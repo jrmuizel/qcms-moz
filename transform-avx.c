@@ -3,7 +3,12 @@
 
 #include "qcmsint.h"
 
-template <size_t kRIndex, size_t kGIndex, size_t kBIndex, size_t kAIndex = NO_A_INDEX>
+static const size_t kRIndex = BGRA_R_INDEX;
+static const size_t kGIndex = BGRA_G_INDEX;
+static const size_t kBIndex = BGRA_B_INDEX;
+static const size_t kAIndex = BGRA_A_INDEX;
+
+//template <size_t kRIndex, size_t kGIndex, size_t kBIndex, size_t kAIndex = NO_A_INDEX>
 static void qcms_transform_data_template_lut_avx(const qcms_transform *transform,
                                                  const unsigned char *src,
                                                  unsigned char *dest,
@@ -31,9 +36,9 @@ static void qcms_transform_data_template_lut_avx(const qcms_transform *transform
     const uint8_t *otdata_b = &transform->output_table_b->data[0];
 
     /* input matrix values never change */
-    const __m256 mat0  = _mm256_broadcast_ps(reinterpret_cast<const __m128*>(mat[0]));
-    const __m256 mat1  = _mm256_broadcast_ps(reinterpret_cast<const __m128*>(mat[1]));
-    const __m256 mat2  = _mm256_broadcast_ps(reinterpret_cast<const __m128*>(mat[2]));
+    const __m256 mat0  = _mm256_broadcast_ps((const __m128*)(mat[0]));
+    const __m256 mat1  = _mm256_broadcast_ps((const __m128*)(mat[1]));
+    const __m256 mat2  = _mm256_broadcast_ps((const __m128*)(mat[2]));
 
     /* these values don't change, either */
     const __m256 max   = _mm256_set1_ps(CLAMPMAXVAL);
@@ -183,7 +188,8 @@ void qcms_transform_data_rgb_out_lut_avx(const qcms_transform *transform,
                                          unsigned char *dest,
                                          size_t length)
 {
-  qcms_transform_data_template_lut_avx<RGBA_R_INDEX, RGBA_G_INDEX, RGBA_B_INDEX>(transform, src, dest, length);
+  //qcms_transform_data_template_lut_avx<RGBA_R_INDEX, RGBA_G_INDEX, RGBA_B_INDEX>(transform, src, dest, length);
+  qcms_transform_data_template_lut_avx(transform, src, dest, length);
 }
 
 void qcms_transform_data_rgba_out_lut_avx(const qcms_transform *transform,
@@ -191,7 +197,8 @@ void qcms_transform_data_rgba_out_lut_avx(const qcms_transform *transform,
                                           unsigned char *dest,
                                           size_t length)
 {
-  qcms_transform_data_template_lut_avx<RGBA_R_INDEX, RGBA_G_INDEX, RGBA_B_INDEX, RGBA_A_INDEX>(transform, src, dest, length);
+  //qcms_transform_data_template_lut_avx<RGBA_R_INDEX, RGBA_G_INDEX, RGBA_B_INDEX, RGBA_A_INDEX>(transform, src, dest, length);
+  qcms_transform_data_template_lut_avx(transform, src, dest, length);
 }
 
 void qcms_transform_data_bgra_out_lut_avx(const qcms_transform *transform,
@@ -199,5 +206,6 @@ void qcms_transform_data_bgra_out_lut_avx(const qcms_transform *transform,
                                           unsigned char *dest,
                                           size_t length)
 {
-  qcms_transform_data_template_lut_avx<BGRA_R_INDEX, BGRA_G_INDEX, BGRA_B_INDEX, BGRA_A_INDEX>(transform, src, dest, length);
+  //qcms_transform_data_template_lut_avx<BGRA_R_INDEX, BGRA_G_INDEX, BGRA_B_INDEX, BGRA_A_INDEX>(transform, src, dest, length);
+  qcms_transform_data_template_lut_avx(transform, src, dest, length);
 }

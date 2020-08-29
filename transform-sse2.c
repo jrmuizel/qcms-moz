@@ -2,13 +2,18 @@
 
 #include "qcmsint.h"
 
+static const size_t kRIndex = BGRA_R_INDEX;
+static const size_t kGIndex = BGRA_G_INDEX;
+static const size_t kBIndex = BGRA_B_INDEX;
+static const size_t kAIndex = BGRA_A_INDEX;
+
 /* pre-shuffled: just load these into XMM reg instead of load-scalar/shufps sequence */
 static const ALIGN float floatScaleX4[4] =
     { FLOATSCALE, FLOATSCALE, FLOATSCALE, FLOATSCALE};
 static const ALIGN float clampMaxValueX4[4] =
     { CLAMPMAXVAL, CLAMPMAXVAL, CLAMPMAXVAL, CLAMPMAXVAL};
 
-template <size_t kRIndex, size_t kGIndex, size_t kBIndex, size_t kAIndex = NO_A_INDEX>
+//template <size_t kRIndex, size_t kGIndex, size_t kBIndex, size_t kAIndex = NO_A_INDEX>
 static void qcms_transform_data_template_lut_sse2(const qcms_transform *transform,
                                                   const unsigned char *src,
                                                   unsigned char *dest,
@@ -140,7 +145,8 @@ void qcms_transform_data_rgb_out_lut_sse2(const qcms_transform *transform,
                                           unsigned char *dest,
                                           size_t length)
 {
-  qcms_transform_data_template_lut_sse2<RGBA_R_INDEX, RGBA_G_INDEX, RGBA_B_INDEX>(transform, src, dest, length);
+  //qcms_transform_data_template_lut_sse2<RGBA_R_INDEX, RGBA_G_INDEX, RGBA_B_INDEX>(transform, src, dest, length);
+  qcms_transform_data_template_lut_sse2(transform, src, dest, length);
 }
 
 void qcms_transform_data_rgba_out_lut_sse2(const qcms_transform *transform,
@@ -148,7 +154,8 @@ void qcms_transform_data_rgba_out_lut_sse2(const qcms_transform *transform,
                                            unsigned char *dest,
                                            size_t length)
 {
-  qcms_transform_data_template_lut_sse2<RGBA_R_INDEX, RGBA_G_INDEX, RGBA_B_INDEX, RGBA_A_INDEX>(transform, src, dest, length);
+  //qcms_transform_data_template_lut_sse2<RGBA_R_INDEX, RGBA_G_INDEX, RGBA_B_INDEX, RGBA_A_INDEX>(transform, src, dest, length);
+  qcms_transform_data_template_lut_sse2(transform, src, dest, length);
 }
 
 void qcms_transform_data_bgra_out_lut_sse2(const qcms_transform *transform,
@@ -156,5 +163,6 @@ void qcms_transform_data_bgra_out_lut_sse2(const qcms_transform *transform,
                                            unsigned char *dest,
                                            size_t length)
 {
-  qcms_transform_data_template_lut_sse2<BGRA_R_INDEX, BGRA_G_INDEX, BGRA_B_INDEX, BGRA_A_INDEX>(transform, src, dest, length);
+  //qcms_transform_data_template_lut_sse2<BGRA_R_INDEX, BGRA_G_INDEX, BGRA_B_INDEX, BGRA_A_INDEX>(transform, src, dest, length);
+  qcms_transform_data_template_lut_sse2(transform, src, dest, length);
 }

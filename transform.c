@@ -112,6 +112,11 @@ static inline bool have_altivec() {
 #endif
 #endif // (defined(__POWERPC__) || defined(__powerpc__))
 
+static const size_t kRIndex = BGRA_R_INDEX;
+static const size_t kGIndex = BGRA_G_INDEX;
+static const size_t kBIndex = BGRA_B_INDEX;
+static const size_t kAIndex = BGRA_A_INDEX;
+
 // Build a White point, primary chromas transfer matrix from RGB to CIE XYZ
 // This is just an approximation, I am not handling all the non-linear
 // aspects of the RGB to XYZ process, and assumming that the gamma correction
@@ -360,8 +365,8 @@ static void qcms_transform_data_rgb_out_pow(const qcms_transform *transform, con
 	See: ftp://ftp.alvyray.com/Acrobat/17_Nonln.pdf
 */
 
-template <size_t kRIndex, size_t kGIndex, size_t kBIndex,
-          size_t kInAIndex = NO_A_INDEX, size_t kOutAIndex = kInAIndex>
+const size_t kInAIndex = NO_A_INDEX;
+const size_t kOutAIndex = kInAIndex;
 static void qcms_transform_data_gray_template_lut(const qcms_transform *transform, const unsigned char *src, unsigned char *dest, size_t length)
 {
 	const unsigned int components = A_INDEX_COMPONENTS(kOutAIndex);
@@ -392,31 +397,34 @@ static void qcms_transform_data_gray_template_lut(const qcms_transform *transfor
 
 static void qcms_transform_data_gray_out_lut(const qcms_transform *transform, const unsigned char *src, unsigned char *dest, size_t length)
 {
-	qcms_transform_data_gray_template_lut<RGBA_R_INDEX, RGBA_G_INDEX, RGBA_B_INDEX>(transform, src, dest, length);
+	//qcms_transform_data_gray_template_lut<RGBA_R_INDEX, RGBA_G_INDEX, RGBA_B_INDEX>(transform, src, dest, length);
+	qcms_transform_data_gray_template_lut(transform, src, dest, length);
 }
 
 static void qcms_transform_data_gray_rgba_out_lut(const qcms_transform *transform, const unsigned char *src, unsigned char *dest, size_t length)
 {
-	qcms_transform_data_gray_template_lut<RGBA_R_INDEX, RGBA_G_INDEX, RGBA_B_INDEX, NO_A_INDEX, RGBA_A_INDEX>(transform, src, dest, length);
+	//qcms_transform_data_gray_template_lut<RGBA_R_INDEX, RGBA_G_INDEX, RGBA_B_INDEX, NO_A_INDEX, RGBA_A_INDEX>(transform, src, dest, length);
+	qcms_transform_data_gray_template_lut(transform, src, dest, length);
 }
 
 static void qcms_transform_data_gray_bgra_out_lut(const qcms_transform *transform, const unsigned char *src, unsigned char *dest, size_t length)
 {
-	qcms_transform_data_gray_template_lut<BGRA_R_INDEX, BGRA_G_INDEX, BGRA_B_INDEX, NO_A_INDEX, BGRA_A_INDEX>(transform, src, dest, length);
+	//qcms_transform_data_gray_template_lut<BGRA_R_INDEX, BGRA_G_INDEX, BGRA_B_INDEX, NO_A_INDEX, BGRA_A_INDEX>(transform, src, dest, length);
+	qcms_transform_data_gray_template_lut(transform, src, dest, length);
 }
 
 static void qcms_transform_data_graya_rgba_out_lut(const qcms_transform *transform, const unsigned char *src, unsigned char *dest, size_t length)
 {
-	qcms_transform_data_gray_template_lut<RGBA_R_INDEX, RGBA_G_INDEX, RGBA_B_INDEX, RGBA_A_INDEX>(transform, src, dest, length);
+	//qcms_transform_data_gray_template_lut<RGBA_R_INDEX, RGBA_G_INDEX, RGBA_B_INDEX, RGBA_A_INDEX>(transform, src, dest, length);
+	qcms_transform_data_gray_template_lut(transform, src, dest, length);
 }
 
 static void qcms_transform_data_graya_bgra_out_lut(const qcms_transform *transform, const unsigned char *src, unsigned char *dest, size_t length)
 {
-	qcms_transform_data_gray_template_lut<BGRA_R_INDEX, BGRA_G_INDEX, BGRA_B_INDEX, BGRA_A_INDEX>(transform, src, dest, length);
+	//qcms_transform_data_gray_template_lut<BGRA_R_INDEX, BGRA_G_INDEX, BGRA_B_INDEX, BGRA_A_INDEX>(transform, src, dest, length);
+	qcms_transform_data_gray_template_lut(transform, src, dest, length);
 }
 
-template <size_t kRIndex, size_t kGIndex, size_t kBIndex,
-          size_t kInAIndex = NO_A_INDEX, size_t kOutAIndex = kInAIndex>
 static void qcms_transform_data_gray_template_precache(const qcms_transform *transform, const unsigned char *src, unsigned char *dest, size_t length)
 {
 	const unsigned int components = A_INDEX_COMPONENTS(kOutAIndex);
@@ -446,30 +454,35 @@ static void qcms_transform_data_gray_template_precache(const qcms_transform *tra
 
 static void qcms_transform_data_gray_out_precache(const qcms_transform *transform, const unsigned char *src, unsigned char *dest, size_t length)
 {
-	qcms_transform_data_gray_template_precache<RGBA_R_INDEX, RGBA_G_INDEX, RGBA_B_INDEX>(transform, src, dest, length);
+	//qcms_transform_data_gray_template_precache<RGBA_R_INDEX, RGBA_G_INDEX, RGBA_B_INDEX>(transform, src, dest, length);
+	qcms_transform_data_gray_template_precache(transform, src, dest, length);
 }
 
 static void qcms_transform_data_gray_rgba_out_precache(const qcms_transform *transform, const unsigned char *src, unsigned char *dest, size_t length)
 {
-	qcms_transform_data_gray_template_precache<RGBA_R_INDEX, RGBA_G_INDEX, RGBA_B_INDEX, NO_A_INDEX, RGBA_A_INDEX>(transform, src, dest, length);
+	//qcms_transform_data_gray_template_precache<RGBA_R_INDEX, RGBA_G_INDEX, RGBA_B_INDEX, NO_A_INDEX, RGBA_A_INDEX>(transform, src, dest, length);
+	qcms_transform_data_gray_template_precache(transform, src, dest, length);
 }
 
 static void qcms_transform_data_gray_bgra_out_precache(const qcms_transform *transform, const unsigned char *src, unsigned char *dest, size_t length)
 {
-	qcms_transform_data_gray_template_precache<BGRA_R_INDEX, BGRA_G_INDEX, BGRA_B_INDEX, NO_A_INDEX, BGRA_A_INDEX>(transform, src, dest, length);
+	//qcms_transform_data_gray_template_precache<BGRA_R_INDEX, BGRA_G_INDEX, BGRA_B_INDEX, NO_A_INDEX, BGRA_A_INDEX>(transform, src, dest, length);
+	qcms_transform_data_gray_template_precache(transform, src, dest, length);
 }
 
 static void qcms_transform_data_graya_rgba_out_precache(const qcms_transform *transform, const unsigned char *src, unsigned char *dest, size_t length)
 {
-	qcms_transform_data_gray_template_precache<RGBA_R_INDEX, RGBA_G_INDEX, RGBA_B_INDEX, RGBA_A_INDEX>(transform, src, dest, length);
+	//qcms_transform_data_gray_template_precache<RGBA_R_INDEX, RGBA_G_INDEX, RGBA_B_INDEX, RGBA_A_INDEX>(transform, src, dest, length);
+	qcms_transform_data_gray_template_precache(transform, src, dest, length);
 }
 
 static void qcms_transform_data_graya_bgra_out_precache(const qcms_transform *transform, const unsigned char *src, unsigned char *dest, size_t length)
 {
-	qcms_transform_data_gray_template_precache<BGRA_R_INDEX, BGRA_G_INDEX, BGRA_B_INDEX, BGRA_A_INDEX>(transform, src, dest, length);
+	//qcms_transform_data_gray_template_precache<BGRA_R_INDEX, BGRA_G_INDEX, BGRA_B_INDEX, BGRA_A_INDEX>(transform, src, dest, length);
+	qcms_transform_data_gray_template_precache(transform, src, dest, length);
 }
 
-template <size_t kRIndex, size_t kGIndex, size_t kBIndex, size_t kAIndex = NO_A_INDEX>
+//template <size_t kRIndex, size_t kGIndex, size_t kBIndex, size_t kAIndex = NO_A_INDEX>
 static void qcms_transform_data_template_lut_precache(const qcms_transform *transform, const unsigned char *src, unsigned char *dest, size_t length)
 {
 	const unsigned int components = A_INDEX_COMPONENTS(kAIndex);
@@ -515,17 +528,17 @@ static void qcms_transform_data_template_lut_precache(const qcms_transform *tran
 
 void qcms_transform_data_rgb_out_lut_precache(const qcms_transform *transform, const unsigned char *src, unsigned char *dest, size_t length)
 {
-	qcms_transform_data_template_lut_precache<RGBA_R_INDEX, RGBA_G_INDEX, RGBA_B_INDEX>(transform, src, dest, length);
+	qcms_transform_data_template_lut_precache(transform, src, dest, length);
 }
 
 void qcms_transform_data_rgba_out_lut_precache(const qcms_transform *transform, const unsigned char *src, unsigned char *dest, size_t length)
 {
-	qcms_transform_data_template_lut_precache<RGBA_R_INDEX, RGBA_G_INDEX, RGBA_B_INDEX, RGBA_A_INDEX>(transform, src, dest, length);
+	qcms_transform_data_template_lut_precache(transform, src, dest, length);
 }
 
 void qcms_transform_data_bgra_out_lut_precache(const qcms_transform *transform, const unsigned char *src, unsigned char *dest, size_t length)
 {
-	qcms_transform_data_template_lut_precache<BGRA_R_INDEX, BGRA_G_INDEX, BGRA_B_INDEX, BGRA_A_INDEX>(transform, src, dest, length);
+	qcms_transform_data_template_lut_precache(transform, src, dest, length);
 }
 
 // Not used
@@ -591,7 +604,6 @@ static int int_div_ceil(int value, int div) {
 }
 
 // Using lcms' tetra interpolation algorithm.
-template <size_t kRIndex, size_t kGIndex, size_t kBIndex, size_t kAIndex = NO_A_INDEX>
 static void qcms_transform_data_tetra_clut_template(const qcms_transform *transform, const unsigned char *src, unsigned char *dest, size_t length) {
 	const unsigned int components = A_INDEX_COMPONENTS(kAIndex);
 	unsigned int i;
@@ -715,18 +727,20 @@ static void qcms_transform_data_tetra_clut_template(const qcms_transform *transf
 }
 
 static void qcms_transform_data_tetra_clut_rgb(const qcms_transform *transform, const unsigned char *src, unsigned char *dest, size_t length) {
-	qcms_transform_data_tetra_clut_template<RGBA_R_INDEX, RGBA_G_INDEX, RGBA_B_INDEX>(transform, src, dest, length);
+	//qcms_transform_data_tetra_clut_template<RGBA_R_INDEX, RGBA_G_INDEX, RGBA_B_INDEX>(transform, src, dest, length);
+	qcms_transform_data_tetra_clut_template(transform, src, dest, length);
 }
 
 static void qcms_transform_data_tetra_clut_rgba(const qcms_transform *transform, const unsigned char *src, unsigned char *dest, size_t length) {
-	qcms_transform_data_tetra_clut_template<RGBA_R_INDEX, RGBA_G_INDEX, RGBA_B_INDEX, RGBA_A_INDEX>(transform, src, dest, length);
+	//qcms_transform_data_tetra_clut_template<RGBA_R_INDEX, RGBA_G_INDEX, RGBA_B_INDEX, RGBA_A_INDEX>(transform, src, dest, length);
+	qcms_transform_data_tetra_clut_template(transform, src, dest, length);
 }
 
 static void qcms_transform_data_tetra_clut_bgra(const qcms_transform *transform, const unsigned char *src, unsigned char *dest, size_t length) {
-	qcms_transform_data_tetra_clut_template<BGRA_R_INDEX, BGRA_G_INDEX, BGRA_B_INDEX, BGRA_A_INDEX>(transform, src, dest, length);
+	//qcms_transform_data_tetra_clut_template<BGRA_R_INDEX, BGRA_G_INDEX, BGRA_B_INDEX, BGRA_A_INDEX>(transform, src, dest, length);
+	qcms_transform_data_tetra_clut_template(transform, src, dest, length);
 }
 
-template <size_t kRIndex, size_t kGIndex, size_t kBIndex, size_t kAIndex = NO_A_INDEX>
 static void qcms_transform_data_template_lut(const qcms_transform *transform, const unsigned char *src, unsigned char *dest, size_t length)
 {
 	const unsigned int components = A_INDEX_COMPONENTS(kAIndex);
@@ -774,17 +788,20 @@ static void qcms_transform_data_template_lut(const qcms_transform *transform, co
 
 void qcms_transform_data_rgb_out_lut(const qcms_transform *transform, const unsigned char *src, unsigned char *dest, size_t length)
 {
-	qcms_transform_data_template_lut<RGBA_R_INDEX, RGBA_G_INDEX, RGBA_B_INDEX>(transform, src, dest, length);
+	//qcms_transform_data_template_lut<RGBA_R_INDEX, RGBA_G_INDEX, RGBA_B_INDEX>(transform, src, dest, length);
+	qcms_transform_data_template_lut(transform, src, dest, length);
 }
 
 void qcms_transform_data_rgba_out_lut(const qcms_transform *transform, const unsigned char *src, unsigned char *dest, size_t length)
 {
-	qcms_transform_data_template_lut<RGBA_R_INDEX, RGBA_G_INDEX, RGBA_B_INDEX, RGBA_A_INDEX>(transform, src, dest, length);
+	//qcms_transform_data_template_lut<RGBA_R_INDEX, RGBA_G_INDEX, RGBA_B_INDEX, RGBA_A_INDEX>(transform, src, dest, length);
+	qcms_transform_data_template_lut(transform, src, dest, length);
 }
 
 void qcms_transform_data_bgra_out_lut(const qcms_transform *transform, const unsigned char *src, unsigned char *dest, size_t length)
 {
-	qcms_transform_data_template_lut<BGRA_R_INDEX, BGRA_G_INDEX, BGRA_B_INDEX, BGRA_A_INDEX>(transform, src, dest, length);
+	//qcms_transform_data_template_lut<BGRA_R_INDEX, BGRA_G_INDEX, BGRA_B_INDEX, BGRA_A_INDEX>(transform, src, dest, length);
+	qcms_transform_data_template_lut(transform, src, dest, length);
 }
 
 #if 0
