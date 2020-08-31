@@ -14,19 +14,19 @@ extern "C" {
     fn floorf(_: f32) -> f32;
     #[no_mangle]
     fn __assert_rtn(_: *const libc::c_char, _: *const libc::c_char,
-                    _: libc::c_int, _: *const libc::c_char) -> !;
+                    _: i32, _: *const libc::c_char) -> !;
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong)
      -> *mut libc::c_void;
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong)
+    fn memset(_: *mut libc::c_void, _: i32, _: libc::c_ulong)
      -> *mut libc::c_void;
     #[no_mangle]
     fn lut_interp_linear(value: libc::c_double, table: *mut uint16_t,
-                         length: libc::c_int) -> f32;
+                         length: i32) -> f32;
     #[no_mangle]
     fn lut_interp_linear_float(value: f32,
-                               table: *mut f32, length: libc::c_int)
+                               table: *mut f32, length: i32)
      -> f32;
     #[no_mangle]
     fn build_input_gamma_table(TRC: *mut curveType) -> *mut f32;
@@ -40,7 +40,7 @@ extern "C" {
     fn matrix_invert(mat: matrix) -> matrix;
 }
 pub type __darwin_size_t = libc::c_ulong;
-pub type int32_t = libc::c_int;
+pub type int32_t = i32;
 pub type size_t = __darwin_size_t;
 pub type uint8_t = libc::c_uchar;
 pub type uint16_t = libc::c_ushort;
@@ -48,7 +48,7 @@ pub type uint32_t = libc::c_uint;
 
 #[repr(C)]#[derive(Copy, Clone)]
 pub struct precache_output {
-    pub ref_count: libc::c_int,
+    pub ref_count: i32,
     pub data: [uint8_t; 8192],
 }
 
@@ -447,16 +447,16 @@ unsafe extern "C" fn qcms_transform_module_clut_only(mut transform:
                                                          *mut f32,
                                                      mut length: size_t) {
     
-    let mut xy_len: libc::c_int = 1i32;
-    let mut x_len: libc::c_int = (*transform).grid_size as libc::c_int;
-    let mut len: libc::c_int = x_len * x_len;
+    let mut xy_len: i32 = 1i32;
+    let mut x_len: i32 = (*transform).grid_size as i32;
+    let mut len: i32 = x_len * x_len;
     let mut r_table: *mut f32 = (*transform).r_clut;
     let mut g_table: *mut f32 = (*transform).g_clut;
     let mut b_table: *mut f32 = (*transform).b_clut;
      let mut i:  size_t =  0u64;
     while i < length {
-        if !((*transform).grid_size as libc::c_int >= 1i32) as
-               libc::c_int as libc::c_long != 0 {
+        if !((*transform).grid_size as i32 >= 1i32) as
+               i32 as libc::c_long != 0 {
             __assert_rtn((*::std::mem::transmute::<&[u8; 32],
                                                    &[libc::c_char; 32]>(b"qcms_transform_module_clut_only\x00")).as_ptr(),
                          b"chain.c\x00" as *const u8 as *const libc::c_char,
@@ -473,44 +473,44 @@ unsafe extern "C" fn qcms_transform_module_clut_only(mut transform:
         let fresh14 = src;
         src = src.offset(1);
         let mut linear_b: f32 = *fresh14;
-        let mut x: libc::c_int =
+        let mut x: i32 =
             floorf(linear_r *
-                       ((*transform).grid_size as libc::c_int -
+                       ((*transform).grid_size as i32 -
                             1i32) as f32) as
-                libc::c_int;
-        let mut y: libc::c_int =
+                i32;
+        let mut y: i32 =
             floorf(linear_g *
-                       ((*transform).grid_size as libc::c_int -
+                       ((*transform).grid_size as i32 -
                             1i32) as f32) as
-                libc::c_int;
-        let mut z: libc::c_int =
+                i32;
+        let mut z: i32 =
             floorf(linear_b *
-                       ((*transform).grid_size as libc::c_int -
+                       ((*transform).grid_size as i32 -
                             1i32) as f32) as
-                libc::c_int;
-        let mut x_n: libc::c_int =
+                i32;
+        let mut x_n: i32 =
             ceilf(linear_r *
-                      ((*transform).grid_size as libc::c_int -
-                           1i32) as f32) as libc::c_int;
-        let mut y_n: libc::c_int =
+                      ((*transform).grid_size as i32 -
+                           1i32) as f32) as i32;
+        let mut y_n: i32 =
             ceilf(linear_g *
-                      ((*transform).grid_size as libc::c_int -
-                           1i32) as f32) as libc::c_int;
-        let mut z_n: libc::c_int =
+                      ((*transform).grid_size as i32 -
+                           1i32) as f32) as i32;
+        let mut z_n: i32 =
             ceilf(linear_b *
-                      ((*transform).grid_size as libc::c_int -
-                           1i32) as f32) as libc::c_int;
+                      ((*transform).grid_size as i32 -
+                           1i32) as f32) as i32;
         let mut x_d: f32 =
             linear_r *
-                ((*transform).grid_size as libc::c_int - 1i32) as
+                ((*transform).grid_size as i32 - 1i32) as
                     f32 - x as f32;
         let mut y_d: f32 =
             linear_g *
-                ((*transform).grid_size as libc::c_int - 1i32) as
+                ((*transform).grid_size as i32 - 1i32) as
                     f32 - y as f32;
         let mut z_d: f32 =
             linear_b *
-                ((*transform).grid_size as libc::c_int - 1i32) as
+                ((*transform).grid_size as i32 - 1i32) as
                     f32 - z as f32;
         let mut r_x1: f32 =
             lerp(*r_table.offset(((x * len + y * x_len + z * xy_len) *
@@ -599,16 +599,16 @@ unsafe extern "C" fn qcms_transform_module_clut(mut transform:
                                                 mut dest: *mut f32,
                                                 mut length: size_t) {
     
-    let mut xy_len: libc::c_int = 1i32;
-    let mut x_len: libc::c_int = (*transform).grid_size as libc::c_int;
-    let mut len: libc::c_int = x_len * x_len;
+    let mut xy_len: i32 = 1i32;
+    let mut x_len: i32 = (*transform).grid_size as i32;
+    let mut len: i32 = x_len * x_len;
     let mut r_table: *mut f32 = (*transform).r_clut;
     let mut g_table: *mut f32 = (*transform).g_clut;
     let mut b_table: *mut f32 = (*transform).b_clut;
      let mut i:  size_t =  0u64;
     while i < length {
-        if !((*transform).grid_size as libc::c_int >= 1i32) as
-               libc::c_int as libc::c_long != 0 {
+        if !((*transform).grid_size as i32 >= 1i32) as
+               i32 as libc::c_long != 0 {
             __assert_rtn((*::std::mem::transmute::<&[u8; 27],
                                                    &[libc::c_char; 27]>(b"qcms_transform_module_clut\x00")).as_ptr(),
                          b"chain.c\x00" as *const u8 as *const libc::c_char,
@@ -628,53 +628,53 @@ unsafe extern "C" fn qcms_transform_module_clut(mut transform:
         let mut linear_r: f32 =
             lut_interp_linear_float(device_r, (*transform).input_clut_table_r,
                                     (*transform).input_clut_table_length as
-                                        libc::c_int);
+                                        i32);
         let mut linear_g: f32 =
             lut_interp_linear_float(device_g, (*transform).input_clut_table_g,
                                     (*transform).input_clut_table_length as
-                                        libc::c_int);
+                                        i32);
         let mut linear_b: f32 =
             lut_interp_linear_float(device_b, (*transform).input_clut_table_b,
                                     (*transform).input_clut_table_length as
-                                        libc::c_int);
-        let mut x: libc::c_int =
+                                        i32);
+        let mut x: i32 =
             floorf(linear_r *
-                       ((*transform).grid_size as libc::c_int -
+                       ((*transform).grid_size as i32 -
                             1i32) as f32) as
-                libc::c_int;
-        let mut y: libc::c_int =
+                i32;
+        let mut y: i32 =
             floorf(linear_g *
-                       ((*transform).grid_size as libc::c_int -
+                       ((*transform).grid_size as i32 -
                             1i32) as f32) as
-                libc::c_int;
-        let mut z: libc::c_int =
+                i32;
+        let mut z: i32 =
             floorf(linear_b *
-                       ((*transform).grid_size as libc::c_int -
+                       ((*transform).grid_size as i32 -
                             1i32) as f32) as
-                libc::c_int;
-        let mut x_n: libc::c_int =
+                i32;
+        let mut x_n: i32 =
             ceilf(linear_r *
-                      ((*transform).grid_size as libc::c_int -
-                           1i32) as f32) as libc::c_int;
-        let mut y_n: libc::c_int =
+                      ((*transform).grid_size as i32 -
+                           1i32) as f32) as i32;
+        let mut y_n: i32 =
             ceilf(linear_g *
-                      ((*transform).grid_size as libc::c_int -
-                           1i32) as f32) as libc::c_int;
-        let mut z_n: libc::c_int =
+                      ((*transform).grid_size as i32 -
+                           1i32) as f32) as i32;
+        let mut z_n: i32 =
             ceilf(linear_b *
-                      ((*transform).grid_size as libc::c_int -
-                           1i32) as f32) as libc::c_int;
+                      ((*transform).grid_size as i32 -
+                           1i32) as f32) as i32;
         let mut x_d: f32 =
             linear_r *
-                ((*transform).grid_size as libc::c_int - 1i32) as
+                ((*transform).grid_size as i32 - 1i32) as
                     f32 - x as f32;
         let mut y_d: f32 =
             linear_g *
-                ((*transform).grid_size as libc::c_int - 1i32) as
+                ((*transform).grid_size as i32 - 1i32) as
                     f32 - y as f32;
         let mut z_d: f32 =
             linear_b *
-                ((*transform).grid_size as libc::c_int - 1i32) as
+                ((*transform).grid_size as i32 - 1i32) as
                     f32 - z as f32;
         let mut r_x1: f32 =
             lerp(*r_table.offset(((x * len + y * x_len + z * xy_len) *
@@ -748,15 +748,15 @@ unsafe extern "C" fn qcms_transform_module_clut(mut transform:
         let mut pcs_r: f32 =
             lut_interp_linear_float(clut_r, (*transform).output_clut_table_r,
                                     (*transform).output_clut_table_length as
-                                        libc::c_int);
+                                        i32);
         let mut pcs_g: f32 =
             lut_interp_linear_float(clut_g, (*transform).output_clut_table_g,
                                     (*transform).output_clut_table_length as
-                                        libc::c_int);
+                                        i32);
         let mut pcs_b: f32 =
             lut_interp_linear_float(clut_b, (*transform).output_clut_table_b,
                                     (*transform).output_clut_table_length as
-                                        libc::c_int);
+                                        i32);
         let fresh21 = dest;
         dest = dest.offset(1);
         *fresh21 = clamp_float(pcs_r);
@@ -963,17 +963,17 @@ unsafe extern "C" fn qcms_transform_module_gamma_lut(mut transform:
             lut_interp_linear(in_r as libc::c_double,
                               (*transform).output_gamma_lut_r,
                               (*transform).output_gamma_lut_r_length as
-                                  libc::c_int);
+                                  i32);
         out_g =
             lut_interp_linear(in_g as libc::c_double,
                               (*transform).output_gamma_lut_g,
                               (*transform).output_gamma_lut_g_length as
-                                  libc::c_int);
+                                  i32);
         out_b =
             lut_interp_linear(in_b as libc::c_double,
                               (*transform).output_gamma_lut_b,
                               (*transform).output_gamma_lut_b_length as
-                                  libc::c_int);
+                                  i32);
         let fresh33 = dest;
         dest = dest.offset(1);
         *fresh33 = clamp_float(out_r);
@@ -1147,10 +1147,10 @@ unsafe extern "C" fn qcms_modular_transform_release(mut transform:
         // clut may use a single block of memory.
 		// Perhaps we should remove this to simply the code.
         if (*transform).input_clut_table_r.offset((*transform).input_clut_table_length
-                                                      as libc::c_int as isize)
+                                                      as i32 as isize)
                == (*transform).input_clut_table_g &&
                (*transform).input_clut_table_g.offset((*transform).input_clut_table_length
-                                                          as libc::c_int as
+                                                          as i32 as
                                                           isize) ==
                    (*transform).input_clut_table_b {
             if !(*transform).input_clut_table_r.is_null() {
@@ -1186,11 +1186,11 @@ unsafe extern "C" fn qcms_modular_transform_release(mut transform:
             }
         }
         if (*transform).output_clut_table_r.offset((*transform).output_clut_table_length
-                                                       as libc::c_int as
+                                                       as i32 as
                                                        isize) ==
                (*transform).output_clut_table_g &&
                (*transform).output_clut_table_g.offset((*transform).output_clut_table_length
-                                                           as libc::c_int as
+                                                           as i32 as
                                                            isize) ==
                    (*transform).output_clut_table_b {
             if !(*transform).output_clut_table_r.is_null() {
@@ -1284,13 +1284,13 @@ unsafe extern "C" fn qcms_modular_transform_create_mAB(mut lut:
                                                   _: *mut f32,
                                                   _: size_t) -> ());
                 if (*lut).num_grid_points[0usize] as
-                       libc::c_int !=
+                       i32 !=
                        (*lut).num_grid_points[1usize] as
-                           libc::c_int ||
+                           i32 ||
                        (*lut).num_grid_points[1usize] as
-                           libc::c_int !=
+                           i32 !=
                            (*lut).num_grid_points[2usize]
-                               as libc::c_int {
+                               as i32 {
                     //XXX: We don't currently support clut that are not squared!
                     current_block = 7590209878260659629;
                 } else {
@@ -1477,15 +1477,15 @@ unsafe extern "C" fn qcms_modular_transform_create_lut(mut lut: *mut lutType)
                            in_curve_len);
                     (*transform).input_clut_table_r =
                         in_curves.offset(((*lut).num_input_table_entries as
-                                              libc::c_int * 0i32)
+                                              i32 * 0i32)
                                              as isize);
                     (*transform).input_clut_table_g =
                         in_curves.offset(((*lut).num_input_table_entries as
-                                              libc::c_int * 1i32)
+                                              i32 * 1i32)
                                              as isize);
                     (*transform).input_clut_table_b =
                         in_curves.offset(((*lut).num_input_table_entries as
-                                              libc::c_int * 2i32)
+                                              i32 * 2i32)
                                              as isize);
                     (*transform).input_clut_table_length =
                         (*lut).num_input_table_entries;
@@ -1524,17 +1524,17 @@ unsafe extern "C" fn qcms_modular_transform_create_lut(mut lut: *mut lutType)
                                    out_curve_len);
                             (*transform).output_clut_table_r =
                                 out_curves.offset(((*lut).num_output_table_entries
-                                                       as libc::c_int *
+                                                       as i32 *
                                                        0i32) as
                                                       isize);
                             (*transform).output_clut_table_g =
                                 out_curves.offset(((*lut).num_output_table_entries
-                                                       as libc::c_int *
+                                                       as i32 *
                                                        1i32) as
                                                       isize);
                             (*transform).output_clut_table_b =
                                 out_curves.offset(((*lut).num_output_table_entries
-                                                       as libc::c_int *
+                                                       as i32 *
                                                        2i32) as
                                                       isize);
                             (*transform).output_clut_table_length =
@@ -1579,9 +1579,9 @@ pub unsafe extern "C" fn qcms_modular_transform_create_input(mut in_0:
             current_block = 10692455896603418738;
         }
     } else if !(*in_0).mAB.is_null() &&
-                  (*(*in_0).mAB).num_in_channels as libc::c_int ==
+                  (*(*in_0).mAB).num_in_channels as i32 ==
                       3i32 &&
-                  (*(*in_0).mAB).num_out_channels as libc::c_int ==
+                  (*(*in_0).mAB).num_out_channels as i32 ==
                       3i32 {
         
          let mut mAB_transform:  *mut qcms_modular_transform =
@@ -1693,9 +1693,9 @@ unsafe extern "C" fn qcms_modular_transform_create_output(mut out:
             current_block = 13131896068329595644;
         }
     } else if !(*out).mBA.is_null() &&
-                  (*(*out).mBA).num_in_channels as libc::c_int ==
+                  (*(*out).mBA).num_in_channels as i32 ==
                       3i32 &&
-                  (*(*out).mBA).num_out_channels as libc::c_int ==
+                  (*(*out).mBA).num_out_channels as i32 ==
                       3i32 {
         
          let mut lut_transform_0:  *mut qcms_modular_transform =
@@ -1785,7 +1785,7 @@ unsafe extern "C" fn qcms_modular_transform_create_output(mut out:
     } else {
         if !(0i32 != 0 &&
                  !(b"Unsupported output profile workflow.\x00" as *const u8 as
-                       *const libc::c_char).is_null()) as libc::c_int as
+                       *const libc::c_char).is_null()) as i32 as
                libc::c_long != 0 {
             __assert_rtn((*::std::mem::transmute::<&[u8; 37],
                                                    &[libc::c_char; 37]>(b"qcms_modular_transform_create_output\x00")).as_ptr(),
@@ -1949,7 +1949,7 @@ unsafe extern "C" fn qcms_modular_transform_create(mut in_0:
                                          !(b"output color space not supported\x00"
                                                as *const u8 as
                                                *const libc::c_char).is_null())
-                                       as libc::c_int as libc::c_long != 0 {
+                                       as i32 as libc::c_long != 0 {
                                     __assert_rtn((*::std::mem::transmute::<&[u8; 30],
                                                                            &[libc::c_char; 30]>(b"qcms_modular_transform_create\x00")).as_ptr(),
                                                  b"chain.c\x00" as *const u8
@@ -1968,7 +1968,7 @@ unsafe extern "C" fn qcms_modular_transform_create(mut in_0:
     } else {
         if !(0i32 != 0 &&
                  !(b"input color space not supported\x00" as *const u8 as
-                       *const libc::c_char).is_null()) as libc::c_int as
+                       *const libc::c_char).is_null()) as i32 as
                libc::c_long != 0 {
             __assert_rtn((*::std::mem::transmute::<&[u8; 30],
                                                    &[libc::c_char; 30]>(b"qcms_modular_transform_create\x00")).as_ptr(),
@@ -2049,7 +2049,7 @@ unsafe extern "C" fn qcms_modular_transform_data(mut transform:
                                                  _: size_t) -> ()) {
             if !(0i32 != 0 &&
                      !(b"Unsupported transform module\x00" as *const u8 as
-                           *const libc::c_char).is_null()) as libc::c_int as
+                           *const libc::c_char).is_null()) as i32 as
                    libc::c_long != 0 {
                 __assert_rtn((*::std::mem::transmute::<&[u8; 28],
                                                        &[libc::c_char; 28]>(b"qcms_modular_transform_data\x00")).as_ptr(),
@@ -2060,7 +2060,7 @@ unsafe extern "C" fn qcms_modular_transform_data(mut transform:
             } else { };
             return 0 as *mut f32
         }
-        if (*transform).grid_size as libc::c_int <= 0i32 &&
+        if (*transform).grid_size as i32 <= 0i32 &&
                (transform_fn ==
                     Some(qcms_transform_module_clut as
                              unsafe extern "C" fn(_:
@@ -2077,7 +2077,7 @@ unsafe extern "C" fn qcms_modular_transform_data(mut transform:
                                                       _: size_t) -> ())) {
             if !(0i32 != 0 &&
                      !(b"Invalid transform\x00" as *const u8 as
-                           *const libc::c_char).is_null()) as libc::c_int as
+                           *const libc::c_char).is_null()) as i32 as
                    libc::c_long != 0 {
                 __assert_rtn((*::std::mem::transmute::<&[u8; 28],
                                                        &[libc::c_char; 28]>(b"qcms_modular_transform_data\x00")).as_ptr(),

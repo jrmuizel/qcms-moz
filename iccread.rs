@@ -9,7 +9,7 @@ extern "C" {
     fn floor(_: libc::c_double) -> libc::c_double;
     #[no_mangle]
     fn __assert_rtn(_: *const libc::c_char, _: *const libc::c_char,
-                    _: libc::c_int, _: *const libc::c_char) -> !;
+                    _: i32, _: *const libc::c_char) -> !;
     #[no_mangle]
     fn malloc(_: libc::c_ulong) -> *mut libc::c_void;
     #[no_mangle]
@@ -20,10 +20,10 @@ extern "C" {
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong)
      -> *mut libc::c_void;
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong)
+    fn memset(_: *mut libc::c_void, _: i32, _: libc::c_ulong)
      -> *mut libc::c_void;
     #[no_mangle]
-    fn fclose(_: *mut FILE) -> libc::c_int;
+    fn fclose(_: *mut FILE) -> i32;
     #[no_mangle]
     fn fopen(_: *const libc::c_char, _: *const libc::c_char) -> *mut FILE;
     #[no_mangle]
@@ -46,7 +46,7 @@ extern "C" {
 pub type __int64_t = libc::c_longlong;
 pub type __darwin_size_t = libc::c_ulong;
 pub type __darwin_off_t = __int64_t;
-pub type int32_t = libc::c_int;
+pub type int32_t = i32;
 pub type size_t = __darwin_size_t;
 pub type uint8_t = libc::c_uchar;
 pub type uint16_t = libc::c_ushort;
@@ -83,43 +83,43 @@ pub type fpos_t = __darwin_off_t;
 #[repr(C)]#[derive(Copy, Clone)]
 pub struct __sbuf {
     pub _base: *mut libc::c_uchar,
-    pub _size: libc::c_int,
+    pub _size: i32,
 }
 
 #[repr(C)]#[derive(Copy, Clone)]
 pub struct __sFILE {
     pub _p: *mut libc::c_uchar,
-    pub _r: libc::c_int,
-    pub _w: libc::c_int,
+    pub _r: i32,
+    pub _w: i32,
     pub _flags: libc::c_short,
     pub _file: libc::c_short,
     pub _bf: __sbuf,
-    pub _lbfsize: libc::c_int,
+    pub _lbfsize: i32,
     pub _cookie: *mut libc::c_void,
     pub _close: Option<unsafe extern "C" fn(_: *mut libc::c_void)
-                           -> libc::c_int>,
+                           -> i32>,
     pub _read: Option<unsafe extern "C" fn(_: *mut libc::c_void,
                                            _: *mut libc::c_char,
-                                           _: libc::c_int) -> libc::c_int>,
+                                           _: i32) -> i32>,
     pub _seek: Option<unsafe extern "C" fn(_: *mut libc::c_void, _: fpos_t,
-                                           _: libc::c_int) -> fpos_t>,
+                                           _: i32) -> fpos_t>,
     pub _write: Option<unsafe extern "C" fn(_: *mut libc::c_void,
                                             _: *const libc::c_char,
-                                            _: libc::c_int) -> libc::c_int>,
+                                            _: i32) -> i32>,
     pub _ub: __sbuf,
     pub _extra: *mut __sFILEX,
-    pub _ur: libc::c_int,
+    pub _ur: i32,
     pub _ubuf: [libc::c_uchar; 3],
     pub _nbuf: [libc::c_uchar; 1],
     pub _lb: __sbuf,
-    pub _blksize: libc::c_int,
+    pub _blksize: i32,
     pub _offset: fpos_t,
 }
 pub type FILE = __sFILE;
 
 #[repr(C)]#[derive(Copy, Clone)]
 pub struct precache_output {
-    pub ref_count: libc::c_int,
+    pub ref_count: i32,
     pub data: [uint8_t; 8192],
 }
 
@@ -319,8 +319,8 @@ unsafe extern "C" fn cpu_to_be32(mut v: uint32_t) -> be32 {
                (v & 0xff000000u32) >> 24i32;
 }
 unsafe extern "C" fn cpu_to_be16(mut v: uint16_t) -> be16 {
-    return ((v as libc::c_int & 0xffi32) << 8i32 |
-                (v as libc::c_int & 0xff00i32) >>
+    return ((v as i32 & 0xffi32) << 8i32 |
+                (v as i32 & 0xff00i32) >>
                     8i32) as be16;
 }
 unsafe extern "C" fn be32_to_cpu(mut v: be32) -> uint32_t {
@@ -333,8 +333,8 @@ unsafe extern "C" fn be32_to_cpu(mut v: be32) -> uint32_t {
     //return __builtin_bswap32(v);
 }
 unsafe extern "C" fn be16_to_cpu(mut v: be16) -> uint16_t {
-    return ((v as libc::c_int & 0xffi32) << 8i32 |
-                (v as libc::c_int & 0xff00i32) >>
+    return ((v as i32 & 0xffi32) << 8i32 |
+                (v as i32 & 0xff00i32) >>
                     8i32) as uint16_t;
 }
 unsafe extern "C" fn invalid_source(mut mem: *mut mem_source,
@@ -428,8 +428,8 @@ unsafe extern "C" fn check_profile_version(mut src: *mut mem_source) {
 			invalid_source(src, "Unsupported minor revision");
 	}
 	*/
-    if reserved1 as libc::c_int != 0i32 ||
-           reserved2 as libc::c_int != 0i32 {
+    if reserved1 as i32 != 0i32 ||
+           reserved2 as i32 != 0i32 {
         invalid_source(src,
                        b"Invalid reserved bytes\x00" as *const u8 as
                            *const libc::c_char);
@@ -695,14 +695,14 @@ unsafe extern "C" fn read_tag_s15Fixed16ArrayType(mut src: *mut mem_source,
                                *const u8 as *const libc::c_char);
         }
         i = 0u8;
-        while (i as libc::c_int) < 9i32 {
-            matrix.m[(i as libc::c_int / 3i32) as
-                         usize][(i as libc::c_int % 3i32) as
+        while (i as i32) < 9i32 {
+            matrix.m[(i as i32 / 3i32) as
+                         usize][(i as i32 % 3i32) as
                                     usize] =
                 s15Fixed16Number_to_float(read_s15Fixed16Number(src,
                                                                 offset.wrapping_add(8u32).wrapping_add((i
                                                                                                                         as
-                                                                                                                        libc::c_int
+                                                                                                                        i32
                                                                                                                         *
                                                                                                                         4i32)
                                                                                                                        as
@@ -880,9 +880,9 @@ unsafe extern "C" fn read_nested_curveType(mut src: *mut mem_source,
                                            mut num_channels: uint8_t,
                                            mut curve_offset: uint32_t) {
     let mut channel_offset: uint32_t = 0u32;
-    let mut i: libc::c_int = 0;
+    let mut i: i32 = 0;
     i = 0i32;
-    while i < num_channels as libc::c_int {
+    while i < num_channels as i32 {
         let mut tag_len: uint32_t = 0;
         (*curveArray)[i as usize] =
             read_curveType(src, curve_offset.wrapping_add(channel_offset),
@@ -910,12 +910,12 @@ unsafe extern "C" fn read_nested_curveType(mut src: *mut mem_source,
 unsafe extern "C" fn mAB_release(mut lut: *mut lutmABType) {
     let mut i: uint8_t = 0;
     i = 0u8;
-    while (i as libc::c_int) < (*lut).num_in_channels as libc::c_int {
+    while (i as i32) < (*lut).num_in_channels as i32 {
         free((*lut).a_curves[i as usize] as *mut libc::c_void);
         i = i.wrapping_add(1)
     }
     i = 0u8;
-    while (i as libc::c_int) < (*lut).num_out_channels as libc::c_int {
+    while (i as i32) < (*lut).num_out_channels as i32 {
         free((*lut).b_curves[i as usize] as *mut libc::c_void);
         free((*lut).m_curves[i as usize] as *mut libc::c_void);
         i = i.wrapping_add(1)
@@ -953,16 +953,16 @@ unsafe extern "C" fn read_tag_lutmABType(mut src: *mut mem_source,
         read_u8(src,
                 offset.wrapping_add(9u32) as
                     size_t);
-    if num_in_channels as libc::c_int > 10i32 ||
-           num_out_channels as libc::c_int > 10i32 {
+    if num_in_channels as i32 > 10i32 ||
+           num_out_channels as i32 > 10i32 {
         return 0 as *mut lutmABType
     }
     // We require 3in/out channels since we only support RGB->XYZ (or RGB->LAB)
 	// XXX: If we remove this restriction make sure that the number of channels
 	//      is less or equal to the maximum number of mAB curves in qcmsint.h
 	//      also check for clut_size overflow. Also make sure it's != 0
-    if num_in_channels as libc::c_int != 3i32 ||
-           num_out_channels as libc::c_int != 3i32 {
+    if num_in_channels as i32 != 3i32 ||
+           num_out_channels as i32 != 3i32 {
         return 0 as *mut lutmABType
     }
     // some of this data is optional and is denoted by a zero offset
@@ -1015,8 +1015,8 @@ unsafe extern "C" fn read_tag_lutmABType(mut src: *mut mem_source,
             (b_curve_offset).wrapping_add(offset)
     }
     if clut_offset != 0 {
-        if !(num_in_channels as libc::c_int == 3i32) as
-               libc::c_int as libc::c_long != 0 {
+        if !(num_in_channels as i32 == 3i32) as
+               i32 as libc::c_long != 0 {
             __assert_rtn((*::std::mem::transmute::<&[u8; 20],
                                                    &[libc::c_char; 20]>(b"read_tag_lutmABType\x00")).as_ptr(),
                          b"iccread.c\x00" as *const u8 as *const libc::c_char,
@@ -1065,7 +1065,7 @@ unsafe extern "C" fn read_tag_lutmABType(mut src: *mut mem_source,
         while i < num_in_channels as libc::c_uint {
             (*lut).num_grid_points[i as usize] =
                 read_u8(src, clut_offset.wrapping_add(i) as size_t);
-            if (*lut).num_grid_points[i as usize] as libc::c_int ==
+            if (*lut).num_grid_points[i as usize] as i32 ==
                    0i32 {
                 invalid_source(src,
                                b"bad grid_points\x00" as *const u8 as
@@ -1198,7 +1198,7 @@ unsafe extern "C" fn read_tag_lutmABType(mut src: *mut mem_source,
         clut_precision =
             read_u8(src,
                     clut_offset.wrapping_add(16u32) as size_t);
-        if clut_precision as libc::c_int == 1i32 {
+        if clut_precision as i32 == 1i32 {
             i = 0u32;
             while i < clut_size {
                 *(*lut).clut_table.offset(i as isize) =
@@ -1207,7 +1207,7 @@ unsafe extern "C" fn read_tag_lutmABType(mut src: *mut mem_source,
                                                               as size_t));
                 i = i.wrapping_add(1)
             }
-        } else if clut_precision as libc::c_int == 2i32 {
+        } else if clut_precision as i32 == 2i32 {
             i = 0u32;
             while i < clut_size {
                 *(*lut).clut_table.offset(i as isize) =
@@ -1257,8 +1257,8 @@ unsafe extern "C" fn read_tag_lutType(mut src: *mut mem_source,
             read_u16(src,
                      offset.wrapping_add(50u32) as
                          size_t);
-        if num_input_table_entries as libc::c_int == 0i32 ||
-               num_output_table_entries as libc::c_int == 0i32 {
+        if num_input_table_entries as i32 == 0i32 ||
+               num_output_table_entries as i32 == 0i32 {
             invalid_source(src,
                            b"Bad channel count\x00" as *const u8 as
                                *const libc::c_char);
@@ -1267,7 +1267,7 @@ unsafe extern "C" fn read_tag_lutType(mut src: *mut mem_source,
         entry_size = 2u64;
         input_offset = 52u32
     } else {
-        if (0i32 == 0) as libc::c_int as libc::c_long != 0 {
+        if (0i32 == 0) as i32 as libc::c_long != 0 {
             __assert_rtn((*::std::mem::transmute::<&[u8; 17],
                                                    &[libc::c_char; 17]>(b"read_tag_lutType\x00")).as_ptr(),
                          b"iccread.c\x00" as *const u8 as *const libc::c_char,
@@ -1306,8 +1306,8 @@ unsafe extern "C" fn read_tag_lutType(mut src: *mut mem_source,
                            *const libc::c_char);
         return 0 as *mut lutType
     }
-    if in_chan as libc::c_int != 3i32 ||
-           out_chan as libc::c_int != 3i32 {
+    if in_chan as i32 != 3i32 ||
+           out_chan as i32 != 3i32 {
         invalid_source(src,
                        b"CLUT only supports RGB\x00" as *const u8 as
                            *const libc::c_char);
@@ -1316,18 +1316,18 @@ unsafe extern "C" fn read_tag_lutType(mut src: *mut mem_source,
     lut =
         malloc((::std::mem::size_of::<lutType>() as
                     libc::c_ulong).wrapping_add((((num_input_table_entries as
-                                                       libc::c_int *
-                                                       in_chan as libc::c_int)
+                                                       i32 *
+                                                       in_chan as i32)
                                                       as
                                                       libc::c_uint).wrapping_add(clut_size.wrapping_mul(out_chan
                                                                                                             as
                                                                                                             libc::c_uint)).wrapping_add((num_output_table_entries
                                                                                                                                              as
-                                                                                                                                             libc::c_int
+                                                                                                                                             i32
                                                                                                                                              *
                                                                                                                                              out_chan
                                                                                                                                                  as
-                                                                                                                                                 libc::c_int)
+                                                                                                                                                 i32)
                                                                                                                                             as
                                                                                                                                             libc::c_uint)
                                                      as
@@ -1346,15 +1346,15 @@ unsafe extern "C" fn read_tag_lutType(mut src: *mut mem_source,
         &mut *(*lut).table_data.as_mut_ptr().offset(0isize)
             as *mut f32;
     (*lut).clut_table =
-        &mut *(*lut).table_data.as_mut_ptr().offset((in_chan as libc::c_int *
+        &mut *(*lut).table_data.as_mut_ptr().offset((in_chan as i32 *
                                                          num_input_table_entries
-                                                             as libc::c_int)
+                                                             as i32)
                                                         as isize) as
             *mut f32;
     (*lut).output_table =
-        &mut *(*lut).table_data.as_mut_ptr().offset(((in_chan as libc::c_int *
+        &mut *(*lut).table_data.as_mut_ptr().offset(((in_chan as i32 *
                                                           num_input_table_entries
-                                                              as libc::c_int)
+                                                              as i32)
                                                          as
                                                          libc::c_uint).wrapping_add(clut_size.wrapping_mul(out_chan
                                                                                                                as
@@ -1404,8 +1404,8 @@ unsafe extern "C" fn read_tag_lutType(mut src: *mut mem_source,
                                   size_t);
     i = 0u32;
     while i <
-              ((*lut).num_input_table_entries as libc::c_int *
-                   in_chan as libc::c_int) as uint32_t {
+              ((*lut).num_input_table_entries as i32 *
+                   in_chan as i32) as uint32_t {
         if type_0 == 0x6d667431u32 {
             *(*lut).input_table.offset(i as isize) =
                 uInt8Number_to_float(read_uInt8Number(src,
@@ -1428,8 +1428,8 @@ unsafe extern "C" fn read_tag_lutType(mut src: *mut mem_source,
     clut_offset =
         (offset.wrapping_add(input_offset) as
              libc::c_ulong).wrapping_add((((*lut).num_input_table_entries as
-                                               libc::c_int *
-                                               in_chan as libc::c_int) as
+                                               i32 *
+                                               in_chan as i32) as
                                               libc::c_ulong).wrapping_mul(entry_size))
             as uint32_t;
     i = 0u32;
@@ -1492,8 +1492,8 @@ unsafe extern "C" fn read_tag_lutType(mut src: *mut mem_source,
             as uint32_t;
     i = 0u32;
     while i <
-              ((*lut).num_output_table_entries as libc::c_int *
-                   out_chan as libc::c_int) as uint32_t {
+              ((*lut).num_output_table_entries as i32 *
+                   out_chan as i32) as uint32_t {
         if type_0 == 0x6d667431u32 {
             *(*lut).output_table.offset(i as isize) =
                 uInt8Number_to_float(read_uInt8Number(src,
@@ -1534,9 +1534,9 @@ pub unsafe extern "C" fn qcms_profile_create() -> *mut qcms_profile {
 }
 /* build sRGB gamma table */
 /* based on cmsBuildParametricGamma() */
-unsafe extern "C" fn build_sRGB_gamma_table(mut num_entries: libc::c_int)
+unsafe extern "C" fn build_sRGB_gamma_table(mut num_entries: i32)
  -> *mut uint16_t {
-    let mut i: libc::c_int = 0;
+    let mut i: i32 = 0;
     /* taken from lcms: Build_sRGBGamma() */
     let mut gamma: libc::c_double = 2.4f64;
     let mut a: libc::c_double = 1.0f64 / 1.055f64;
@@ -1578,10 +1578,10 @@ unsafe extern "C" fn build_sRGB_gamma_table(mut num_entries: libc::c_int)
     return table;
 }
 unsafe extern "C" fn curve_from_table(mut table: *mut uint16_t,
-                                      mut num_entries: libc::c_int)
+                                      mut num_entries: i32)
  -> *mut curveType {
     let mut curve: *mut curveType = 0 as *mut curveType;
-    let mut i: libc::c_int = 0;
+    let mut i: i32 = 0;
     curve =
         malloc((::std::mem::size_of::<curveType>() as
                     libc::c_ulong).wrapping_add((::std::mem::size_of::<uInt16Number>()
@@ -1612,7 +1612,7 @@ unsafe extern "C" fn float_to_u8Fixed8Number(mut a: f32)
 unsafe extern "C" fn curve_from_gamma(mut gamma: f32)
  -> *mut curveType {
     let mut curve: *mut curveType = 0 as *mut curveType;
-    let mut num_entries: libc::c_int = 1i32;
+    let mut num_entries: i32 = 1i32;
     curve =
         malloc((::std::mem::size_of::<curveType>() as
                     libc::c_ulong).wrapping_add((::std::mem::size_of::<uInt16Number>()
@@ -1684,7 +1684,7 @@ pub unsafe extern "C" fn qcms_profile_create_rgb_with_table(mut white_point:
                                                             mut table:
                                                                 *mut uint16_t,
                                                             mut num_entries:
-                                                                libc::c_int)
+                                                                i32)
  -> *mut qcms_profile {
     let mut profile: *mut qcms_profile = qcms_profile_create();
     if profile.is_null() { return 0 as *mut qcms_profile }
@@ -1712,7 +1712,7 @@ pub unsafe extern "C" fn qcms_profile_create_rgb_with_table(mut white_point:
  * Invalid values of tempK will return
  * (x,y,Y) = (-1.0, -1.0, -1.0)
  * similar to argyll: icx_DTEMP2XYZ() */
-unsafe extern "C" fn white_point_from_temp(mut temp_K: libc::c_int)
+unsafe extern "C" fn white_point_from_temp(mut temp_K: i32)
  -> qcms_CIE_xyY {
     let mut white_point: qcms_CIE_xyY = qcms_CIE_xyY{x: 0., y: 0., Y: 0.,};
     let mut x: libc::c_double = 0.;
@@ -1742,7 +1742,7 @@ unsafe extern "C" fn white_point_from_temp(mut temp_K: libc::c_int)
         white_point.Y = -1.0f64;
         if !(0i32 != 0 &&
                  !(b"invalid temp\x00" as *const u8 as
-                       *const libc::c_char).is_null()) as libc::c_int as
+                       *const libc::c_char).is_null()) as i32 as
                libc::c_long != 0 {
             __assert_rtn((*::std::mem::transmute::<&[u8; 22],
                                                    &[libc::c_char; 22]>(b"white_point_from_temp\x00")).as_ptr(),
@@ -1972,7 +1972,7 @@ pub unsafe extern "C" fn qcms_profile_from_memory(mut mem:
                              !(b"read_color_space protects against entering here\x00"
                                    as *const u8 as
                                    *const libc::c_char).is_null()) as
-                           libc::c_int as libc::c_long != 0 {
+                           i32 as libc::c_long != 0 {
                         __assert_rtn((*::std::mem::transmute::<&[u8; 25],
                                                                &[libc::c_char; 25]>(b"qcms_profile_from_memory\x00")).as_ptr(),
                                      b"iccread.c\x00" as *const u8 as

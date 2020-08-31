@@ -71,7 +71,7 @@ pub type transform_fn_t
 
 #[repr(C)]#[derive(Copy, Clone)]
 pub struct precache_output {
-    pub ref_count: libc::c_int,
+    pub ref_count: i32,
     pub data: [uint8_t; 8192],
 }
 pub type qcms_transform = _qcms_transform;

@@ -10,7 +10,7 @@ extern "C" {
     fn floorf(_: f32) -> f32;
     #[no_mangle]
     fn __assert_rtn(_: *const libc::c_char, _: *const libc::c_char,
-                    _: libc::c_int, _: *const libc::c_char) -> !;
+                    _: i32, _: *const libc::c_char) -> !;
     #[no_mangle]
     fn qcms_transform_data_rgb_out_lut_avx(transform: *const qcms_transform,
                                            src: *const libc::c_uchar,
@@ -93,7 +93,7 @@ extern "C" {
     fn matrix_invalid() -> matrix;
     #[no_mangle]
     fn lut_interp_linear(value: libc::c_double, table: *mut uint16_t,
-                         length: libc::c_int) -> f32;
+                         length: i32) -> f32;
     #[no_mangle]
     fn build_input_gamma_table(TRC: *mut curveType) -> *mut f32;
     #[no_mangle]
@@ -106,7 +106,7 @@ extern "C" {
     fn compute_precache(trc: *mut curveType, output: *mut uint8_t) -> bool;
 }
 pub type __darwin_size_t = libc::c_ulong;
-pub type int32_t = libc::c_int;
+pub type int32_t = i32;
 pub type uintptr_t = libc::c_ulong;
 pub type size_t = __darwin_size_t;
 pub type uint8_t = libc::c_uchar;
@@ -166,7 +166,7 @@ pub type transform_fn_t
 
 #[repr(C)]#[derive(Copy, Clone)]
 pub struct precache_output {
-    pub ref_count: libc::c_int,
+    pub ref_count: i32,
     pub data: [uint8_t; 8192],
 }
 pub type qcms_transform = _qcms_transform;
@@ -693,7 +693,7 @@ pub unsafe extern "C" fn get_rgb_colorants(mut colorants: *mut matrix,
  -> bool {
     *colorants = build_RGB_to_XYZ_transfer_matrix(white_point, primaries);
     *colorants = adapt_matrix_to_D50(*colorants, white_point);
-    return if (*colorants).invalid as libc::c_int != 0 {
+    return if (*colorants).invalid as i32 != 0 {
                1i32
            } else { 0i32 } != 0;
 }
@@ -738,17 +738,17 @@ unsafe extern "C" fn qcms_transform_data_gray_template_lut<I: GrayFormat, F: For
             lut_interp_linear(linear as libc::c_double,
                               (*transform).output_gamma_lut_r,
                               (*transform).output_gamma_lut_r_length as
-                                  libc::c_int); let mut out_device_g:  f32 =
+                                  i32); let mut out_device_g:  f32 =
     
             lut_interp_linear(linear as libc::c_double,
                               (*transform).output_gamma_lut_g,
                               (*transform).output_gamma_lut_g_length as
-                                  libc::c_int); let mut out_device_b:  f32 =
+                                  i32); let mut out_device_b:  f32 =
     
             lut_interp_linear(linear as libc::c_double,
                               (*transform).output_gamma_lut_b,
                               (*transform).output_gamma_lut_b_length as
-                                  libc::c_int);
+                                  i32);
         *dest.offset(F::kRIndex as isize) =
             clamp_u8(out_device_r * 255f32);
         *dest.offset(F::kGIndex as isize) =
@@ -1081,8 +1081,8 @@ static void qcms_transform_data_clut(const qcms_transform *transform, const unsi
 	}	
 }
 */
-unsafe extern "C" fn int_div_ceil(mut value: libc::c_int,
-                                  mut div: libc::c_int) -> libc::c_int {
+unsafe extern "C" fn int_div_ceil(mut value: i32,
+                                  mut div: i32) -> i32 {
     return (value + div - 1i32) / div;
 }
 // Using lcms' tetra interpolation algorithm.
@@ -1099,9 +1099,9 @@ unsafe extern "C" fn qcms_transform_data_tetra_clut_template<F: Format>(mut tran
             3i32
         } else { 4i32 } as libc::c_uint;
     
-    let mut xy_len: libc::c_int = 1i32;
-    let mut x_len: libc::c_int = (*transform).grid_size as libc::c_int;
-    let mut len: libc::c_int = x_len * x_len;
+    let mut xy_len: i32 = 1i32;
+    let mut x_len: i32 = (*transform).grid_size as i32;
+    let mut len: i32 = x_len * x_len;
     let mut r_table: *mut f32 = (*transform).r_clut;
     let mut g_table: *mut f32 = (*transform).g_clut;
     let mut b_table: *mut f32 = (*transform).b_clut;
@@ -1131,46 +1131,46 @@ unsafe extern "C" fn qcms_transform_data_tetra_clut_template<F: Format>(mut tran
         }
         src = src.offset(components as isize);
         let mut linear_r: f32 =
-            in_r as libc::c_int as f32 / 255.0f32;
+            in_r as i32 as f32 / 255.0f32;
         let mut linear_g: f32 =
-            in_g as libc::c_int as f32 / 255.0f32;
+            in_g as i32 as f32 / 255.0f32;
         let mut linear_b: f32 =
-            in_b as libc::c_int as f32 / 255.0f32;
-        let mut x: libc::c_int =
-            in_r as libc::c_int *
-                ((*transform).grid_size as libc::c_int - 1i32) /
+            in_b as i32 as f32 / 255.0f32;
+        let mut x: i32 =
+            in_r as i32 *
+                ((*transform).grid_size as i32 - 1i32) /
                 255i32;
-        let mut y: libc::c_int =
-            in_g as libc::c_int *
-                ((*transform).grid_size as libc::c_int - 1i32) /
+        let mut y: i32 =
+            in_g as i32 *
+                ((*transform).grid_size as i32 - 1i32) /
                 255i32;
-        let mut z: libc::c_int =
-            in_b as libc::c_int *
-                ((*transform).grid_size as libc::c_int - 1i32) /
+        let mut z: i32 =
+            in_b as i32 *
+                ((*transform).grid_size as i32 - 1i32) /
                 255i32;
-        let mut x_n: libc::c_int =
-            int_div_ceil(in_r as libc::c_int *
-                             ((*transform).grid_size as libc::c_int -
+        let mut x_n: i32 =
+            int_div_ceil(in_r as i32 *
+                             ((*transform).grid_size as i32 -
                                   1i32), 255i32);
-        let mut y_n: libc::c_int =
-            int_div_ceil(in_g as libc::c_int *
-                             ((*transform).grid_size as libc::c_int -
+        let mut y_n: i32 =
+            int_div_ceil(in_g as i32 *
+                             ((*transform).grid_size as i32 -
                                   1i32), 255i32);
-        let mut z_n: libc::c_int =
-            int_div_ceil(in_b as libc::c_int *
-                             ((*transform).grid_size as libc::c_int -
+        let mut z_n: i32 =
+            int_div_ceil(in_b as i32 *
+                             ((*transform).grid_size as i32 -
                                   1i32), 255i32);
         let mut rx: f32 =
             linear_r *
-                ((*transform).grid_size as libc::c_int - 1i32) as
+                ((*transform).grid_size as i32 - 1i32) as
                     f32 - x as f32;
         let mut ry: f32 =
             linear_g *
-                ((*transform).grid_size as libc::c_int - 1i32) as
+                ((*transform).grid_size as i32 - 1i32) as
                     f32 - y as f32;
         let mut rz: f32 =
             linear_b *
-                ((*transform).grid_size as libc::c_int - 1i32) as
+                ((*transform).grid_size as i32 - 1i32) as
                     f32 - z as f32;
         c0_r =
             *r_table.offset(((x * len + y * x_len + z * xy_len) *
@@ -1539,17 +1539,17 @@ unsafe extern "C" fn qcms_transform_data_template_lut<F: Format>(mut transform:
             lut_interp_linear(out_linear_r as libc::c_double,
                               (*transform).output_gamma_lut_r,
                               (*transform).output_gamma_lut_r_length as
-                                  libc::c_int); let mut out_device_g:  f32 =
+                                  i32); let mut out_device_g:  f32 =
     
             lut_interp_linear(out_linear_g as libc::c_double,
                               (*transform).output_gamma_lut_g,
                               (*transform).output_gamma_lut_g_length as
-                                  libc::c_int); let mut out_device_b:  f32 =
+                                  i32); let mut out_device_b:  f32 =
     
             lut_interp_linear(out_linear_b as libc::c_double,
                               (*transform).output_gamma_lut_b,
                               (*transform).output_gamma_lut_b_length as
-                                  libc::c_int);
+                                  i32);
         *dest.offset(F::kRIndex as isize) =
             clamp_u8(out_device_r * 255f32);
         *dest.offset(F::kGIndex as isize) =
@@ -1621,7 +1621,7 @@ unsafe extern "C" fn precache_create() -> *mut precache_output {
  * of 1/1024 which happens for large values like 0x40000040 */
 #[no_mangle]
 pub unsafe extern "C" fn precache_release(mut p: *mut precache_output) {
-    let fresh6 = &mut (*p).ref_count as *mut libc::c_int;
+    let fresh6 = &mut (*p).ref_count as *mut i32;
     let fresh7 = 1i32;
     if ::std::intrinsics::atomic_xsub(fresh6, fresh7) - fresh7 ==
            0i32 {
@@ -1694,7 +1694,7 @@ pub unsafe extern "C" fn qcms_transform_release(mut t: *mut qcms_transform) {
 // -------------------------Runtime SSEx Detection-----------------------------
 /* MMX is always supported per
  *  Gecko v1.9.1 minimum CPU requirements */
-unsafe extern "C" fn sse_version_available() -> libc::c_int {
+unsafe extern "C" fn sse_version_available() -> i32 {
     /* we know at build time that 64-bit CPUs always have SSE2
 	 * this tells the compiler that non-SSE2 branches will never be
 	 * taken (i.e. OK to optimze away the SSE1 and non-SIMD code */
@@ -1839,7 +1839,7 @@ pub unsafe extern "C" fn qcms_transform_precacheLUT_float(mut transform:
                                                           mut out:
                                                               *mut qcms_profile,
                                                           mut samples:
-                                                              libc::c_int,
+                                                              i32,
                                                           mut in_type:
                                                               qcms_data_type)
  -> *mut qcms_transform {
@@ -1869,25 +1869,25 @@ pub unsafe extern "C" fn qcms_transform_precacheLUT_float(mut transform:
         /* Prepare a list of points we want to sample */
         l = 0u32;
         x = 0u16;
-        while (x as libc::c_int) < samples {
+        while (x as i32) < samples {
             y = 0u16;
-            while (y as libc::c_int) < samples {
+            while (y as i32) < samples {
                 z = 0u16;
-                while (z as libc::c_int) < samples {
+                while (z as i32) < samples {
                     let fresh8 = l;
                     l = l.wrapping_add(1);
                     *src.offset(fresh8 as isize) =
-                        x as libc::c_int as f32 /
+                        x as i32 as f32 /
                             (samples - 1i32) as f32;
                     let fresh9 = l;
                     l = l.wrapping_add(1);
                     *src.offset(fresh9 as isize) =
-                        y as libc::c_int as f32 /
+                        y as i32 as f32 /
                             (samples - 1i32) as f32;
                     let fresh10 = l;
                     l = l.wrapping_add(1);
                     *src.offset(fresh10 as isize) =
-                        z as libc::c_int as f32 /
+                        z as i32 as f32 /
                             (samples - 1i32) as f32;
                     z = z.wrapping_add(1)
                 }
@@ -1935,7 +1935,7 @@ pub unsafe extern "C" fn qcms_transform_precacheLUT_float(mut transform:
                                                   _: *mut libc::c_uchar,
                                                   _: size_t) -> ())
             }
-            if (*transform).transform_fn.is_none() as libc::c_int as
+            if (*transform).transform_fn.is_none() as i32 as
                    libc::c_long != 0 {
                 __assert_rtn((*::std::mem::transmute::<&[u8; 33],
                                                        &[libc::c_char; 33]>(b"qcms_transform_precacheLUT_float\x00")).as_ptr(),
@@ -2018,7 +2018,7 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
     if !match_0 {
         if !(0i32 != 0 &&
                  !(b"input/output type\x00" as *const u8 as
-                       *const libc::c_char).is_null()) as libc::c_int as
+                       *const libc::c_char).is_null()) as i32 as
                libc::c_long != 0 {
             __assert_rtn((*::std::mem::transmute::<&[u8; 22],
                                                    &[libc::c_char; 22]>(b"qcms_transform_create\x00")).as_ptr(),
@@ -2037,7 +2037,7 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
         precache = 1i32 != 0
     }
     // This precache assumes RGB_SIGNATURE (fails on GRAY_SIGNATURE, for instance)
-    if qcms_supports_iccv4 as libc::c_int != 0 &&
+    if qcms_supports_iccv4 as i32 != 0 &&
            (in_type ==
                 
                 QCMS_DATA_RGB_8 ||
@@ -2062,7 +2062,7 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
         if result.is_null() {
             if !(0i32 != 0 &&
                      !(b"precacheLUT failed\x00" as *const u8 as
-                           *const libc::c_char).is_null()) as libc::c_int as
+                           *const libc::c_char).is_null()) as i32 as
                    libc::c_long != 0 {
                 __assert_rtn((*::std::mem::transmute::<&[u8; 22],
                                                        &[libc::c_char; 22]>(b"qcms_transform_create\x00")).as_ptr(),
@@ -2440,7 +2440,7 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
     } else {
         if !(0i32 != 0 &&
                  !(b"unexpected colorspace\x00" as *const u8 as
-                       *const libc::c_char).is_null()) as libc::c_int as
+                       *const libc::c_char).is_null()) as i32 as
                libc::c_long != 0 {
             __assert_rtn((*::std::mem::transmute::<&[u8; 22],
                                                    &[libc::c_char; 22]>(b"qcms_transform_create\x00")).as_ptr(),
@@ -2452,7 +2452,7 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
         qcms_transform_release(transform);
         return 0 as *mut qcms_transform
     }
-    if (*transform).transform_fn.is_none() as libc::c_int as libc::c_long != 0
+    if (*transform).transform_fn.is_none() as i32 as libc::c_long != 0
        {
         __assert_rtn((*::std::mem::transmute::<&[u8; 22],
                                                &[libc::c_char; 22]>(b"qcms_transform_create\x00")).as_ptr(),

@@ -115,11 +115,11 @@ pub unsafe extern "C" fn matrix_det(mut mat: matrix) -> f32 {
 #[no_mangle]
 pub unsafe extern "C" fn matrix_invert(mut mat: matrix) -> matrix {
     let mut dest_mat: matrix = matrix{m: [[0.; 3]; 3], invalid: false,};
-    let mut i: libc::c_int = 0;
+    let mut i: i32 = 0;
     
-    static mut a: [libc::c_int; 3] =
+    static mut a: [i32; 3] =
         [2i32, 2i32, 1i32];
-    static mut b: [libc::c_int; 3] =
+    static mut b: [i32; 3] =
         [1i32, 0i32, 0i32];
     /* inv  (A) = 1/det (A) * adj (A) */
     let mut det: f32 = matrix_det(mat);
@@ -129,15 +129,15 @@ pub unsafe extern "C" fn matrix_invert(mut mat: matrix) -> matrix {
     }
     dest_mat.invalid = 0i32 != 0;
     det = 1f32 / det;
-     let mut j:  libc::c_int =  0i32;
+     let mut j:  i32 =  0i32;
     while j < 3i32 {
         i = 0i32;
         while i < 3i32 {
             
-            let mut ai: libc::c_int = a[i as usize];
-            let mut aj: libc::c_int = a[j as usize];
-            let mut bi: libc::c_int = b[i as usize];
-            let mut bj: libc::c_int = b[j as usize];
+            let mut ai: i32 = a[i as usize];
+            let mut aj: i32 = a[j as usize];
+            let mut bi: i32 = b[i as usize];
+            let mut bj: i32 = b[j as usize];
              let mut p:  libc::c_double =
     
                 (mat.m[ai as usize][aj as usize] *
@@ -189,10 +189,10 @@ pub unsafe extern "C" fn matrix_invalid() -> matrix {
 pub unsafe extern "C" fn matrix_multiply(mut a: matrix, mut b: matrix)
  -> matrix {
     let mut result: matrix = matrix{m: [[0.; 3]; 3], invalid: false,};
-    let mut dx: libc::c_int = 0;
+    let mut dx: i32 = 0;
     
-    let mut o: libc::c_int = 0;
-     let mut dy:  libc::c_int =  0i32;
+    let mut o: i32 = 0;
+     let mut dy:  i32 =  0i32;
     while dy < 3i32 {
         dx = 0i32;
         while dx < 3i32 {
@@ -210,6 +210,6 @@ pub unsafe extern "C" fn matrix_multiply(mut a: matrix, mut b: matrix)
         dy += 1
     }
     result.invalid =
-        a.invalid as libc::c_int != 0 || b.invalid as libc::c_int != 0;
+        a.invalid as i32 != 0 || b.invalid as i32 != 0;
     return result;
 }

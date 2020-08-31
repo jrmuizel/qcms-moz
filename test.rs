@@ -5,7 +5,7 @@ extern "C" {
     #[no_mangle]
     fn abort() -> !;
     #[no_mangle]
-    fn printf(_: *const libc::c_char, _: ...) -> libc::c_int;
+    fn printf(_: *const libc::c_char, _: ...) -> i32;
     #[no_mangle]
     fn qcms_transform_release(_: *mut qcms_transform);
     #[no_mangle]
@@ -24,7 +24,7 @@ extern "C" {
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong)
      -> *mut libc::c_void;
     #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong)
+    fn memset(_: *mut libc::c_void, _: i32, _: libc::c_ulong)
      -> *mut libc::c_void;
 }
 pub type __darwin_size_t = libc::c_ulong;
@@ -2857,7 +2857,7 @@ unsafe extern "C" fn SHA1_Final(mut context: *mut SHA1_CTX,
                    (*context).buffer.as_mut_ptr() as *const uint8_t);
 }
 #[inline]
-unsafe extern "C" fn sum(mut data: *mut libc::c_void, mut len: libc::c_int)
+unsafe extern "C" fn sum(mut data: *mut libc::c_void, mut len: i32)
  -> libc::c_ulong {
     let mut sha: SHA1_CTX =
         SHA1_CTX{state: [0; 5], count: [0; 2], buffer: [0; 64],};
@@ -2865,16 +2865,16 @@ unsafe extern "C" fn sum(mut data: *mut libc::c_void, mut len: libc::c_int)
     SHA1_Init(&mut sha);
     SHA1_Update(&mut sha, data as *const uint8_t, len as size_t);
     SHA1_Final(&mut sha, digest.as_mut_ptr());
-    return ((digest[0usize] as libc::c_int) <<
+    return ((digest[0usize] as i32) <<
                 24i32 |
-                (digest[1usize] as libc::c_int) <<
+                (digest[1usize] as i32) <<
                     16i32 |
-                (digest[2usize] as libc::c_int) <<
+                (digest[2usize] as i32) <<
                     8i32 |
-                digest[3usize] as libc::c_int) as
+                digest[3usize] as i32) as
                libc::c_ulong;
 }
-unsafe fn main_0() -> libc::c_int {
+unsafe fn main_0() -> i32 {
     let mut srct: [libc::c_uchar; 3] =
         [221u8,
          79u8,
@@ -2883,9 +2883,9 @@ unsafe fn main_0() -> libc::c_int {
     static mut src: [libc::c_uchar; 50331648] = [0; 50331648];
     static mut output: [libc::c_uchar; 50331648] = [0; 50331648];
     
-    let mut j: libc::c_int = 0;
-    let mut k: libc::c_int = 0;
-    let mut l: libc::c_int = 0i32;
+    let mut j: i32 = 0;
+    let mut k: i32 = 0;
+    let mut l: i32 = 0i32;
     
     
     
@@ -2902,7 +2902,7 @@ unsafe fn main_0() -> libc::c_int {
                                    *const libc::c_char); let mut transform:  *mut qcms_transform =
     
         qcms_transform_create(input_profile, QCMS_DATA_RGB_8, output_profile,
-                              QCMS_DATA_RGB_8, QCMS_INTENT_PERCEPTUAL); let mut i:  libc::c_int =  0i32;
+                              QCMS_DATA_RGB_8, QCMS_INTENT_PERCEPTUAL); let mut i:  i32 =  0i32;
     while i < 256i32 {
         j = 0i32;
         while j < 256i32 {
@@ -2935,12 +2935,12 @@ unsafe fn main_0() -> libc::c_int {
               30i32 +
                   256i32 * 40i32 * 3i32 {
         printf(b"(%d %d %d) -> output (%d %d %d)\n\x00" as *const u8 as
-                   *const libc::c_char, src[i as usize] as libc::c_int,
-               src[(i + 1i32) as usize] as libc::c_int,
-               src[(i + 2i32) as usize] as libc::c_int,
-               output[i as usize] as libc::c_int,
-               output[(i + 1i32) as usize] as libc::c_int,
-               output[(i + 2i32) as usize] as libc::c_int);
+                   *const libc::c_char, src[i as usize] as i32,
+               src[(i + 1i32) as usize] as i32,
+               src[(i + 2i32) as usize] as i32,
+               output[i as usize] as i32,
+               output[(i + 1i32) as usize] as i32,
+               output[(i + 2i32) as usize] as i32);
         i += 3i32
     }
     qcms_transform_release(transform);
