@@ -1459,7 +1459,6 @@ unsafe extern "C" fn qcms_transform_data_tetra_clut_rgb(mut transform:
                                                         mut dest:
                                                             *mut libc::c_uchar,
                                                         mut length: size_t) {
-    //qcms_transform_data_tetra_clut_template<RGBA_R_INDEX, RGBA_G_INDEX, RGBA_B_INDEX>(transform, src, dest, length);
     qcms_transform_data_tetra_clut_template::<RGB>(transform, src, dest, length);
 }
 unsafe extern "C" fn qcms_transform_data_tetra_clut_rgba(mut transform:
