@@ -4,7 +4,7 @@ extern "C" {
     #[no_mangle]
     fn pow(_: libc::c_double, _: libc::c_double) -> libc::c_double;
     #[no_mangle]
-    fn floorf(_: libc::c_float) -> libc::c_float;
+    fn floorf(_: f32) -> f32;
     #[no_mangle]
     fn floor(_: libc::c_double) -> libc::c_double;
     #[no_mangle]
@@ -148,7 +148,7 @@ pub struct _qcms_profile {
 
 #[repr(C)]#[derive(Copy, Clone)]
 pub struct matrix {
-    pub m: [[libc::c_float; 3]; 3],
+    pub m: [[f32; 3]; 3],
     pub invalid: bool,
 }
 
@@ -170,18 +170,18 @@ pub struct lutmABType {
     pub e22: s15Fixed16Number,
     pub e23: s15Fixed16Number,
     pub reversed: bool,
-    pub clut_table: *mut libc::c_float,
+    pub clut_table: *mut f32,
     pub a_curves: [*mut curveType; 10],
     pub b_curves: [*mut curveType; 10],
     pub m_curves: [*mut curveType; 10],
-    pub clut_table_data: [libc::c_float; 0],
+    pub clut_table_data: [f32; 0],
 }
 
 #[repr(C)]#[derive(Copy, Clone)]
 pub struct curveType {
     pub type_0: uint32_t,
     pub count: uint32_t,
-    pub parameter: [libc::c_float; 7],
+    pub parameter: [f32; 7],
     pub data: [uInt16Number; 0],
 }
 pub type uInt16Number = uint16_t;
@@ -203,10 +203,10 @@ pub struct lutType {
     pub e22: s15Fixed16Number,
     pub num_input_table_entries: uint16_t,
     pub num_output_table_entries: uint16_t,
-    pub input_table: *mut libc::c_float,
-    pub clut_table: *mut libc::c_float,
-    pub output_table: *mut libc::c_float,
-    pub table_data: [libc::c_float; 0],
+    pub input_table: *mut f32,
+    pub clut_table: *mut f32,
+    pub output_table: *mut f32,
+    pub table_data: [f32; 0],
 }
 
 #[repr(C)]#[derive(Copy, Clone)]
@@ -292,8 +292,8 @@ pub struct mem_source {
 pub type uInt8Number = uint8_t;
 #[inline]
 unsafe extern "C" fn uInt8Number_to_float(mut a: uInt8Number)
- -> libc::c_float {
-    return a as int32_t as libc::c_float / 255.0f32;
+ -> f32 {
+    return a as int32_t as f32 / 255.0f32;
 }
 #[inline]
 unsafe extern "C" fn double_to_s15Fixed16Number(mut v: libc::c_double)
@@ -302,13 +302,13 @@ unsafe extern "C" fn double_to_s15Fixed16Number(mut v: libc::c_double)
 }
 #[inline]
 unsafe extern "C" fn uInt16Number_to_float(mut a: uInt16Number)
- -> libc::c_float {
-    return a as int32_t as libc::c_float / 65535.0f32;
+ -> f32 {
+    return a as int32_t as f32 / 65535.0f32;
 }
 #[inline]
 unsafe extern "C" fn s15Fixed16Number_to_float(mut a: s15Fixed16Number)
- -> libc::c_float {
-    return a as libc::c_float / 65536.0f32;
+ -> f32 {
+    return a as f32 / 65536.0f32;
 }
 unsafe extern "C" fn cpu_to_be32(mut v: uint32_t) -> be32 {
     return (v & 0xffu32) << 24i32 |
@@ -597,18 +597,18 @@ authorization from SunSoft Inc.
 #[no_mangle]
 pub unsafe extern "C" fn qcms_profile_is_bogus(mut profile: *mut qcms_profile)
  -> bool {
-    let mut sum: [libc::c_float; 3] = [0.; 3];
-    let mut target: [libc::c_float; 3] = [0.; 3];
-    let mut tolerance: [libc::c_float; 3] = [0.; 3];
-    let mut rX: libc::c_float = 0.;
-    let mut rY: libc::c_float = 0.;
-    let mut rZ: libc::c_float = 0.;
-    let mut gX: libc::c_float = 0.;
-    let mut gY: libc::c_float = 0.;
-    let mut gZ: libc::c_float = 0.;
-    let mut bX: libc::c_float = 0.;
-    let mut bY: libc::c_float = 0.;
-    let mut bZ: libc::c_float = 0.;
+    let mut sum: [f32; 3] = [0.; 3];
+    let mut target: [f32; 3] = [0.; 3];
+    let mut tolerance: [f32; 3] = [0.; 3];
+    let mut rX: f32 = 0.;
+    let mut rY: f32 = 0.;
+    let mut rZ: f32 = 0.;
+    let mut gX: f32 = 0.;
+    let mut gY: f32 = 0.;
+    let mut gZ: f32 = 0.;
+    let mut bX: f32 = 0.;
+    let mut bY: f32 = 0.;
+    let mut bZ: f32 = 0.;
     let mut negative: bool = false;
     let mut i: libc::c_uint = 0;
     // We currently only check the bogosity of RGB profiles
@@ -846,7 +846,7 @@ unsafe extern "C" fn read_curveType(mut src: *mut mem_source,
         if count == 1u32 ||
                count == 2u32 {
             /* we have a type 1 or type 2 function that has a division by 'a' */
-            let mut a: libc::c_float =
+            let mut a: f32 =
                 (*curve).parameter[1usize];
             if a == 0.0f32 {
                 invalid_source(src,
@@ -1049,7 +1049,7 @@ unsafe extern "C" fn read_tag_lutmABType(mut src: *mut mem_source,
     lut =
         malloc((::std::mem::size_of::<lutmABType>() as
                     libc::c_ulong).wrapping_add((clut_size as
-                                                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<libc::c_float>()
+                                                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<f32>()
                                                                                      as
                                                                                      libc::c_ulong)))
             as *mut lutmABType;
@@ -1059,7 +1059,7 @@ unsafe extern "C" fn read_tag_lutmABType(mut src: *mut mem_source,
            ::std::mem::size_of::<lutmABType>() as libc::c_ulong);
     (*lut).clut_table =
         &mut *(*lut).clut_table_data.as_mut_ptr().offset(0isize) as
-            *mut libc::c_float;
+            *mut f32;
     if clut_offset != 0 {
         i = 0u32;
         while i < num_in_channels as libc::c_uint {
@@ -1331,7 +1331,7 @@ unsafe extern "C" fn read_tag_lutType(mut src: *mut mem_source,
                                                                                                                                             as
                                                                                                                                             libc::c_uint)
                                                      as
-                                                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<libc::c_float>()
+                                                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<f32>()
                                                                                      as
                                                                                      libc::c_ulong)))
             as *mut lutType;
@@ -1344,13 +1344,13 @@ unsafe extern "C" fn read_tag_lutType(mut src: *mut mem_source,
     /* compute the offsets of tables */
     (*lut).input_table =
         &mut *(*lut).table_data.as_mut_ptr().offset(0isize)
-            as *mut libc::c_float;
+            as *mut f32;
     (*lut).clut_table =
         &mut *(*lut).table_data.as_mut_ptr().offset((in_chan as libc::c_int *
                                                          num_input_table_entries
                                                              as libc::c_int)
                                                         as isize) as
-            *mut libc::c_float;
+            *mut f32;
     (*lut).output_table =
         &mut *(*lut).table_data.as_mut_ptr().offset(((in_chan as libc::c_int *
                                                           num_input_table_entries
@@ -1360,7 +1360,7 @@ unsafe extern "C" fn read_tag_lutType(mut src: *mut mem_source,
                                                                                                                as
                                                                                                                libc::c_uint))
                                                         as isize) as
-            *mut libc::c_float;
+            *mut f32;
     (*lut).num_input_table_entries = num_input_table_entries;
     (*lut).num_output_table_entries = num_output_table_entries;
     (*lut).num_input_channels = in_chan;
@@ -1601,7 +1601,7 @@ unsafe extern "C" fn curve_from_table(mut table: *mut uint16_t,
     }
     return curve;
 }
-unsafe extern "C" fn float_to_u8Fixed8Number(mut a: libc::c_float)
+unsafe extern "C" fn float_to_u8Fixed8Number(mut a: f32)
  -> uint16_t {
     if a > 255.0f32 + 255.0f32 / 256f32 {
         return 0xffffu16
@@ -1609,7 +1609,7 @@ unsafe extern "C" fn float_to_u8Fixed8Number(mut a: libc::c_float)
         return 0u16
     } else { return floorf(a * 256.0f32 + 0.5f32) as uint16_t };
 }
-unsafe extern "C" fn curve_from_gamma(mut gamma: libc::c_float)
+unsafe extern "C" fn curve_from_gamma(mut gamma: f32)
  -> *mut curveType {
     let mut curve: *mut curveType = 0 as *mut curveType;
     let mut num_entries: libc::c_int = 1i32;
@@ -1638,11 +1638,11 @@ pub unsafe extern "C" fn qcms_profile_create_rgb_with_gamma_set(mut white_point:
                                                                 mut primaries:
                                                                     qcms_CIE_xyYTRIPLE,
                                                                 mut redGamma:
-                                                                    libc::c_float,
+                                                                    f32,
                                                                 mut greenGamma:
-                                                                    libc::c_float,
+                                                                    f32,
                                                                 mut blueGamma:
-                                                                    libc::c_float)
+                                                                    f32)
  -> *mut qcms_profile {
     let mut profile: *mut qcms_profile = qcms_profile_create();
     if profile.is_null() { return 0 as *mut qcms_profile }
@@ -1671,7 +1671,7 @@ pub unsafe extern "C" fn qcms_profile_create_rgb_with_gamma(mut white_point:
                                                             mut primaries:
                                                                 qcms_CIE_xyYTRIPLE,
                                                             mut gamma:
-                                                                libc::c_float)
+                                                                f32)
  -> *mut qcms_profile {
     return qcms_profile_create_rgb_with_gamma_set(white_point, primaries,
                                                   gamma, gamma, gamma);
@@ -2125,7 +2125,7 @@ pub unsafe extern "C" fn qcms_data_create_rgb_with_gamma(mut white_point:
                                                          mut primaries:
                                                              qcms_CIE_xyYTRIPLE,
                                                          mut gamma:
-                                                             libc::c_float,
+                                                             f32,
                                                          mut mem:
                                                              *mut *mut libc::c_void,
                                                          mut size:

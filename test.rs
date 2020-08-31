@@ -171,8 +171,8 @@ unsafe extern "C" fn SHA1_Init(mut context: *mut SHA1_CTX) {
 unsafe extern "C" fn SHA1_Update(mut context: *mut SHA1_CTX,
                                  mut data: *const uint8_t, len: size_t) {
     let mut i: size_t = 0;
-    let mut j: size_t = 0;
-    j =
+    
+     let mut j:  size_t = 
         ((*context).count[0usize] >> 3i32 &
              63u32) as size_t;
     (*context).count[0usize] =
@@ -213,21 +213,22 @@ unsafe extern "C" fn SHA1_Update(mut context: *mut SHA1_CTX,
 }
 unsafe extern "C" fn SHA1_Transform(mut state: *mut uint32_t,
                                     mut buffer: *const uint8_t) {
-    let mut a: uint32_t = 0;
-    let mut b: uint32_t = 0;
-    let mut c: uint32_t = 0;
-    let mut d: uint32_t = 0;
-    let mut e: uint32_t = 0;
-    let mut block: *mut CHAR64LONG16 = 0 as *mut CHAR64LONG16;
+    
+    
+    
+    
+    
+    
     static mut workspace: [uint8_t; 64] = [0; 64];
-    block = workspace.as_mut_ptr() as *mut CHAR64LONG16;
+     let mut block:  *mut CHAR64LONG16 =
+     workspace.as_mut_ptr() as *mut CHAR64LONG16;
     memcpy(block as *mut libc::c_void, buffer as *const libc::c_void,
            64u64);
-    a = *state.offset(0isize);
-    b = *state.offset(1isize);
-    c = *state.offset(2isize);
-    d = *state.offset(3isize);
-    e = *state.offset(4isize);
+    
+    
+    
+    
+     let mut a:  uint32_t =  *state.offset(0isize); let mut b:  uint32_t =  *state.offset(1isize); let mut c:  uint32_t =  *state.offset(2isize); let mut d:  uint32_t =  *state.offset(3isize); let mut e:  uint32_t =  *state.offset(4isize);
     (*block).l[0usize] =
         ((*block).l[0usize] << 24i32 |
              (*block).l[0usize] >>
@@ -2805,9 +2806,9 @@ unsafe extern "C" fn SHA1_Transform(mut state: *mut uint32_t,
 /* Add padding and return the message digest. */
 unsafe extern "C" fn SHA1_Final(mut context: *mut SHA1_CTX,
                                 mut digest: *mut uint8_t) {
-    let mut i: uint32_t = 0;
+    
     let mut finalcount: [uint8_t; 8] = [0; 8];
-    i = 0u32;
+     let mut i:  uint32_t =  0u32;
     while i < 8u32 {
         finalcount[i as usize] =
             ((*context).count[(if i >= 4u32 {
@@ -2881,24 +2882,27 @@ unsafe fn main_0() -> libc::c_int {
     let mut outt: [libc::c_uchar; 3] = [0; 3];
     static mut src: [libc::c_uchar; 50331648] = [0; 50331648];
     static mut output: [libc::c_uchar; 50331648] = [0; 50331648];
-    let mut i: libc::c_int = 0;
+    
     let mut j: libc::c_int = 0;
     let mut k: libc::c_int = 0;
     let mut l: libc::c_int = 0i32;
-    let mut input_profile: *mut qcms_profile = 0 as *mut qcms_profile;
-    let mut output_profile: *mut qcms_profile = 0 as *mut qcms_profile;
-    let mut transform: *mut qcms_transform = 0 as *mut qcms_transform;
-    input_profile =
-        qcms_profile_from_path(b"lcms_test/input.icc\x00" as *const u8 as
-                                   *const libc::c_char);
-    output_profile =
-        qcms_profile_from_path(b"lcms_test/output.icc\x00" as *const u8 as
-                                   *const libc::c_char);
-    transform =
-        qcms_transform_create(input_profile, QCMS_DATA_RGB_8, output_profile,
-                              QCMS_DATA_RGB_8, QCMS_INTENT_PERCEPTUAL);
+    
+    
+    
+    
+    
+    
     //transform = qcms_create_transform(output_profile, input_profile);
-    i = 0i32;
+     let mut input_profile:  *mut qcms_profile =
+    
+        qcms_profile_from_path(b"lcms_test/input.icc\x00" as *const u8 as
+                                   *const libc::c_char); let mut output_profile:  *mut qcms_profile =
+    
+        qcms_profile_from_path(b"lcms_test/output.icc\x00" as *const u8 as
+                                   *const libc::c_char); let mut transform:  *mut qcms_transform =
+    
+        qcms_transform_create(input_profile, QCMS_DATA_RGB_8, output_profile,
+                              QCMS_DATA_RGB_8, QCMS_INTENT_PERCEPTUAL); let mut i:  libc::c_int =  0i32;
     while i < 256i32 {
         j = 0i32;
         while j < 256i32 {

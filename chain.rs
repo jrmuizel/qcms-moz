@@ -9,9 +9,9 @@ extern "C" {
     #[no_mangle]
     fn pow(_: libc::c_double, _: libc::c_double) -> libc::c_double;
     #[no_mangle]
-    fn ceilf(_: libc::c_float) -> libc::c_float;
+    fn ceilf(_: f32) -> f32;
     #[no_mangle]
-    fn floorf(_: libc::c_float) -> libc::c_float;
+    fn floorf(_: f32) -> f32;
     #[no_mangle]
     fn __assert_rtn(_: *const libc::c_char, _: *const libc::c_char,
                     _: libc::c_int, _: *const libc::c_char) -> !;
@@ -23,13 +23,13 @@ extern "C" {
      -> *mut libc::c_void;
     #[no_mangle]
     fn lut_interp_linear(value: libc::c_double, table: *mut uint16_t,
-                         length: libc::c_int) -> libc::c_float;
+                         length: libc::c_int) -> f32;
     #[no_mangle]
-    fn lut_interp_linear_float(value: libc::c_float,
-                               table: *mut libc::c_float, length: libc::c_int)
-     -> libc::c_float;
+    fn lut_interp_linear_float(value: f32,
+                               table: *mut f32, length: libc::c_int)
+     -> f32;
     #[no_mangle]
-    fn build_input_gamma_table(TRC: *mut curveType) -> *mut libc::c_float;
+    fn build_input_gamma_table(TRC: *mut curveType) -> *mut f32;
     #[no_mangle]
     fn build_colorant_matrix(p: *mut qcms_profile) -> matrix;
     #[no_mangle]
@@ -77,7 +77,7 @@ pub struct _qcms_profile {
 
 #[repr(C)]#[derive(Copy, Clone)]
 pub struct matrix {
-    pub m: [[libc::c_float; 3]; 3],
+    pub m: [[f32; 3]; 3],
     pub invalid: bool,
 }
 
@@ -99,18 +99,18 @@ pub struct lutmABType {
     pub e22: s15Fixed16Number,
     pub e23: s15Fixed16Number,
     pub reversed: bool,
-    pub clut_table: *mut libc::c_float,
+    pub clut_table: *mut f32,
     pub a_curves: [*mut curveType; 10],
     pub b_curves: [*mut curveType; 10],
     pub m_curves: [*mut curveType; 10],
-    pub clut_table_data: [libc::c_float; 0],
+    pub clut_table_data: [f32; 0],
 }
 
 #[repr(C)]#[derive(Copy, Clone)]
 pub struct curveType {
     pub type_0: uint32_t,
     pub count: uint32_t,
-    pub parameter: [libc::c_float; 7],
+    pub parameter: [f32; 7],
     pub data: [uInt16Number; 0],
 }
 pub type uInt16Number = uint16_t;
@@ -132,10 +132,10 @@ pub struct lutType {
     pub e22: s15Fixed16Number,
     pub num_input_table_entries: uint16_t,
     pub num_output_table_entries: uint16_t,
-    pub input_table: *mut libc::c_float,
-    pub clut_table: *mut libc::c_float,
-    pub output_table: *mut libc::c_float,
-    pub table_data: [libc::c_float; 0],
+    pub input_table: *mut f32,
+    pub clut_table: *mut f32,
+    pub output_table: *mut f32,
+    pub table_data: [f32; 0],
 }
 
 #[repr(C)]#[derive(Copy, Clone)]
@@ -157,20 +157,20 @@ pub type qcms_profile = _qcms_profile;
 #[repr(C)]#[derive(Copy, Clone)]
 pub struct qcms_modular_transform {
     pub matrix: matrix,
-    pub tx: libc::c_float,
-    pub ty: libc::c_float,
-    pub tz: libc::c_float,
-    pub input_clut_table_r: *mut libc::c_float,
-    pub input_clut_table_g: *mut libc::c_float,
-    pub input_clut_table_b: *mut libc::c_float,
+    pub tx: f32,
+    pub ty: f32,
+    pub tz: f32,
+    pub input_clut_table_r: *mut f32,
+    pub input_clut_table_g: *mut f32,
+    pub input_clut_table_b: *mut f32,
     pub input_clut_table_length: uint16_t,
-    pub r_clut: *mut libc::c_float,
-    pub g_clut: *mut libc::c_float,
-    pub b_clut: *mut libc::c_float,
+    pub r_clut: *mut f32,
+    pub g_clut: *mut f32,
+    pub b_clut: *mut f32,
     pub grid_size: uint16_t,
-    pub output_clut_table_r: *mut libc::c_float,
-    pub output_clut_table_g: *mut libc::c_float,
-    pub output_clut_table_b: *mut libc::c_float,
+    pub output_clut_table_r: *mut f32,
+    pub output_clut_table_g: *mut f32,
+    pub output_clut_table_b: *mut f32,
     pub output_clut_table_length: uint16_t,
     pub output_gamma_lut_r: *mut uint16_t,
     pub output_gamma_lut_g: *mut uint16_t,
@@ -184,20 +184,20 @@ pub struct qcms_modular_transform {
 pub type transform_module_fn_t
     =
     Option<unsafe extern "C" fn(_: *mut qcms_modular_transform,
-                                _: *mut libc::c_float, _: *mut libc::c_float,
+                                _: *mut f32, _: *mut f32,
                                 _: size_t) -> ()>;
 #[inline]
 unsafe extern "C" fn s15Fixed16Number_to_float(mut a: s15Fixed16Number)
- -> libc::c_float {
-    return a as libc::c_float / 65536.0f32;
+ -> f32 {
+    return a as f32 / 65536.0f32;
 }
 #[inline]
-unsafe extern "C" fn lerp(mut a: libc::c_float, mut b: libc::c_float,
-                          mut t: libc::c_float) -> libc::c_float {
+unsafe extern "C" fn lerp(mut a: f32, mut b: f32,
+                          mut t: f32) -> f32 {
     return a * (1.0f32 - t) + b * t;
 }
 #[inline]
-unsafe extern "C" fn clamp_float(mut a: libc::c_float) -> libc::c_float {
+unsafe extern "C" fn clamp_float(mut a: f32) -> f32 {
     /* One would naturally write this function as the following:
   if (a > 1.)
     return 1.;
@@ -305,28 +305,28 @@ unsafe extern "C" fn build_mAB_matrix(mut lut: *mut lutmABType) -> matrix {
 unsafe extern "C" fn qcms_transform_module_LAB_to_XYZ(mut transform:
                                                           *mut qcms_modular_transform,
                                                       mut src:
-                                                          *mut libc::c_float,
+                                                          *mut f32,
                                                       mut dest:
-                                                          *mut libc::c_float,
+                                                          *mut f32,
                                                       mut length: size_t) {
-    let mut i: size_t = 0;
+    
     // lcms: D50 XYZ values
-    let mut WhitePointX: libc::c_float = 0.9642f32;
-    let mut WhitePointY: libc::c_float = 1.0f32;
-    let mut WhitePointZ: libc::c_float = 0.8249f32;
-    i = 0u64;
+    let mut WhitePointX: f32 = 0.9642f32;
+    let mut WhitePointY: f32 = 1.0f32;
+    let mut WhitePointZ: f32 = 0.8249f32;
+     let mut i:  size_t =  0u64;
     while i < length {
         let fresh0 = src;
         src = src.offset(1);
-        let mut device_L: libc::c_float = *fresh0 * 100.0f32;
+        let mut device_L: f32 = *fresh0 * 100.0f32;
         let fresh1 = src;
         src = src.offset(1);
-        let mut device_a: libc::c_float = *fresh1 * 255.0f32 - 128.0f32;
+        let mut device_a: f32 = *fresh1 * 255.0f32 - 128.0f32;
         let fresh2 = src;
         src = src.offset(1);
-        let mut device_b: libc::c_float = *fresh2 * 255.0f32 - 128.0f32;
-        let mut y: libc::c_float = (device_L + 16.0f32) / 116.0f32;
-        let mut X: libc::c_float =
+        let mut device_b: f32 = *fresh2 * 255.0f32 - 128.0f32;
+        let mut y: f32 = (device_L + 16.0f32) / 116.0f32;
+        let mut X: f32 =
             if y + 0.002f32 * device_a <= 24.0f32 / 116.0f32 {
                 (108.0f64 / 841.0f64) *
                     ((y + 0.002f32 * device_a) as libc::c_double -
@@ -335,14 +335,14 @@ unsafe extern "C" fn qcms_transform_module_LAB_to_XYZ(mut transform:
                 ((y + 0.002f32 * device_a) * (y + 0.002f32 * device_a) *
                      (y + 0.002f32 * device_a) * WhitePointX) as
                     libc::c_double
-            } as libc::c_float;
-        let mut Y: libc::c_float =
+            } as f32;
+        let mut Y: f32 =
             if y <= 24.0f32 / 116.0f32 {
                 (108.0f64 / 841.0f64) *
                     (y as libc::c_double - 16.0f64 / 116.0f64)
             } else { (y * y * y * WhitePointY) as libc::c_double } as
-                libc::c_float;
-        let mut Z: libc::c_float =
+                f32;
+        let mut Z: f32 =
             if y - 0.005f32 * device_b <= 24.0f32 / 116.0f32 {
                 (108.0f64 / 841.0f64) *
                     ((y - 0.005f32 * device_b) as libc::c_double -
@@ -351,22 +351,22 @@ unsafe extern "C" fn qcms_transform_module_LAB_to_XYZ(mut transform:
                 ((y - 0.005f32 * device_b) * (y - 0.005f32 * device_b) *
                      (y - 0.005f32 * device_b) * WhitePointZ) as
                     libc::c_double
-            } as libc::c_float;
+            } as f32;
         let fresh3 = dest;
         dest = dest.offset(1);
         *fresh3 =
             (X as libc::c_double / (1.0f64 + 32767.0f64 / 32768.0f64)) as
-                libc::c_float;
+                f32;
         let fresh4 = dest;
         dest = dest.offset(1);
         *fresh4 =
             (Y as libc::c_double / (1.0f64 + 32767.0f64 / 32768.0f64)) as
-                libc::c_float;
+                f32;
         let fresh5 = dest;
         dest = dest.offset(1);
         *fresh5 =
             (Z as libc::c_double / (1.0f64 + 32767.0f64 / 32768.0f64)) as
-                libc::c_float;
+                f32;
         i = i.wrapping_add(1)
     };
 }
@@ -374,59 +374,59 @@ unsafe extern "C" fn qcms_transform_module_LAB_to_XYZ(mut transform:
 unsafe extern "C" fn qcms_transform_module_XYZ_to_LAB(mut transform:
                                                           *mut qcms_modular_transform,
                                                       mut src:
-                                                          *mut libc::c_float,
+                                                          *mut f32,
                                                       mut dest:
-                                                          *mut libc::c_float,
+                                                          *mut f32,
                                                       mut length: size_t) {
-    let mut i: size_t = 0;
+    
     // lcms: D50 XYZ values
-    let mut WhitePointX: libc::c_float = 0.9642f32;
-    let mut WhitePointY: libc::c_float = 1.0f32;
-    let mut WhitePointZ: libc::c_float = 0.8249f32;
-    i = 0u64;
+    let mut WhitePointX: f32 = 0.9642f32;
+    let mut WhitePointY: f32 = 1.0f32;
+    let mut WhitePointZ: f32 = 0.8249f32;
+     let mut i:  size_t =  0u64;
     while i < length {
         let fresh6 = src;
         src = src.offset(1);
-        let mut device_x: libc::c_float =
+        let mut device_x: f32 =
             (*fresh6 as libc::c_double * (1.0f64 + 32767.0f64 / 32768.0f64) /
-                 WhitePointX as libc::c_double) as libc::c_float;
+                 WhitePointX as libc::c_double) as f32;
         let fresh7 = src;
         src = src.offset(1);
-        let mut device_y: libc::c_float =
+        let mut device_y: f32 =
             (*fresh7 as libc::c_double * (1.0f64 + 32767.0f64 / 32768.0f64) /
-                 WhitePointY as libc::c_double) as libc::c_float;
+                 WhitePointY as libc::c_double) as f32;
         let fresh8 = src;
         src = src.offset(1);
-        let mut device_z: libc::c_float =
+        let mut device_z: f32 =
             (*fresh8 as libc::c_double * (1.0f64 + 32767.0f64 / 32768.0f64) /
-                 WhitePointZ as libc::c_double) as libc::c_float;
-        let mut fx: libc::c_float =
+                 WhitePointZ as libc::c_double) as f32;
+        let mut fx: f32 =
             if device_x <=
                    24.0f32 / 116.0f32 * (24.0f32 / 116.0f32) *
                        (24.0f32 / 116.0f32) {
                 (841.0f64 / 108.0f64 * device_x as libc::c_double) +
                     16.0f64 / 116.0f64
             } else { pow(device_x as libc::c_double, 1.0f64 / 3.0f64) } as
-                libc::c_float;
-        let mut fy: libc::c_float =
+                f32;
+        let mut fy: f32 =
             if device_y <=
                    24.0f32 / 116.0f32 * (24.0f32 / 116.0f32) *
                        (24.0f32 / 116.0f32) {
                 (841.0f64 / 108.0f64 * device_y as libc::c_double) +
                     16.0f64 / 116.0f64
             } else { pow(device_y as libc::c_double, 1.0f64 / 3.0f64) } as
-                libc::c_float;
-        let mut fz: libc::c_float =
+                f32;
+        let mut fz: f32 =
             if device_z <=
                    24.0f32 / 116.0f32 * (24.0f32 / 116.0f32) *
                        (24.0f32 / 116.0f32) {
                 (841.0f64 / 108.0f64 * device_z as libc::c_double) +
                     16.0f64 / 116.0f64
             } else { pow(device_z as libc::c_double, 1.0f64 / 3.0f64) } as
-                libc::c_float;
-        let mut L: libc::c_float = 116.0f32 * fy - 16.0f32;
-        let mut a: libc::c_float = 500.0f32 * (fx - fy);
-        let mut b: libc::c_float = 200.0f32 * (fy - fz);
+                f32;
+        let mut L: f32 = 116.0f32 * fy - 16.0f32;
+        let mut a: f32 = 500.0f32 * (fx - fy);
+        let mut b: f32 = 200.0f32 * (fy - fz);
         let fresh9 = dest;
         dest = dest.offset(1);
         *fresh9 = L / 100.0f32;
@@ -442,18 +442,18 @@ unsafe extern "C" fn qcms_transform_module_XYZ_to_LAB(mut transform:
 unsafe extern "C" fn qcms_transform_module_clut_only(mut transform:
                                                          *mut qcms_modular_transform,
                                                      mut src:
-                                                         *mut libc::c_float,
+                                                         *mut f32,
                                                      mut dest:
-                                                         *mut libc::c_float,
+                                                         *mut f32,
                                                      mut length: size_t) {
-    let mut i: size_t = 0;
+    
     let mut xy_len: libc::c_int = 1i32;
     let mut x_len: libc::c_int = (*transform).grid_size as libc::c_int;
     let mut len: libc::c_int = x_len * x_len;
-    let mut r_table: *mut libc::c_float = (*transform).r_clut;
-    let mut g_table: *mut libc::c_float = (*transform).g_clut;
-    let mut b_table: *mut libc::c_float = (*transform).b_clut;
-    i = 0u64;
+    let mut r_table: *mut f32 = (*transform).r_clut;
+    let mut g_table: *mut f32 = (*transform).g_clut;
+    let mut b_table: *mut f32 = (*transform).b_clut;
+     let mut i:  size_t =  0u64;
     while i < length {
         if !((*transform).grid_size as libc::c_int >= 1i32) as
                libc::c_int as libc::c_long != 0 {
@@ -466,121 +466,121 @@ unsafe extern "C" fn qcms_transform_module_clut_only(mut transform:
         } else { };
         let fresh12 = src;
         src = src.offset(1);
-        let mut linear_r: libc::c_float = *fresh12;
+        let mut linear_r: f32 = *fresh12;
         let fresh13 = src;
         src = src.offset(1);
-        let mut linear_g: libc::c_float = *fresh13;
+        let mut linear_g: f32 = *fresh13;
         let fresh14 = src;
         src = src.offset(1);
-        let mut linear_b: libc::c_float = *fresh14;
+        let mut linear_b: f32 = *fresh14;
         let mut x: libc::c_int =
             floorf(linear_r *
                        ((*transform).grid_size as libc::c_int -
-                            1i32) as libc::c_float) as
+                            1i32) as f32) as
                 libc::c_int;
         let mut y: libc::c_int =
             floorf(linear_g *
                        ((*transform).grid_size as libc::c_int -
-                            1i32) as libc::c_float) as
+                            1i32) as f32) as
                 libc::c_int;
         let mut z: libc::c_int =
             floorf(linear_b *
                        ((*transform).grid_size as libc::c_int -
-                            1i32) as libc::c_float) as
+                            1i32) as f32) as
                 libc::c_int;
         let mut x_n: libc::c_int =
             ceilf(linear_r *
                       ((*transform).grid_size as libc::c_int -
-                           1i32) as libc::c_float) as libc::c_int;
+                           1i32) as f32) as libc::c_int;
         let mut y_n: libc::c_int =
             ceilf(linear_g *
                       ((*transform).grid_size as libc::c_int -
-                           1i32) as libc::c_float) as libc::c_int;
+                           1i32) as f32) as libc::c_int;
         let mut z_n: libc::c_int =
             ceilf(linear_b *
                       ((*transform).grid_size as libc::c_int -
-                           1i32) as libc::c_float) as libc::c_int;
-        let mut x_d: libc::c_float =
+                           1i32) as f32) as libc::c_int;
+        let mut x_d: f32 =
             linear_r *
                 ((*transform).grid_size as libc::c_int - 1i32) as
-                    libc::c_float - x as libc::c_float;
-        let mut y_d: libc::c_float =
+                    f32 - x as f32;
+        let mut y_d: f32 =
             linear_g *
                 ((*transform).grid_size as libc::c_int - 1i32) as
-                    libc::c_float - y as libc::c_float;
-        let mut z_d: libc::c_float =
+                    f32 - y as f32;
+        let mut z_d: f32 =
             linear_b *
                 ((*transform).grid_size as libc::c_int - 1i32) as
-                    libc::c_float - z as libc::c_float;
-        let mut r_x1: libc::c_float =
+                    f32 - z as f32;
+        let mut r_x1: f32 =
             lerp(*r_table.offset(((x * len + y * x_len + z * xy_len) *
                                       3i32) as isize),
                  *r_table.offset(((x_n * len + y * x_len + z * xy_len) *
                                       3i32) as isize), x_d);
-        let mut r_x2: libc::c_float =
+        let mut r_x2: f32 =
             lerp(*r_table.offset(((x * len + y_n * x_len + z * xy_len) *
                                       3i32) as isize),
                  *r_table.offset(((x_n * len + y_n * x_len + z * xy_len) *
                                       3i32) as isize), x_d);
-        let mut r_y1: libc::c_float = lerp(r_x1, r_x2, y_d);
-        let mut r_x3: libc::c_float =
+        let mut r_y1: f32 = lerp(r_x1, r_x2, y_d);
+        let mut r_x3: f32 =
             lerp(*r_table.offset(((x * len + y * x_len + z_n * xy_len) *
                                       3i32) as isize),
                  *r_table.offset(((x_n * len + y * x_len + z_n * xy_len) *
                                       3i32) as isize), x_d);
-        let mut r_x4: libc::c_float =
+        let mut r_x4: f32 =
             lerp(*r_table.offset(((x * len + y_n * x_len + z_n * xy_len) *
                                       3i32) as isize),
                  *r_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) *
                                       3i32) as isize), x_d);
-        let mut r_y2: libc::c_float = lerp(r_x3, r_x4, y_d);
-        let mut clut_r: libc::c_float = lerp(r_y1, r_y2, z_d);
-        let mut g_x1: libc::c_float =
+        let mut r_y2: f32 = lerp(r_x3, r_x4, y_d);
+        let mut clut_r: f32 = lerp(r_y1, r_y2, z_d);
+        let mut g_x1: f32 =
             lerp(*g_table.offset(((x * len + y * x_len + z * xy_len) *
                                       3i32) as isize),
                  *g_table.offset(((x_n * len + y * x_len + z * xy_len) *
                                       3i32) as isize), x_d);
-        let mut g_x2: libc::c_float =
+        let mut g_x2: f32 =
             lerp(*g_table.offset(((x * len + y_n * x_len + z * xy_len) *
                                       3i32) as isize),
                  *g_table.offset(((x_n * len + y_n * x_len + z * xy_len) *
                                       3i32) as isize), x_d);
-        let mut g_y1: libc::c_float = lerp(g_x1, g_x2, y_d);
-        let mut g_x3: libc::c_float =
+        let mut g_y1: f32 = lerp(g_x1, g_x2, y_d);
+        let mut g_x3: f32 =
             lerp(*g_table.offset(((x * len + y * x_len + z_n * xy_len) *
                                       3i32) as isize),
                  *g_table.offset(((x_n * len + y * x_len + z_n * xy_len) *
                                       3i32) as isize), x_d);
-        let mut g_x4: libc::c_float =
+        let mut g_x4: f32 =
             lerp(*g_table.offset(((x * len + y_n * x_len + z_n * xy_len) *
                                       3i32) as isize),
                  *g_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) *
                                       3i32) as isize), x_d);
-        let mut g_y2: libc::c_float = lerp(g_x3, g_x4, y_d);
-        let mut clut_g: libc::c_float = lerp(g_y1, g_y2, z_d);
-        let mut b_x1: libc::c_float =
+        let mut g_y2: f32 = lerp(g_x3, g_x4, y_d);
+        let mut clut_g: f32 = lerp(g_y1, g_y2, z_d);
+        let mut b_x1: f32 =
             lerp(*b_table.offset(((x * len + y * x_len + z * xy_len) *
                                       3i32) as isize),
                  *b_table.offset(((x_n * len + y * x_len + z * xy_len) *
                                       3i32) as isize), x_d);
-        let mut b_x2: libc::c_float =
+        let mut b_x2: f32 =
             lerp(*b_table.offset(((x * len + y_n * x_len + z * xy_len) *
                                       3i32) as isize),
                  *b_table.offset(((x_n * len + y_n * x_len + z * xy_len) *
                                       3i32) as isize), x_d);
-        let mut b_y1: libc::c_float = lerp(b_x1, b_x2, y_d);
-        let mut b_x3: libc::c_float =
+        let mut b_y1: f32 = lerp(b_x1, b_x2, y_d);
+        let mut b_x3: f32 =
             lerp(*b_table.offset(((x * len + y * x_len + z_n * xy_len) *
                                       3i32) as isize),
                  *b_table.offset(((x_n * len + y * x_len + z_n * xy_len) *
                                       3i32) as isize), x_d);
-        let mut b_x4: libc::c_float =
+        let mut b_x4: f32 =
             lerp(*b_table.offset(((x * len + y_n * x_len + z_n * xy_len) *
                                       3i32) as isize),
                  *b_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) *
                                       3i32) as isize), x_d);
-        let mut b_y2: libc::c_float = lerp(b_x3, b_x4, y_d);
-        let mut clut_b: libc::c_float = lerp(b_y1, b_y2, z_d);
+        let mut b_y2: f32 = lerp(b_x3, b_x4, y_d);
+        let mut clut_b: f32 = lerp(b_y1, b_y2, z_d);
         let fresh15 = dest;
         dest = dest.offset(1);
         *fresh15 = clamp_float(clut_r);
@@ -595,17 +595,17 @@ unsafe extern "C" fn qcms_transform_module_clut_only(mut transform:
 }
 unsafe extern "C" fn qcms_transform_module_clut(mut transform:
                                                     *mut qcms_modular_transform,
-                                                mut src: *mut libc::c_float,
-                                                mut dest: *mut libc::c_float,
+                                                mut src: *mut f32,
+                                                mut dest: *mut f32,
                                                 mut length: size_t) {
-    let mut i: size_t = 0;
+    
     let mut xy_len: libc::c_int = 1i32;
     let mut x_len: libc::c_int = (*transform).grid_size as libc::c_int;
     let mut len: libc::c_int = x_len * x_len;
-    let mut r_table: *mut libc::c_float = (*transform).r_clut;
-    let mut g_table: *mut libc::c_float = (*transform).g_clut;
-    let mut b_table: *mut libc::c_float = (*transform).b_clut;
-    i = 0u64;
+    let mut r_table: *mut f32 = (*transform).r_clut;
+    let mut g_table: *mut f32 = (*transform).g_clut;
+    let mut b_table: *mut f32 = (*transform).b_clut;
+     let mut i:  size_t =  0u64;
     while i < length {
         if !((*transform).grid_size as libc::c_int >= 1i32) as
                libc::c_int as libc::c_long != 0 {
@@ -618,142 +618,142 @@ unsafe extern "C" fn qcms_transform_module_clut(mut transform:
         } else { };
         let fresh18 = src;
         src = src.offset(1);
-        let mut device_r: libc::c_float = *fresh18;
+        let mut device_r: f32 = *fresh18;
         let fresh19 = src;
         src = src.offset(1);
-        let mut device_g: libc::c_float = *fresh19;
+        let mut device_g: f32 = *fresh19;
         let fresh20 = src;
         src = src.offset(1);
-        let mut device_b: libc::c_float = *fresh20;
-        let mut linear_r: libc::c_float =
+        let mut device_b: f32 = *fresh20;
+        let mut linear_r: f32 =
             lut_interp_linear_float(device_r, (*transform).input_clut_table_r,
                                     (*transform).input_clut_table_length as
                                         libc::c_int);
-        let mut linear_g: libc::c_float =
+        let mut linear_g: f32 =
             lut_interp_linear_float(device_g, (*transform).input_clut_table_g,
                                     (*transform).input_clut_table_length as
                                         libc::c_int);
-        let mut linear_b: libc::c_float =
+        let mut linear_b: f32 =
             lut_interp_linear_float(device_b, (*transform).input_clut_table_b,
                                     (*transform).input_clut_table_length as
                                         libc::c_int);
         let mut x: libc::c_int =
             floorf(linear_r *
                        ((*transform).grid_size as libc::c_int -
-                            1i32) as libc::c_float) as
+                            1i32) as f32) as
                 libc::c_int;
         let mut y: libc::c_int =
             floorf(linear_g *
                        ((*transform).grid_size as libc::c_int -
-                            1i32) as libc::c_float) as
+                            1i32) as f32) as
                 libc::c_int;
         let mut z: libc::c_int =
             floorf(linear_b *
                        ((*transform).grid_size as libc::c_int -
-                            1i32) as libc::c_float) as
+                            1i32) as f32) as
                 libc::c_int;
         let mut x_n: libc::c_int =
             ceilf(linear_r *
                       ((*transform).grid_size as libc::c_int -
-                           1i32) as libc::c_float) as libc::c_int;
+                           1i32) as f32) as libc::c_int;
         let mut y_n: libc::c_int =
             ceilf(linear_g *
                       ((*transform).grid_size as libc::c_int -
-                           1i32) as libc::c_float) as libc::c_int;
+                           1i32) as f32) as libc::c_int;
         let mut z_n: libc::c_int =
             ceilf(linear_b *
                       ((*transform).grid_size as libc::c_int -
-                           1i32) as libc::c_float) as libc::c_int;
-        let mut x_d: libc::c_float =
+                           1i32) as f32) as libc::c_int;
+        let mut x_d: f32 =
             linear_r *
                 ((*transform).grid_size as libc::c_int - 1i32) as
-                    libc::c_float - x as libc::c_float;
-        let mut y_d: libc::c_float =
+                    f32 - x as f32;
+        let mut y_d: f32 =
             linear_g *
                 ((*transform).grid_size as libc::c_int - 1i32) as
-                    libc::c_float - y as libc::c_float;
-        let mut z_d: libc::c_float =
+                    f32 - y as f32;
+        let mut z_d: f32 =
             linear_b *
                 ((*transform).grid_size as libc::c_int - 1i32) as
-                    libc::c_float - z as libc::c_float;
-        let mut r_x1: libc::c_float =
+                    f32 - z as f32;
+        let mut r_x1: f32 =
             lerp(*r_table.offset(((x * len + y * x_len + z * xy_len) *
                                       3i32) as isize),
                  *r_table.offset(((x_n * len + y * x_len + z * xy_len) *
                                       3i32) as isize), x_d);
-        let mut r_x2: libc::c_float =
+        let mut r_x2: f32 =
             lerp(*r_table.offset(((x * len + y_n * x_len + z * xy_len) *
                                       3i32) as isize),
                  *r_table.offset(((x_n * len + y_n * x_len + z * xy_len) *
                                       3i32) as isize), x_d);
-        let mut r_y1: libc::c_float = lerp(r_x1, r_x2, y_d);
-        let mut r_x3: libc::c_float =
+        let mut r_y1: f32 = lerp(r_x1, r_x2, y_d);
+        let mut r_x3: f32 =
             lerp(*r_table.offset(((x * len + y * x_len + z_n * xy_len) *
                                       3i32) as isize),
                  *r_table.offset(((x_n * len + y * x_len + z_n * xy_len) *
                                       3i32) as isize), x_d);
-        let mut r_x4: libc::c_float =
+        let mut r_x4: f32 =
             lerp(*r_table.offset(((x * len + y_n * x_len + z_n * xy_len) *
                                       3i32) as isize),
                  *r_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) *
                                       3i32) as isize), x_d);
-        let mut r_y2: libc::c_float = lerp(r_x3, r_x4, y_d);
-        let mut clut_r: libc::c_float = lerp(r_y1, r_y2, z_d);
-        let mut g_x1: libc::c_float =
+        let mut r_y2: f32 = lerp(r_x3, r_x4, y_d);
+        let mut clut_r: f32 = lerp(r_y1, r_y2, z_d);
+        let mut g_x1: f32 =
             lerp(*g_table.offset(((x * len + y * x_len + z * xy_len) *
                                       3i32) as isize),
                  *g_table.offset(((x_n * len + y * x_len + z * xy_len) *
                                       3i32) as isize), x_d);
-        let mut g_x2: libc::c_float =
+        let mut g_x2: f32 =
             lerp(*g_table.offset(((x * len + y_n * x_len + z * xy_len) *
                                       3i32) as isize),
                  *g_table.offset(((x_n * len + y_n * x_len + z * xy_len) *
                                       3i32) as isize), x_d);
-        let mut g_y1: libc::c_float = lerp(g_x1, g_x2, y_d);
-        let mut g_x3: libc::c_float =
+        let mut g_y1: f32 = lerp(g_x1, g_x2, y_d);
+        let mut g_x3: f32 =
             lerp(*g_table.offset(((x * len + y * x_len + z_n * xy_len) *
                                       3i32) as isize),
                  *g_table.offset(((x_n * len + y * x_len + z_n * xy_len) *
                                       3i32) as isize), x_d);
-        let mut g_x4: libc::c_float =
+        let mut g_x4: f32 =
             lerp(*g_table.offset(((x * len + y_n * x_len + z_n * xy_len) *
                                       3i32) as isize),
                  *g_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) *
                                       3i32) as isize), x_d);
-        let mut g_y2: libc::c_float = lerp(g_x3, g_x4, y_d);
-        let mut clut_g: libc::c_float = lerp(g_y1, g_y2, z_d);
-        let mut b_x1: libc::c_float =
+        let mut g_y2: f32 = lerp(g_x3, g_x4, y_d);
+        let mut clut_g: f32 = lerp(g_y1, g_y2, z_d);
+        let mut b_x1: f32 =
             lerp(*b_table.offset(((x * len + y * x_len + z * xy_len) *
                                       3i32) as isize),
                  *b_table.offset(((x_n * len + y * x_len + z * xy_len) *
                                       3i32) as isize), x_d);
-        let mut b_x2: libc::c_float =
+        let mut b_x2: f32 =
             lerp(*b_table.offset(((x * len + y_n * x_len + z * xy_len) *
                                       3i32) as isize),
                  *b_table.offset(((x_n * len + y_n * x_len + z * xy_len) *
                                       3i32) as isize), x_d);
-        let mut b_y1: libc::c_float = lerp(b_x1, b_x2, y_d);
-        let mut b_x3: libc::c_float =
+        let mut b_y1: f32 = lerp(b_x1, b_x2, y_d);
+        let mut b_x3: f32 =
             lerp(*b_table.offset(((x * len + y * x_len + z_n * xy_len) *
                                       3i32) as isize),
                  *b_table.offset(((x_n * len + y * x_len + z_n * xy_len) *
                                       3i32) as isize), x_d);
-        let mut b_x4: libc::c_float =
+        let mut b_x4: f32 =
             lerp(*b_table.offset(((x * len + y_n * x_len + z_n * xy_len) *
                                       3i32) as isize),
                  *b_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) *
                                       3i32) as isize), x_d);
-        let mut b_y2: libc::c_float = lerp(b_x3, b_x4, y_d);
-        let mut clut_b: libc::c_float = lerp(b_y1, b_y2, z_d);
-        let mut pcs_r: libc::c_float =
+        let mut b_y2: f32 = lerp(b_x3, b_x4, y_d);
+        let mut clut_b: f32 = lerp(b_y1, b_y2, z_d);
+        let mut pcs_r: f32 =
             lut_interp_linear_float(clut_r, (*transform).output_clut_table_r,
                                     (*transform).output_clut_table_length as
                                         libc::c_int);
-        let mut pcs_g: libc::c_float =
+        let mut pcs_g: f32 =
             lut_interp_linear_float(clut_g, (*transform).output_clut_table_g,
                                     (*transform).output_clut_table_length as
                                         libc::c_int);
-        let mut pcs_b: libc::c_float =
+        let mut pcs_b: f32 =
             lut_interp_linear_float(clut_b, (*transform).output_clut_table_b,
                                     (*transform).output_clut_table_length as
                                         libc::c_int);
@@ -897,25 +897,25 @@ static void qcms_transform_module_tetra_clut(struct qcms_modular_transform *tran
 unsafe extern "C" fn qcms_transform_module_gamma_table(mut transform:
                                                            *mut qcms_modular_transform,
                                                        mut src:
-                                                           *mut libc::c_float,
+                                                           *mut f32,
                                                        mut dest:
-                                                           *mut libc::c_float,
+                                                           *mut f32,
                                                        mut length: size_t) {
-    let mut i: size_t = 0;
-    let mut out_r: libc::c_float = 0.;
-    let mut out_g: libc::c_float = 0.;
-    let mut out_b: libc::c_float = 0.;
-    i = 0u64;
+    
+    let mut out_r: f32 = 0.;
+    let mut out_g: f32 = 0.;
+    let mut out_b: f32 = 0.;
+     let mut i:  size_t =  0u64;
     while i < length {
         let fresh24 = src;
         src = src.offset(1);
-        let mut in_r: libc::c_float = *fresh24;
+        let mut in_r: f32 = *fresh24;
         let fresh25 = src;
         src = src.offset(1);
-        let mut in_g: libc::c_float = *fresh25;
+        let mut in_g: f32 = *fresh25;
         let fresh26 = src;
         src = src.offset(1);
-        let mut in_b: libc::c_float = *fresh26;
+        let mut in_b: f32 = *fresh26;
         out_r =
             lut_interp_linear_float(in_r, (*transform).input_clut_table_r,
                                     256i32);
@@ -940,25 +940,25 @@ unsafe extern "C" fn qcms_transform_module_gamma_table(mut transform:
 unsafe extern "C" fn qcms_transform_module_gamma_lut(mut transform:
                                                          *mut qcms_modular_transform,
                                                      mut src:
-                                                         *mut libc::c_float,
+                                                         *mut f32,
                                                      mut dest:
-                                                         *mut libc::c_float,
+                                                         *mut f32,
                                                      mut length: size_t) {
-    let mut i: size_t = 0;
-    let mut out_r: libc::c_float = 0.;
-    let mut out_g: libc::c_float = 0.;
-    let mut out_b: libc::c_float = 0.;
-    i = 0u64;
+    
+    let mut out_r: f32 = 0.;
+    let mut out_g: f32 = 0.;
+    let mut out_b: f32 = 0.;
+     let mut i:  size_t =  0u64;
     while i < length {
         let fresh30 = src;
         src = src.offset(1);
-        let mut in_r: libc::c_float = *fresh30;
+        let mut in_r: f32 = *fresh30;
         let fresh31 = src;
         src = src.offset(1);
-        let mut in_g: libc::c_float = *fresh31;
+        let mut in_g: f32 = *fresh31;
         let fresh32 = src;
         src = src.offset(1);
-        let mut in_b: libc::c_float = *fresh32;
+        let mut in_b: f32 = *fresh32;
         out_r =
             lut_interp_linear(in_r as libc::c_double,
                               (*transform).output_gamma_lut_r,
@@ -989,12 +989,12 @@ unsafe extern "C" fn qcms_transform_module_gamma_lut(mut transform:
 unsafe extern "C" fn qcms_transform_module_matrix_translate(mut transform:
                                                                 *mut qcms_modular_transform,
                                                             mut src:
-                                                                *mut libc::c_float,
+                                                                *mut f32,
                                                             mut dest:
-                                                                *mut libc::c_float,
+                                                                *mut f32,
                                                             mut length:
                                                                 size_t) {
-    let mut i: size_t = 0;
+    
     let mut mat: matrix = matrix{m: [[0.; 3]; 3], invalid: false,};
     /* store the results in column major mode
 	 * this makes doing the multiplication with sse easier */
@@ -1016,32 +1016,32 @@ unsafe extern "C" fn qcms_transform_module_matrix_translate(mut transform:
         (*transform).matrix.m[2usize][1usize];
     mat.m[2usize][2usize] =
         (*transform).matrix.m[2usize][2usize];
-    i = 0u64;
+     let mut i:  size_t =  0u64;
     while i < length {
         let fresh36 = src;
         src = src.offset(1);
-        let mut in_r: libc::c_float = *fresh36;
+        let mut in_r: f32 = *fresh36;
         let fresh37 = src;
         src = src.offset(1);
-        let mut in_g: libc::c_float = *fresh37;
+        let mut in_g: f32 = *fresh37;
         let fresh38 = src;
         src = src.offset(1);
-        let mut in_b: libc::c_float = *fresh38;
-        let mut out_r: libc::c_float =
+        let mut in_b: f32 = *fresh38;
+        let mut out_r: f32 =
             mat.m[0usize][0usize] * in_r
                 +
                 mat.m[1usize][0usize] *
                     in_g +
                 mat.m[2usize][0usize] *
                     in_b + (*transform).tx;
-        let mut out_g: libc::c_float =
+        let mut out_g: f32 =
             mat.m[0usize][1usize] * in_r
                 +
                 mat.m[1usize][1usize] *
                     in_g +
                 mat.m[2usize][1usize] *
                     in_b + (*transform).ty;
-        let mut out_b: libc::c_float =
+        let mut out_b: f32 =
             mat.m[0usize][2usize] * in_r
                 +
                 mat.m[1usize][2usize] *
@@ -1062,11 +1062,11 @@ unsafe extern "C" fn qcms_transform_module_matrix_translate(mut transform:
 }
 unsafe extern "C" fn qcms_transform_module_matrix(mut transform:
                                                       *mut qcms_modular_transform,
-                                                  mut src: *mut libc::c_float,
+                                                  mut src: *mut f32,
                                                   mut dest:
-                                                      *mut libc::c_float,
+                                                      *mut f32,
                                                   mut length: size_t) {
-    let mut i: size_t = 0;
+    
     let mut mat: matrix = matrix{m: [[0.; 3]; 3], invalid: false,};
     /* store the results in column major mode
 	 * this makes doing the multiplication with sse easier */
@@ -1088,32 +1088,32 @@ unsafe extern "C" fn qcms_transform_module_matrix(mut transform:
         (*transform).matrix.m[2usize][1usize];
     mat.m[2usize][2usize] =
         (*transform).matrix.m[2usize][2usize];
-    i = 0u64;
+     let mut i:  size_t =  0u64;
     while i < length {
         let fresh42 = src;
         src = src.offset(1);
-        let mut in_r: libc::c_float = *fresh42;
+        let mut in_r: f32 = *fresh42;
         let fresh43 = src;
         src = src.offset(1);
-        let mut in_g: libc::c_float = *fresh43;
+        let mut in_g: f32 = *fresh43;
         let fresh44 = src;
         src = src.offset(1);
-        let mut in_b: libc::c_float = *fresh44;
-        let mut out_r: libc::c_float =
+        let mut in_b: f32 = *fresh44;
+        let mut out_r: f32 =
             mat.m[0usize][0usize] * in_r
                 +
                 mat.m[1usize][0usize] *
                     in_g +
                 mat.m[2usize][0usize] *
                     in_b;
-        let mut out_g: libc::c_float =
+        let mut out_g: f32 =
             mat.m[0usize][1usize] * in_r
                 +
                 mat.m[1usize][1usize] *
                     in_g +
                 mat.m[2usize][1usize] *
                     in_b;
-        let mut out_b: libc::c_float =
+        let mut out_b: f32 =
             mat.m[0usize][2usize] * in_r
                 +
                 mat.m[1usize][2usize] *
@@ -1258,7 +1258,7 @@ unsafe extern "C" fn qcms_modular_transform_create_mAB(mut lut:
         0 as *mut qcms_modular_transform;
     if !(*lut).a_curves[0usize].is_null() {
         let mut clut_length: size_t = 0;
-        let mut clut: *mut libc::c_float = 0 as *mut libc::c_float;
+        let mut clut: *mut f32 = 0 as *mut f32;
         // If the A curve is present this also implies the 
 		// presence of a CLUT.
         if (*lut).clut_table.is_null() {
@@ -1280,8 +1280,8 @@ unsafe extern "C" fn qcms_modular_transform_create_mAB(mut lut:
                     Some(qcms_transform_module_gamma_table as
                              unsafe extern "C" fn(_:
                                                       *mut qcms_modular_transform,
-                                                  _: *mut libc::c_float,
-                                                  _: *mut libc::c_float,
+                                                  _: *mut f32,
+                                                  _: *mut f32,
                                                   _: size_t) -> ());
                 if (*lut).num_grid_points[0usize] as
                        libc::c_int !=
@@ -1301,14 +1301,14 @@ unsafe extern "C" fn qcms_modular_transform_create_mAB(mut lut:
                     } else {
                         append_transform(transform, &mut next_transform);
                         clut_length =
-                            (::std::mem::size_of::<libc::c_float>() as
+                            (::std::mem::size_of::<f32>() as
                                  libc::c_ulong as libc::c_double *
                                  pow((*lut).num_grid_points[0usize] as
                                          libc::c_double,
                                      3f64) *
                                  3f64) as
                                 size_t;
-                        clut = malloc(clut_length) as *mut libc::c_float;
+                        clut = malloc(clut_length) as *mut f32;
                         if clut.is_null() {
                             current_block = 7590209878260659629;
                         } else {
@@ -1328,9 +1328,9 @@ unsafe extern "C" fn qcms_modular_transform_create_mAB(mut lut:
                                          unsafe extern "C" fn(_:
                                                                   *mut qcms_modular_transform,
                                                               _:
-                                                                  *mut libc::c_float,
+                                                                  *mut f32,
                                                               _:
-                                                                  *mut libc::c_float,
+                                                                  *mut f32,
                                                               _: size_t)
                                              -> ());
                             current_block = 10652014663920648156;
@@ -1360,8 +1360,8 @@ unsafe extern "C" fn qcms_modular_transform_create_mAB(mut lut:
                         Some(qcms_transform_module_gamma_table as
                                  unsafe extern "C" fn(_:
                                                           *mut qcms_modular_transform,
-                                                      _: *mut libc::c_float,
-                                                      _: *mut libc::c_float,
+                                                      _: *mut f32,
+                                                      _: *mut f32,
                                                       _: size_t) -> ());
                     // Prepare Matrix
                     transform = qcms_modular_transform_alloc();
@@ -1384,9 +1384,9 @@ unsafe extern "C" fn qcms_modular_transform_create_mAB(mut lut:
                                          unsafe extern "C" fn(_:
                                                                   *mut qcms_modular_transform,
                                                               _:
-                                                                  *mut libc::c_float,
+                                                                  *mut f32,
                                                               _:
-                                                                  *mut libc::c_float,
+                                                                  *mut f32,
                                                               _: size_t)
                                              -> ());
                             current_block = 980989089337379490;
@@ -1413,9 +1413,9 @@ unsafe extern "C" fn qcms_modular_transform_create_mAB(mut lut:
                                          unsafe extern "C" fn(_:
                                                                   *mut qcms_modular_transform,
                                                               _:
-                                                                  *mut libc::c_float,
+                                                                  *mut f32,
                                                               _:
-                                                                  *mut libc::c_float,
+                                                                  *mut f32,
                                                               _: size_t)
                                              -> ());
                             if (*lut).reversed {
@@ -1442,16 +1442,15 @@ unsafe extern "C" fn qcms_modular_transform_create_lut(mut lut: *mut lutType)
         0 as *mut qcms_modular_transform;
     let mut next_transform: *mut *mut qcms_modular_transform =
         &mut first_transform;
-    let mut transform: *mut qcms_modular_transform =
-        0 as *mut qcms_modular_transform;
+    
     let mut in_curve_len: size_t = 0;
     let mut clut_length: size_t = 0;
     let mut out_curve_len: size_t = 0;
-    let mut in_curves: *mut libc::c_float = 0 as *mut libc::c_float;
-    let mut clut: *mut libc::c_float = 0 as *mut libc::c_float;
-    let mut out_curves: *mut libc::c_float = 0 as *mut libc::c_float;
-    // Prepare Matrix
-    transform = qcms_modular_transform_alloc();
+    let mut in_curves: *mut f32 = 0 as *mut f32;
+    let mut clut: *mut f32 = 0 as *mut f32;
+    let mut out_curves: *mut f32 = 0 as *mut f32;
+     let mut transform:  *mut qcms_modular_transform =
+     qcms_modular_transform_alloc();
     if !transform.is_null() {
         append_transform(transform, &mut next_transform);
         (*transform).matrix = build_lut_matrix(lut);
@@ -1459,19 +1458,19 @@ unsafe extern "C" fn qcms_modular_transform_create_lut(mut lut: *mut lutType)
             (*transform).transform_module_fn =
                 Some(qcms_transform_module_matrix as
                          unsafe extern "C" fn(_: *mut qcms_modular_transform,
-                                              _: *mut libc::c_float,
-                                              _: *mut libc::c_float,
+                                              _: *mut f32,
+                                              _: *mut f32,
                                               _: size_t) -> ());
             // Prepare input curves
             transform = qcms_modular_transform_alloc();
             if !transform.is_null() {
                 append_transform(transform, &mut next_transform);
                 in_curve_len =
-                    (::std::mem::size_of::<libc::c_float>() as
+                    (::std::mem::size_of::<f32>() as
                          libc::c_ulong).wrapping_mul((*lut).num_input_table_entries
                                                          as
                                                          libc::c_ulong).wrapping_mul(3u64);
-                in_curves = malloc(in_curve_len) as *mut libc::c_float;
+                in_curves = malloc(in_curve_len) as *mut f32;
                 if !in_curves.is_null() {
                     memcpy(in_curves as *mut libc::c_void,
                            (*lut).input_table as *const libc::c_void,
@@ -1492,13 +1491,13 @@ unsafe extern "C" fn qcms_modular_transform_create_lut(mut lut: *mut lutType)
                         (*lut).num_input_table_entries;
                     // Prepare table
                     clut_length =
-                        (::std::mem::size_of::<libc::c_float>() as
+                        (::std::mem::size_of::<f32>() as
                              libc::c_ulong as libc::c_double *
                              pow((*lut).num_clut_grid_points as
                                      libc::c_double,
                                  3f64) *
                              3f64) as size_t;
-                    clut = malloc(clut_length) as *mut libc::c_float;
+                    clut = malloc(clut_length) as *mut f32;
                     if !clut.is_null() {
                         memcpy(clut as *mut libc::c_void,
                                (*lut).clut_table as *const libc::c_void,
@@ -1513,12 +1512,12 @@ unsafe extern "C" fn qcms_modular_transform_create_lut(mut lut: *mut lutType)
                             (*lut).num_clut_grid_points as uint16_t;
                         // Prepare output curves
                         out_curve_len =
-                            (::std::mem::size_of::<libc::c_float>() as
+                            (::std::mem::size_of::<f32>() as
                                  libc::c_ulong).wrapping_mul((*lut).num_output_table_entries
                                                                  as
                                                                  libc::c_ulong).wrapping_mul(3u64);
                         out_curves =
-                            malloc(out_curve_len) as *mut libc::c_float;
+                            malloc(out_curve_len) as *mut f32;
                         if !out_curves.is_null() {
                             memcpy(out_curves as *mut libc::c_void,
                                    (*lut).output_table as *const libc::c_void,
@@ -1545,9 +1544,9 @@ unsafe extern "C" fn qcms_modular_transform_create_lut(mut lut: *mut lutType)
                                          unsafe extern "C" fn(_:
                                                                   *mut qcms_modular_transform,
                                                               _:
-                                                                  *mut libc::c_float,
+                                                                  *mut f32,
                                                               _:
-                                                                  *mut libc::c_float,
+                                                                  *mut f32,
                                                               _: size_t)
                                              -> ());
                             return first_transform
@@ -1570,9 +1569,9 @@ pub unsafe extern "C" fn qcms_modular_transform_create_input(mut in_0:
     let mut next_transform: *mut *mut qcms_modular_transform =
         &mut first_transform;
     if !(*in_0).A2B0.is_null() {
-        let mut lut_transform: *mut qcms_modular_transform =
-            0 as *mut qcms_modular_transform;
-        lut_transform = qcms_modular_transform_create_lut((*in_0).A2B0);
+        
+         let mut lut_transform:  *mut qcms_modular_transform =
+     qcms_modular_transform_create_lut((*in_0).A2B0);
         if lut_transform.is_null() {
             current_block = 8903102000210989603;
         } else {
@@ -1584,9 +1583,9 @@ pub unsafe extern "C" fn qcms_modular_transform_create_input(mut in_0:
                       3i32 &&
                   (*(*in_0).mAB).num_out_channels as libc::c_int ==
                       3i32 {
-        let mut mAB_transform: *mut qcms_modular_transform =
-            0 as *mut qcms_modular_transform;
-        mAB_transform = qcms_modular_transform_create_mAB((*in_0).mAB);
+        
+         let mut mAB_transform:  *mut qcms_modular_transform =
+     qcms_modular_transform_create_mAB((*in_0).mAB);
         if mAB_transform.is_null() {
             current_block = 8903102000210989603;
         } else {
@@ -1594,9 +1593,9 @@ pub unsafe extern "C" fn qcms_modular_transform_create_input(mut in_0:
             current_block = 10692455896603418738;
         }
     } else {
-        let mut transform: *mut qcms_modular_transform =
-            0 as *mut qcms_modular_transform;
-        transform = qcms_modular_transform_alloc();
+        
+         let mut transform:  *mut qcms_modular_transform =
+     qcms_modular_transform_alloc();
         if transform.is_null() {
             current_block = 8903102000210989603;
         } else {
@@ -1610,8 +1609,8 @@ pub unsafe extern "C" fn qcms_modular_transform_create_input(mut in_0:
             (*transform).transform_module_fn =
                 Some(qcms_transform_module_gamma_table as
                          unsafe extern "C" fn(_: *mut qcms_modular_transform,
-                                              _: *mut libc::c_float,
-                                              _: *mut libc::c_float,
+                                              _: *mut f32,
+                                              _: *mut f32,
                                               _: size_t) -> ());
             if (*transform).input_clut_table_r.is_null() ||
                    (*transform).input_clut_table_g.is_null() ||
@@ -1643,8 +1642,8 @@ pub unsafe extern "C" fn qcms_modular_transform_create_input(mut in_0:
                         Some(qcms_transform_module_matrix as
                                  unsafe extern "C" fn(_:
                                                           *mut qcms_modular_transform,
-                                                      _: *mut libc::c_float,
-                                                      _: *mut libc::c_float,
+                                                      _: *mut f32,
+                                                      _: *mut f32,
                                                       _: size_t) -> ());
                     transform = qcms_modular_transform_alloc();
                     if transform.is_null() {
@@ -1657,9 +1656,9 @@ pub unsafe extern "C" fn qcms_modular_transform_create_input(mut in_0:
                                      unsafe extern "C" fn(_:
                                                               *mut qcms_modular_transform,
                                                           _:
-                                                              *mut libc::c_float,
+                                                              *mut f32,
                                                           _:
-                                                              *mut libc::c_float,
+                                                              *mut f32,
                                                           _: size_t) -> ());
                         current_block = 10692455896603418738;
                     }
@@ -1684,9 +1683,9 @@ unsafe extern "C" fn qcms_modular_transform_create_output(mut out:
     let mut next_transform: *mut *mut qcms_modular_transform =
         &mut first_transform;
     if !(*out).B2A0.is_null() {
-        let mut lut_transform: *mut qcms_modular_transform =
-            0 as *mut qcms_modular_transform;
-        lut_transform = qcms_modular_transform_create_lut((*out).B2A0);
+        
+         let mut lut_transform:  *mut qcms_modular_transform =
+     qcms_modular_transform_create_lut((*out).B2A0);
         if lut_transform.is_null() {
             current_block = 15713701561912628542;
         } else {
@@ -1698,9 +1697,9 @@ unsafe extern "C" fn qcms_modular_transform_create_output(mut out:
                       3i32 &&
                   (*(*out).mBA).num_out_channels as libc::c_int ==
                       3i32 {
-        let mut lut_transform_0: *mut qcms_modular_transform =
-            0 as *mut qcms_modular_transform;
-        lut_transform_0 = qcms_modular_transform_create_mAB((*out).mBA);
+        
+         let mut lut_transform_0:  *mut qcms_modular_transform =
+     qcms_modular_transform_create_mAB((*out).mBA);
         if lut_transform_0.is_null() {
             current_block = 15713701561912628542;
         } else {
@@ -1709,9 +1708,9 @@ unsafe extern "C" fn qcms_modular_transform_create_output(mut out:
         }
     } else if !(*out).redTRC.is_null() && !(*out).greenTRC.is_null() &&
                   !(*out).blueTRC.is_null() {
-        let mut transform: *mut qcms_modular_transform =
-            0 as *mut qcms_modular_transform;
-        transform = qcms_modular_transform_alloc();
+        
+         let mut transform:  *mut qcms_modular_transform =
+     qcms_modular_transform_alloc();
         if transform.is_null() {
             current_block = 15713701561912628542;
         } else {
@@ -1720,8 +1719,8 @@ unsafe extern "C" fn qcms_modular_transform_create_output(mut out:
             (*transform).transform_module_fn =
                 Some(qcms_transform_module_matrix as
                          unsafe extern "C" fn(_: *mut qcms_modular_transform,
-                                              _: *mut libc::c_float,
-                                              _: *mut libc::c_float,
+                                              _: *mut f32,
+                                              _: *mut f32,
                                               _: size_t) -> ());
             transform = qcms_modular_transform_alloc();
             if transform.is_null() {
@@ -1751,8 +1750,8 @@ unsafe extern "C" fn qcms_modular_transform_create_output(mut out:
                     Some(qcms_transform_module_matrix as
                              unsafe extern "C" fn(_:
                                                       *mut qcms_modular_transform,
-                                                  _: *mut libc::c_float,
-                                                  _: *mut libc::c_float,
+                                                  _: *mut f32,
+                                                  _: *mut f32,
                                                   _: size_t) -> ());
                 transform = qcms_modular_transform_alloc();
                 if transform.is_null() {
@@ -1772,8 +1771,8 @@ unsafe extern "C" fn qcms_modular_transform_create_output(mut out:
                         Some(qcms_transform_module_gamma_lut as
                                  unsafe extern "C" fn(_:
                                                           *mut qcms_modular_transform,
-                                                      _: *mut libc::c_float,
-                                                      _: *mut libc::c_float,
+                                                      _: *mut f32,
+                                                      _: *mut f32,
                                                       _: size_t) -> ());
                     if (*transform).output_gamma_lut_r.is_null() ||
                            (*transform).output_gamma_lut_g.is_null() ||
@@ -1866,16 +1865,16 @@ unsafe extern "C" fn qcms_modular_transform_create(mut in_0:
     let mut next_transform: *mut *mut qcms_modular_transform =
         &mut first_transform;
     if (*in_0).color_space == 0x52474220u32 {
-        let mut rgb_to_pcs: *mut qcms_modular_transform =
-            0 as *mut qcms_modular_transform;
-        rgb_to_pcs = qcms_modular_transform_create_input(in_0);
+        
+         let mut rgb_to_pcs:  *mut qcms_modular_transform =
+     qcms_modular_transform_create_input(in_0);
         if !rgb_to_pcs.is_null() {
             append_transform(rgb_to_pcs, &mut next_transform);
             if (*in_0).pcs == 0x4c616220u32 &&
                    (*out).pcs == 0x58595a20u32 {
-                let mut lab_to_pcs: *mut qcms_modular_transform =
-                    0 as *mut qcms_modular_transform;
-                lab_to_pcs = qcms_modular_transform_alloc();
+                
+                 let mut lab_to_pcs:  *mut qcms_modular_transform =
+     qcms_modular_transform_alloc();
                 if lab_to_pcs.is_null() {
                     current_block = 8418824557173580938;
                 } else {
@@ -1884,8 +1883,8 @@ unsafe extern "C" fn qcms_modular_transform_create(mut in_0:
                         Some(qcms_transform_module_LAB_to_XYZ as
                                  unsafe extern "C" fn(_:
                                                           *mut qcms_modular_transform,
-                                                      _: *mut libc::c_float,
-                                                      _: *mut libc::c_float,
+                                                      _: *mut f32,
+                                                      _: *mut f32,
                                                       _: size_t) -> ());
                     current_block = 10599921512955367680;
                 }
@@ -1908,9 +1907,9 @@ unsafe extern "C" fn qcms_modular_transform_create(mut in_0:
                            0x58595a20u32 &&
                            (*out).pcs ==
                                0x4c616220u32 {
-                        let mut pcs_to_lab: *mut qcms_modular_transform =
-                            0 as *mut qcms_modular_transform;
-                        pcs_to_lab = qcms_modular_transform_alloc();
+                        
+                         let mut pcs_to_lab:  *mut qcms_modular_transform =
+     qcms_modular_transform_alloc();
                         if pcs_to_lab.is_null() {
                             current_block = 8418824557173580938;
                         } else {
@@ -1920,9 +1919,9 @@ unsafe extern "C" fn qcms_modular_transform_create(mut in_0:
                                          unsafe extern "C" fn(_:
                                                                   *mut qcms_modular_transform,
                                                               _:
-                                                                  *mut libc::c_float,
+                                                                  *mut f32,
                                                               _:
-                                                                  *mut libc::c_float,
+                                                                  *mut f32,
                                                               _: size_t)
                                              -> ());
                             current_block = 7175849428784450219;
@@ -1933,10 +1932,10 @@ unsafe extern "C" fn qcms_modular_transform_create(mut in_0:
                         _ => {
                             if (*out).color_space ==
                                    0x52474220u32 {
-                                let mut pcs_to_rgb:
+                                
+                                 let mut pcs_to_rgb: 
                                         *mut qcms_modular_transform =
-                                    0 as *mut qcms_modular_transform;
-                                pcs_to_rgb =
+    
                                     qcms_modular_transform_create_output(out);
                                 if !pcs_to_rgb.is_null() {
                                     append_transform(pcs_to_rgb,
@@ -1984,69 +1983,69 @@ unsafe extern "C" fn qcms_modular_transform_create(mut in_0:
 }
 unsafe extern "C" fn qcms_modular_transform_data(mut transform:
                                                      *mut qcms_modular_transform,
-                                                 mut src: *mut libc::c_float,
-                                                 mut dest: *mut libc::c_float,
+                                                 mut src: *mut f32,
+                                                 mut dest: *mut f32,
                                                  mut len: size_t)
- -> *mut libc::c_float {
+ -> *mut f32 {
     while !transform.is_null() {
         // Keep swaping src/dest when performing a transform to use less memory.
-        let mut new_src: *mut libc::c_float = dest;
+        let mut new_src: *mut f32 = dest;
         let transform_fn: transform_module_fn_t =
             (*transform).transform_module_fn;
         if transform_fn !=
                Some(qcms_transform_module_gamma_table as
                         unsafe extern "C" fn(_: *mut qcms_modular_transform,
-                                             _: *mut libc::c_float,
-                                             _: *mut libc::c_float, _: size_t)
+                                             _: *mut f32,
+                                             _: *mut f32, _: size_t)
                             -> ()) &&
                transform_fn !=
                    Some(qcms_transform_module_gamma_lut as
                             unsafe extern "C" fn(_:
                                                      *mut qcms_modular_transform,
-                                                 _: *mut libc::c_float,
-                                                 _: *mut libc::c_float,
+                                                 _: *mut f32,
+                                                 _: *mut f32,
                                                  _: size_t) -> ()) &&
                transform_fn !=
                    Some(qcms_transform_module_clut as
                             unsafe extern "C" fn(_:
                                                      *mut qcms_modular_transform,
-                                                 _: *mut libc::c_float,
-                                                 _: *mut libc::c_float,
+                                                 _: *mut f32,
+                                                 _: *mut f32,
                                                  _: size_t) -> ()) &&
                transform_fn !=
                    Some(qcms_transform_module_clut_only as
                             unsafe extern "C" fn(_:
                                                      *mut qcms_modular_transform,
-                                                 _: *mut libc::c_float,
-                                                 _: *mut libc::c_float,
+                                                 _: *mut f32,
+                                                 _: *mut f32,
                                                  _: size_t) -> ()) &&
                transform_fn !=
                    Some(qcms_transform_module_matrix as
                             unsafe extern "C" fn(_:
                                                      *mut qcms_modular_transform,
-                                                 _: *mut libc::c_float,
-                                                 _: *mut libc::c_float,
+                                                 _: *mut f32,
+                                                 _: *mut f32,
                                                  _: size_t) -> ()) &&
                transform_fn !=
                    Some(qcms_transform_module_matrix_translate as
                             unsafe extern "C" fn(_:
                                                      *mut qcms_modular_transform,
-                                                 _: *mut libc::c_float,
-                                                 _: *mut libc::c_float,
+                                                 _: *mut f32,
+                                                 _: *mut f32,
                                                  _: size_t) -> ()) &&
                transform_fn !=
                    Some(qcms_transform_module_LAB_to_XYZ as
                             unsafe extern "C" fn(_:
                                                      *mut qcms_modular_transform,
-                                                 _: *mut libc::c_float,
-                                                 _: *mut libc::c_float,
+                                                 _: *mut f32,
+                                                 _: *mut f32,
                                                  _: size_t) -> ()) &&
                transform_fn !=
                    Some(qcms_transform_module_XYZ_to_LAB as
                             unsafe extern "C" fn(_:
                                                      *mut qcms_modular_transform,
-                                                 _: *mut libc::c_float,
-                                                 _: *mut libc::c_float,
+                                                 _: *mut f32,
+                                                 _: *mut f32,
                                                  _: size_t) -> ()) {
             if !(0i32 != 0 &&
                      !(b"Unsupported transform module\x00" as *const u8 as
@@ -2059,22 +2058,22 @@ unsafe extern "C" fn qcms_modular_transform_data(mut transform:
                              b"0 && \"Unsupported transform module\"\x00" as
                                  *const u8 as *const libc::c_char);
             } else { };
-            return 0 as *mut libc::c_float
+            return 0 as *mut f32
         }
         if (*transform).grid_size as libc::c_int <= 0i32 &&
                (transform_fn ==
                     Some(qcms_transform_module_clut as
                              unsafe extern "C" fn(_:
                                                       *mut qcms_modular_transform,
-                                                  _: *mut libc::c_float,
-                                                  _: *mut libc::c_float,
+                                                  _: *mut f32,
+                                                  _: *mut f32,
                                                   _: size_t) -> ()) ||
                     transform_fn ==
                         Some(qcms_transform_module_clut_only as
                                  unsafe extern "C" fn(_:
                                                           *mut qcms_modular_transform,
-                                                      _: *mut libc::c_float,
-                                                      _: *mut libc::c_float,
+                                                      _: *mut f32,
+                                                      _: *mut f32,
                                                       _: size_t) -> ())) {
             if !(0i32 != 0 &&
                      !(b"Invalid transform\x00" as *const u8 as
@@ -2087,7 +2086,7 @@ unsafe extern "C" fn qcms_modular_transform_data(mut transform:
                              b"0 && \"Invalid transform\"\x00" as *const u8 as
                                  *const libc::c_char);
             } else { };
-            return 0 as *mut libc::c_float
+            return 0 as *mut f32
         }
         (*transform).transform_module_fn.expect("non-null function pointer")(transform,
                                                                              src,
@@ -2103,18 +2102,18 @@ unsafe extern "C" fn qcms_modular_transform_data(mut transform:
 #[no_mangle]
 pub unsafe extern "C" fn qcms_chain_transform(mut in_0: *mut qcms_profile,
                                               mut out: *mut qcms_profile,
-                                              mut src: *mut libc::c_float,
-                                              mut dest: *mut libc::c_float,
+                                              mut src: *mut f32,
+                                              mut dest: *mut f32,
                                               mut lutSize: size_t)
- -> *mut libc::c_float {
+ -> *mut f32 {
     let mut transform_list: *mut qcms_modular_transform =
         qcms_modular_transform_create(in_0, out);
     if !transform_list.is_null() {
-        let mut lut: *mut libc::c_float =
+        let mut lut: *mut f32 =
             qcms_modular_transform_data(transform_list, src, dest,
                                         lutSize.wrapping_div(3u64));
         qcms_modular_transform_release(transform_list);
         return lut
     }
-    return 0 as *mut libc::c_float;
+    return 0 as *mut f32;
 }

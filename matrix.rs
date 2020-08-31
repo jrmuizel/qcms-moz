@@ -2,7 +2,7 @@ use ::libc;
 
 #[repr(C)]#[derive(Copy, Clone)]
 pub struct matrix {
-    pub m: [[libc::c_float; 3]; 3],
+    pub m: [[f32; 3]; 3],
     pub invalid: bool,
 }
 /* vim: set ts=8 sw=8 noexpandtab: */
@@ -30,7 +30,7 @@ pub struct matrix {
 
 #[repr(C)]#[derive(Copy, Clone)]
 pub struct vector {
-    pub v: [libc::c_float; 3],
+    pub v: [f32; 3],
 }
 /* vim: set ts=8 sw=8 noexpandtab: */
 //  qcms
@@ -84,9 +84,10 @@ pub unsafe extern "C" fn matrix_eval(mut mat: matrix, mut v: vector)
 //XXX: should probably pass by reference and we could
 //probably reuse this computation in matrix_invert
 #[no_mangle]
-pub unsafe extern "C" fn matrix_det(mut mat: matrix) -> libc::c_float {
-    let mut det: libc::c_float = 0.;
-    det =
+pub unsafe extern "C" fn matrix_det(mut mat: matrix) -> f32 {
+    
+     let mut det:  f32 =
+    
         mat.m[0usize][0usize] *
             mat.m[1usize][1usize] *
             mat.m[2usize][2usize] +
@@ -115,36 +116,37 @@ pub unsafe extern "C" fn matrix_det(mut mat: matrix) -> libc::c_float {
 pub unsafe extern "C" fn matrix_invert(mut mat: matrix) -> matrix {
     let mut dest_mat: matrix = matrix{m: [[0.; 3]; 3], invalid: false,};
     let mut i: libc::c_int = 0;
-    let mut j: libc::c_int = 0;
+    
     static mut a: [libc::c_int; 3] =
         [2i32, 2i32, 1i32];
     static mut b: [libc::c_int; 3] =
         [1i32, 0i32, 0i32];
     /* inv  (A) = 1/det (A) * adj (A) */
-    let mut det: libc::c_float = matrix_det(mat);
+    let mut det: f32 = matrix_det(mat);
     if det == 0f32 {
         dest_mat.invalid = 1i32 != 0;
         return dest_mat
     }
     dest_mat.invalid = 0i32 != 0;
     det = 1f32 / det;
-    j = 0i32;
+     let mut j:  libc::c_int =  0i32;
     while j < 3i32 {
         i = 0i32;
         while i < 3i32 {
-            let mut p: libc::c_double = 0.;
+            
             let mut ai: libc::c_int = a[i as usize];
             let mut aj: libc::c_int = a[j as usize];
             let mut bi: libc::c_int = b[i as usize];
             let mut bj: libc::c_int = b[j as usize];
-            p =
+             let mut p:  libc::c_double =
+    
                 (mat.m[ai as usize][aj as usize] *
                      mat.m[bi as usize][bj as usize] -
                      mat.m[ai as usize][bj as usize] *
                          mat.m[bi as usize][aj as usize]) as libc::c_double;
             if i + j & 1i32 != 0i32 { p = -p }
             dest_mat.m[j as usize][i as usize] =
-                (det as libc::c_double * p) as libc::c_float;
+                (det as libc::c_double * p) as f32;
             i += 1
         }
         j += 1
@@ -188,9 +190,9 @@ pub unsafe extern "C" fn matrix_multiply(mut a: matrix, mut b: matrix)
  -> matrix {
     let mut result: matrix = matrix{m: [[0.; 3]; 3], invalid: false,};
     let mut dx: libc::c_int = 0;
-    let mut dy: libc::c_int = 0;
+    
     let mut o: libc::c_int = 0;
-    dy = 0i32;
+     let mut dy:  libc::c_int =  0i32;
     while dy < 3i32 {
         dx = 0i32;
         while dx < 3i32 {
@@ -202,7 +204,7 @@ pub unsafe extern "C" fn matrix_multiply(mut a: matrix, mut b: matrix)
                          b.m[o as usize][dx as usize]) as libc::c_double;
                 o += 1
             }
-            result.m[dy as usize][dx as usize] = v as libc::c_float;
+            result.m[dy as usize][dx as usize] = v as f32;
             dx += 1
         }
         dy += 1

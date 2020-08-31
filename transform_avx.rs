@@ -29,27 +29,27 @@ pub type uint32_t = libc::c_uint;
 
 #[repr(C)]#[derive(Copy, Clone)]
 pub struct _qcms_transform {
-    pub matrix: [[libc::c_float; 4]; 3],
-    pub input_gamma_table_r: *mut libc::c_float,
-    pub input_gamma_table_g: *mut libc::c_float,
-    pub input_gamma_table_b: *mut libc::c_float,
-    pub input_clut_table_r: *mut libc::c_float,
-    pub input_clut_table_g: *mut libc::c_float,
-    pub input_clut_table_b: *mut libc::c_float,
+    pub matrix: [[f32; 4]; 3],
+    pub input_gamma_table_r: *mut f32,
+    pub input_gamma_table_g: *mut f32,
+    pub input_gamma_table_b: *mut f32,
+    pub input_clut_table_r: *mut f32,
+    pub input_clut_table_g: *mut f32,
+    pub input_clut_table_b: *mut f32,
     pub input_clut_table_length: uint16_t,
-    pub r_clut: *mut libc::c_float,
-    pub g_clut: *mut libc::c_float,
-    pub b_clut: *mut libc::c_float,
+    pub r_clut: *mut f32,
+    pub g_clut: *mut f32,
+    pub b_clut: *mut f32,
     pub grid_size: uint16_t,
-    pub output_clut_table_r: *mut libc::c_float,
-    pub output_clut_table_g: *mut libc::c_float,
-    pub output_clut_table_b: *mut libc::c_float,
+    pub output_clut_table_r: *mut f32,
+    pub output_clut_table_g: *mut f32,
+    pub output_clut_table_b: *mut f32,
     pub output_clut_table_length: uint16_t,
-    pub input_gamma_table_gray: *mut libc::c_float,
-    pub out_gamma_r: libc::c_float,
-    pub out_gamma_g: libc::c_float,
-    pub out_gamma_b: libc::c_float,
-    pub out_gamma_gray: libc::c_float,
+    pub input_gamma_table_gray: *mut f32,
+    pub out_gamma_r: f32,
+    pub out_gamma_g: f32,
+    pub out_gamma_b: f32,
+    pub out_gamma_gray: f32,
     pub output_gamma_lut_r: *mut uint16_t,
     pub output_gamma_lut_g: *mut uint16_t,
     pub output_gamma_lut_b: *mut uint16_t,
@@ -84,23 +84,23 @@ unsafe extern "C" fn qcms_transform_data_template_lut_avx<F: Format>(mut transfo
                                                               *mut libc::c_uchar,
                                                           mut length:
                                                               size_t) {
-    let mut mat: *const [libc::c_float; 4] = (*transform).matrix.as_ptr();
+    let mut mat: *const [f32; 4] = (*transform).matrix.as_ptr();
     let mut input_back: [libc::c_char; 64] = [0; 64];
     /* Ensure we have a buffer that's 32 byte aligned regardless of the original
      * stack alignment. We can't use __attribute__((aligned(32))) or __declspec(align(32))
      * because they don't work on stack variables. gcc 4.4 does do the right thing
      * on x86 but that's too new for us right now. For more info: gcc bug #16660 */
-    let mut input: *const libc::c_float =
+    let mut input: *const f32 =
         (&mut *input_back.as_mut_ptr().offset(32isize) as
              *mut libc::c_char as uintptr_t &
-             !(0x1fi32) as libc::c_ulong) as *mut libc::c_float;
+             !(0x1fi32) as libc::c_ulong) as *mut f32;
     /* share input and output locations to save having to keep the
      * locations in separate registers */
     let mut output: *const uint32_t = input as *mut uint32_t;
     /* deref *transform now to avoid it in loop */
-    let mut igtbl_r: *const libc::c_float = (*transform).input_gamma_table_r;
-    let mut igtbl_g: *const libc::c_float = (*transform).input_gamma_table_g;
-    let mut igtbl_b: *const libc::c_float = (*transform).input_gamma_table_b;
+    let mut igtbl_r: *const f32 = (*transform).input_gamma_table_r;
+    let mut igtbl_g: *const f32 = (*transform).input_gamma_table_g;
+    let mut igtbl_b: *const f32 = (*transform).input_gamma_table_b;
     /* deref *transform now to avoid it in loop */
     let mut otdata_r: *const uint8_t =
         &mut *(*(*transform).output_table_r).data.as_mut_ptr().offset(0isize)
@@ -124,7 +124,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut_avx<F: Format>(mut transfo
     /* these values don't change, either */
     let max: __m256 =
         _mm256_set1_ps((8192i32 - 1i32) as
-                           libc::c_float /
+                           f32 /
                            8192f32);
     let min: __m256 = _mm256_setzero_ps();
     let scale: __m256 = _mm256_set1_ps(8192f32);
