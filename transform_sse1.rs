@@ -1,4 +1,5 @@
 use ::libc;
+use crate::transform::{RGB, Format, RGBA, BGRA};
 #[cfg(target_arch = "x86")]
 pub use std::arch::x86::{__m64, __m128, _mm_add_ps, _mm_mul_ps, _mm_min_ps,
                          _mm_max_ps, _mm_cvtps_pi32, _mm_load_ss, _mm_load_ps,
@@ -135,10 +136,7 @@ authorization from SunSoft Inc.
 /* 'ECLR' */
 /* 'FCLR' */
 pub type qcms_transform = _qcms_transform;
-static mut kRIndex: size_t = 2 as libc::c_int as size_t;
-static mut kGIndex: size_t = 1 as libc::c_int as size_t;
-static mut kBIndex: size_t = 0 as libc::c_int as size_t;
-static mut kAIndex: size_t = 3 as libc::c_int as size_t;
+
 /* pre-shuffled: just load these into XMM reg instead of load-scalar/shufps sequence */
 static mut floatScaleX4: [libc::c_float; 4] =
     [8192 as libc::c_int as libc::c_float,
@@ -154,8 +152,8 @@ static mut clampMaxValueX4: [libc::c_float; 4] =
          8192 as libc::c_int as libc::c_float,
      (8192 as libc::c_int - 1 as libc::c_int) as libc::c_float /
          8192 as libc::c_int as libc::c_float];
-//template <size_t kRIndex, size_t kGIndex, size_t kBIndex, size_t kAIndex = NO_A_INDEX>
-unsafe extern "C" fn qcms_transform_data_template_lut_sse1(mut transform:
+
+unsafe extern "C" fn qcms_transform_data_template_lut_sse1<F: Format>(mut transform:
                                                                *const qcms_transform,
                                                            mut src:
                                                                *const libc::c_uchar,
@@ -212,7 +210,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut_sse1(mut transform:
     let min: __m128 = _mm_setzero_ps();
     let scale: __m128 = _mm_load_ps(floatScaleX4.as_ptr());
     let components: libc::c_uint =
-        if kAIndex == 0xff as libc::c_int as libc::c_ulong {
+        if F::kAIndex == 0xff as libc::c_int as libc::c_ulong {
             3 as libc::c_int
         } else { 4 as libc::c_int } as libc::c_uint;
     /* working variables */
@@ -227,13 +225,13 @@ unsafe extern "C" fn qcms_transform_data_template_lut_sse1(mut transform:
     length = length.wrapping_sub(1);
     /* setup for transforming 1st pixel */
     vec_r =
-        _mm_load_ss(&*igtbl_r.offset(*src.offset(kRIndex as isize) as isize));
+        _mm_load_ss(&*igtbl_r.offset(*src.offset(F::kRIndex as isize) as isize));
     vec_g =
-        _mm_load_ss(&*igtbl_g.offset(*src.offset(kGIndex as isize) as isize));
+        _mm_load_ss(&*igtbl_g.offset(*src.offset(F::kGIndex as isize) as isize));
     vec_b =
-        _mm_load_ss(&*igtbl_b.offset(*src.offset(kBIndex as isize) as isize));
-    if kAIndex != 0xff as libc::c_int as libc::c_ulong {
-        alpha = *src.offset(kAIndex as isize)
+        _mm_load_ss(&*igtbl_b.offset(*src.offset(F::kBIndex as isize) as isize));
+    if F::kAIndex != 0xff as libc::c_int as libc::c_ulong {
+        alpha = *src.offset(F::kAIndex as isize)
     }
     src = src.offset(components as isize);
     /* transform all but final pixel */
@@ -248,9 +246,9 @@ unsafe extern "C" fn qcms_transform_data_template_lut_sse1(mut transform:
         vec_g = _mm_mul_ps(vec_g, mat1);
         vec_b = _mm_mul_ps(vec_b, mat2);
         /* store alpha for this pixel; load alpha for next */
-        if kAIndex != 0xff as libc::c_int as libc::c_ulong {
-            *dest.offset(kAIndex as isize) = alpha;
-            alpha = *src.offset(kAIndex as isize)
+        if F::kAIndex != 0xff as libc::c_int as libc::c_ulong {
+            *dest.offset(F::kAIndex as isize) = alpha;
+            alpha = *src.offset(F::kAIndex as isize)
         }
         /* crunch, crunch, crunch */
         vec_r = _mm_add_ps(vec_r, _mm_add_ps(vec_g, vec_b));
@@ -265,23 +263,23 @@ unsafe extern "C" fn qcms_transform_data_template_lut_sse1(mut transform:
               *mut __m64) = _mm_cvtps_pi32(result);
         /* load gamma values for next loop while store completes */
         vec_r =
-            _mm_load_ss(&*igtbl_r.offset(*src.offset(kRIndex as isize) as
+            _mm_load_ss(&*igtbl_r.offset(*src.offset(F::kRIndex as isize) as
                                              isize));
         vec_g =
-            _mm_load_ss(&*igtbl_g.offset(*src.offset(kGIndex as isize) as
+            _mm_load_ss(&*igtbl_g.offset(*src.offset(F::kGIndex as isize) as
                                              isize));
         vec_b =
-            _mm_load_ss(&*igtbl_b.offset(*src.offset(kBIndex as isize) as
+            _mm_load_ss(&*igtbl_b.offset(*src.offset(F::kBIndex as isize) as
                                              isize));
         src = src.offset(components as isize);
         /* use calc'd indices to output RGB values */
-        *dest.offset(kRIndex as isize) =
+        *dest.offset(F::kRIndex as isize) =
             *otdata_r.offset(*output.offset(0 as libc::c_int as isize) as
                                  isize);
-        *dest.offset(kGIndex as isize) =
+        *dest.offset(F::kGIndex as isize) =
             *otdata_g.offset(*output.offset(1 as libc::c_int as isize) as
                                  isize);
-        *dest.offset(kBIndex as isize) =
+        *dest.offset(F::kBIndex as isize) =
             *otdata_b.offset(*output.offset(2 as libc::c_int as isize) as
                                  isize);
         dest = dest.offset(components as isize);
@@ -294,8 +292,8 @@ unsafe extern "C" fn qcms_transform_data_template_lut_sse1(mut transform:
     vec_r = _mm_mul_ps(vec_r, mat0);
     vec_g = _mm_mul_ps(vec_g, mat1);
     vec_b = _mm_mul_ps(vec_b, mat2);
-    if kAIndex != 0xff as libc::c_int as libc::c_ulong {
-        *dest.offset(kAIndex as isize) = alpha
+    if F::kAIndex != 0xff as libc::c_int as libc::c_ulong {
+        *dest.offset(F::kAIndex as isize) = alpha
     }
     vec_r = _mm_add_ps(vec_r, _mm_add_ps(vec_g, vec_b));
     vec_r = _mm_max_ps(min, vec_r);
@@ -306,11 +304,11 @@ unsafe extern "C" fn qcms_transform_data_template_lut_sse1(mut transform:
     result = _mm_movehl_ps(result, result);
     *(&*output.offset(2 as libc::c_int as isize) as *const uint32_t as
           *mut __m64) = _mm_cvtps_pi32(result);
-    *dest.offset(kRIndex as isize) =
+    *dest.offset(F::kRIndex as isize) =
         *otdata_r.offset(*output.offset(0 as libc::c_int as isize) as isize);
-    *dest.offset(kGIndex as isize) =
+    *dest.offset(F::kGIndex as isize) =
         *otdata_g.offset(*output.offset(1 as libc::c_int as isize) as isize);
-    *dest.offset(kBIndex as isize) =
+    *dest.offset(F::kBIndex as isize) =
         *otdata_b.offset(*output.offset(2 as libc::c_int as isize) as isize);
     _mm_empty();
 }
@@ -323,8 +321,7 @@ pub unsafe extern "C" fn qcms_transform_data_rgb_out_lut_sse1(mut transform:
                                                                   *mut libc::c_uchar,
                                                               mut length:
                                                                   size_t) {
-    //qcms_transform_data_template_lut_sse1<RGBA_R_INDEX, RGBA_G_INDEX, RGBA_B_INDEX>(transform, src, dest, length);
-    qcms_transform_data_template_lut_sse1(transform, src, dest, length);
+    qcms_transform_data_template_lut_sse1::<RGB>(transform, src, dest, length);
 }
 #[no_mangle]
 pub unsafe extern "C" fn qcms_transform_data_rgba_out_lut_sse1(mut transform:
@@ -335,8 +332,7 @@ pub unsafe extern "C" fn qcms_transform_data_rgba_out_lut_sse1(mut transform:
                                                                    *mut libc::c_uchar,
                                                                mut length:
                                                                    size_t) {
-    //qcms_transform_data_template_lut_sse1<RGBA_R_INDEX, RGBA_G_INDEX, RGBA_B_INDEX, RGBA_A_INDEX>(transform, src, dest, length);
-    qcms_transform_data_template_lut_sse1(transform, src, dest, length);
+    qcms_transform_data_template_lut_sse1::<RGBA>(transform, src, dest, length);
 }
 /* vim: set ts=8 sw=8 noexpandtab: */
 /* used as a lookup table for the output transformation.
@@ -363,5 +359,5 @@ pub unsafe extern "C" fn qcms_transform_data_bgra_out_lut_sse1(mut transform:
                                                                mut length:
                                                                    size_t) {
     //qcms_transform_data_template_lut_sse1<BGRA_R_INDEX, BGRA_G_INDEX, BGRA_B_INDEX, BGRA_A_INDEX>(transform, src, dest, length);
-    qcms_transform_data_template_lut_sse1(transform, src, dest, length);
+    qcms_transform_data_template_lut_sse1::<BGRA>(transform, src, dest, length);
 }
