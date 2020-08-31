@@ -16,13 +16,13 @@ pub type size_t = __darwin_size_t;
 pub type uint8_t = libc::c_uchar;
 pub type uint16_t = libc::c_ushort;
 pub type uint32_t = libc::c_uint;
-#[derive(Copy, Clone)]
-#[repr(C, packed)]
+
+#[repr(C, packed)]#[derive(Copy, Clone)]
 pub struct __mm_load_ss_struct {
     pub __u: libc::c_float,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
+
+#[repr(C)]#[derive(Copy, Clone)]
 pub struct _qcms_transform {
     pub matrix: [[libc::c_float; 4]; 3],
     pub input_gamma_table_r: *mut libc::c_float,
@@ -63,8 +63,8 @@ pub type transform_fn_t
     Option<unsafe extern "C" fn(_: *const _qcms_transform,
                                 _: *const libc::c_uchar,
                                 _: *mut libc::c_uchar, _: size_t) -> ()>;
-#[derive(Copy, Clone)]
-#[repr(C)]
+
+#[repr(C)]#[derive(Copy, Clone)]
 pub struct precache_output {
     pub ref_count: libc::c_int,
     pub data: [uint8_t; 8192],
@@ -140,19 +140,19 @@ pub type qcms_transform = _qcms_transform;
 
 /* pre-shuffled: just load these into XMM reg instead of load-scalar/shufps sequence */
 static mut floatScaleX4: [libc::c_float; 4] =
-    [8192 as libc::c_int as libc::c_float,
-     8192 as libc::c_int as libc::c_float,
-     8192 as libc::c_int as libc::c_float,
-     8192 as libc::c_int as libc::c_float];
+    [8192f32,
+     8192f32,
+     8192f32,
+     8192f32];
 static mut clampMaxValueX4: [libc::c_float; 4] =
-    [(8192 as libc::c_int - 1 as libc::c_int) as libc::c_float /
-         8192 as libc::c_int as libc::c_float,
-     (8192 as libc::c_int - 1 as libc::c_int) as libc::c_float /
-         8192 as libc::c_int as libc::c_float,
-     (8192 as libc::c_int - 1 as libc::c_int) as libc::c_float /
-         8192 as libc::c_int as libc::c_float,
-     (8192 as libc::c_int - 1 as libc::c_int) as libc::c_float /
-         8192 as libc::c_int as libc::c_float];
+    [(8192i32 - 1i32) as libc::c_float /
+         8192f32,
+     (8192i32 - 1i32) as libc::c_float /
+         8192f32,
+     (8192i32 - 1i32) as libc::c_float /
+         8192f32,
+     (8192i32 - 1i32) as libc::c_float /
+         8192f32];
 //template <size_t kRIndex, size_t kGIndex, size_t kBIndex, size_t kAIndex = NO_A_INDEX>
 unsafe extern "C" fn qcms_transform_data_template_lut_sse2<F: Format>(mut transform:
                                                                *const qcms_transform,
@@ -170,9 +170,9 @@ unsafe extern "C" fn qcms_transform_data_template_lut_sse2<F: Format>(mut transf
      * because they don't work on stack variables. gcc 4.4 does do the right thing
      * on x86 but that's too new for us right now. For more info: gcc bug #16660 */
     let mut input: *const libc::c_float =
-        (&mut *input_back.as_mut_ptr().offset(16 as libc::c_int as isize) as
+        (&mut *input_back.as_mut_ptr().offset(16isize) as
              *mut libc::c_char as uintptr_t &
-             !(0xf as libc::c_int) as libc::c_ulong) as *mut libc::c_float;
+             !(0xfi32) as libc::c_ulong) as *mut libc::c_float;
     /* share input and output locations to save having to keep the
      * locations in separate registers */
     let mut output: *const uint32_t = input as *mut uint32_t;
@@ -182,38 +182,29 @@ unsafe extern "C" fn qcms_transform_data_template_lut_sse2<F: Format>(mut transf
     let mut igtbl_b: *const libc::c_float = (*transform).input_gamma_table_b;
     /* deref *transform now to avoid it in loop */
     let mut otdata_r: *const uint8_t =
-        &mut *(*(*transform).output_table_r).data.as_mut_ptr().offset(0 as
-                                                                          libc::c_int
-                                                                          as
-                                                                          isize)
+        &mut *(*(*transform).output_table_r).data.as_mut_ptr().offset(0isize)
             as *mut uint8_t;
     let mut otdata_g: *const uint8_t =
-        &mut *(*(*transform).output_table_g).data.as_mut_ptr().offset(0 as
-                                                                          libc::c_int
-                                                                          as
-                                                                          isize)
+        &mut *(*(*transform).output_table_g).data.as_mut_ptr().offset(0isize)
             as *mut uint8_t;
     let mut otdata_b: *const uint8_t =
-        &mut *(*(*transform).output_table_b).data.as_mut_ptr().offset(0 as
-                                                                          libc::c_int
-                                                                          as
-                                                                          isize)
+        &mut *(*(*transform).output_table_b).data.as_mut_ptr().offset(0isize)
             as *mut uint8_t;
     /* input matrix values never change */
     let mat0: __m128 =
-        _mm_load_ps((*mat.offset(0 as libc::c_int as isize)).as_ptr());
+        _mm_load_ps((*mat.offset(0isize)).as_ptr());
     let mat1: __m128 =
-        _mm_load_ps((*mat.offset(1 as libc::c_int as isize)).as_ptr());
+        _mm_load_ps((*mat.offset(1isize)).as_ptr());
     let mat2: __m128 =
-        _mm_load_ps((*mat.offset(2 as libc::c_int as isize)).as_ptr());
+        _mm_load_ps((*mat.offset(2isize)).as_ptr());
     /* these values don't change, either */
     let max: __m128 = _mm_load_ps(clampMaxValueX4.as_ptr());
     let min: __m128 = _mm_setzero_ps();
     let scale: __m128 = _mm_load_ps(floatScaleX4.as_ptr());
     let components: libc::c_uint =
-        if F::kAIndex == 0xff as libc::c_int as libc::c_ulong {
-            3 as libc::c_int
-        } else { 4 as libc::c_int } as libc::c_uint;
+        if F::kAIndex == 0xffu64 {
+            3i32
+        } else { 4i32 } as libc::c_uint;
     /* working variables */
     let mut vec_r: __m128 = _mm_setzero_ps();
     let mut vec_g: __m128 = _mm_setzero_ps();
@@ -231,23 +222,23 @@ unsafe extern "C" fn qcms_transform_data_template_lut_sse2<F: Format>(mut transf
         _mm_load_ss(&*igtbl_g.offset(*src.offset(F::kGIndex as isize) as isize));
     vec_b =
         _mm_load_ss(&*igtbl_b.offset(*src.offset(F::kBIndex as isize) as isize));
-    if F::kAIndex != 0xff as libc::c_int as libc::c_ulong {
+    if F::kAIndex != 0xffu64 {
         alpha = *src.offset(F::kAIndex as isize)
     }
     src = src.offset(components as isize);
     /* transform all but final pixel */
-    i = 0 as libc::c_int as libc::c_uint;
+    i = 0u32;
     while (i as libc::c_ulong) < length {
         /* position values from gamma tables */
-        vec_r = _mm_shuffle_ps(vec_r, vec_r, 0 as libc::c_int);
-        vec_g = _mm_shuffle_ps(vec_g, vec_g, 0 as libc::c_int);
-        vec_b = _mm_shuffle_ps(vec_b, vec_b, 0 as libc::c_int);
+        vec_r = _mm_shuffle_ps(vec_r, vec_r, 0i32);
+        vec_g = _mm_shuffle_ps(vec_g, vec_g, 0i32);
+        vec_b = _mm_shuffle_ps(vec_b, vec_b, 0i32);
         /* gamma * matrix */
         vec_r = _mm_mul_ps(vec_r, mat0);
         vec_g = _mm_mul_ps(vec_g, mat1);
         vec_b = _mm_mul_ps(vec_b, mat2);
         /* store alpha for this pixel; load alpha for next */
-        if F::kAIndex != 0xff as libc::c_int as libc::c_ulong {
+        if F::kAIndex != 0xffu64 {
             *dest.offset(F::kAIndex as isize) = alpha;
             alpha = *src.offset(F::kAIndex as isize)
         }
@@ -271,25 +262,25 @@ unsafe extern "C" fn qcms_transform_data_template_lut_sse2<F: Format>(mut transf
         src = src.offset(components as isize);
         /* use calc'd indices to output RGB values */
         *dest.offset(F::kRIndex as isize) =
-            *otdata_r.offset(*output.offset(0 as libc::c_int as isize) as
+            *otdata_r.offset(*output.offset(0isize) as
                                  isize);
         *dest.offset(F::kGIndex as isize) =
-            *otdata_g.offset(*output.offset(1 as libc::c_int as isize) as
+            *otdata_g.offset(*output.offset(1isize) as
                                  isize);
         *dest.offset(F::kBIndex as isize) =
-            *otdata_b.offset(*output.offset(2 as libc::c_int as isize) as
+            *otdata_b.offset(*output.offset(2isize) as
                                  isize);
         dest = dest.offset(components as isize);
         i = i.wrapping_add(1)
     }
     /* handle final (maybe only) pixel */
-    vec_r = _mm_shuffle_ps(vec_r, vec_r, 0 as libc::c_int);
-    vec_g = _mm_shuffle_ps(vec_g, vec_g, 0 as libc::c_int);
-    vec_b = _mm_shuffle_ps(vec_b, vec_b, 0 as libc::c_int);
+    vec_r = _mm_shuffle_ps(vec_r, vec_r, 0i32);
+    vec_g = _mm_shuffle_ps(vec_g, vec_g, 0i32);
+    vec_b = _mm_shuffle_ps(vec_b, vec_b, 0i32);
     vec_r = _mm_mul_ps(vec_r, mat0);
     vec_g = _mm_mul_ps(vec_g, mat1);
     vec_b = _mm_mul_ps(vec_b, mat2);
-    if F::kAIndex != 0xff as libc::c_int as libc::c_ulong {
+    if F::kAIndex != 0xffu64 {
         *dest.offset(F::kAIndex as isize) = alpha
     }
     vec_r = _mm_add_ps(vec_r, _mm_add_ps(vec_g, vec_b));
@@ -298,11 +289,11 @@ unsafe extern "C" fn qcms_transform_data_template_lut_sse2<F: Format>(mut transf
     result = _mm_mul_ps(vec_r, scale);
     _mm_store_si128(output as *mut __m128i, _mm_cvtps_epi32(result));
     *dest.offset(F::kRIndex as isize) =
-        *otdata_r.offset(*output.offset(0 as libc::c_int as isize) as isize);
+        *otdata_r.offset(*output.offset(0isize) as isize);
     *dest.offset(F::kGIndex as isize) =
-        *otdata_g.offset(*output.offset(1 as libc::c_int as isize) as isize);
+        *otdata_g.offset(*output.offset(1isize) as isize);
     *dest.offset(F::kBIndex as isize) =
-        *otdata_b.offset(*output.offset(2 as libc::c_int as isize) as isize);
+        *otdata_b.offset(*output.offset(2isize) as isize);
 }
 #[no_mangle]
 pub unsafe extern "C" fn qcms_transform_data_rgb_out_lut_sse2(mut transform:

@@ -121,8 +121,8 @@ pub type uint32_t = libc::c_uint;
 	 * improve startup performance and reduce memory usage. ColorSync on
 	 * 10.5 uses 4097 which is perhaps because they use a fixed point
 	 * representation where 1. is represented by 0x1000. */
-#[derive(Copy, Clone)]
-#[repr(C)]
+
+#[repr(C)]#[derive(Copy, Clone)]
 pub struct _qcms_transform {
     pub matrix: [[libc::c_float; 4]; 3],
     pub input_gamma_table_r: *mut libc::c_float,
@@ -163,8 +163,8 @@ pub type transform_fn_t
     Option<unsafe extern "C" fn(_: *const _qcms_transform,
                                 _: *const libc::c_uchar,
                                 _: *mut libc::c_uchar, _: size_t) -> ()>;
-#[derive(Copy, Clone)]
-#[repr(C)]
+
+#[repr(C)]#[derive(Copy, Clone)]
 pub struct precache_output {
     pub ref_count: libc::c_int,
     pub data: [uint8_t; 8192],
@@ -174,8 +174,8 @@ pub type qcms_transform = _qcms_transform;
 // reversed elements (for mBA)
 /* should lut8Type and lut16Type be different types? */
 // used by lut8Type/lut16Type (mft2) only
-#[derive(Copy, Clone)]
-#[repr(C)]
+
+#[repr(C)]#[derive(Copy, Clone)]
 pub struct _qcms_profile {
     pub class_type: uint32_t,
     pub color_space: uint32_t,
@@ -197,14 +197,14 @@ pub struct _qcms_profile {
     pub output_table_g: *mut precache_output,
     pub output_table_b: *mut precache_output,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
+
+#[repr(C)]#[derive(Copy, Clone)]
 pub struct matrix {
     pub m: [[libc::c_float; 3]; 3],
     pub invalid: bool,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
+
+#[repr(C)]#[derive(Copy, Clone)]
 pub struct lutmABType {
     pub num_in_channels: uint8_t,
     pub num_out_channels: uint8_t,
@@ -228,8 +228,8 @@ pub struct lutmABType {
     pub m_curves: [*mut curveType; 10],
     pub clut_table_data: [libc::c_float; 0],
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
+
+#[repr(C)]#[derive(Copy, Clone)]
 pub struct curveType {
     pub type_0: uint32_t,
     pub count: uint32_t,
@@ -238,8 +238,8 @@ pub struct curveType {
 }
 pub type uInt16Number = uint16_t;
 pub type s15Fixed16Number = int32_t;
-#[derive(Copy, Clone)]
-#[repr(C)]
+
+#[repr(C)]#[derive(Copy, Clone)]
 pub struct lutType {
     pub num_input_channels: uint8_t,
     pub num_output_channels: uint8_t,
@@ -260,8 +260,8 @@ pub struct lutType {
     pub output_table: *mut libc::c_float,
     pub table_data: [libc::c_float; 0],
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
+
+#[repr(C)]#[derive(Copy, Clone)]
 pub struct XYZNumber {
     pub X: s15Fixed16Number,
     pub Y: s15Fixed16Number,
@@ -282,22 +282,22 @@ pub const QCMS_DATA_GRAY_8: qcms_data_type = 3;
 pub const QCMS_DATA_BGRA_8: qcms_data_type = 2;
 pub const QCMS_DATA_RGBA_8: qcms_data_type = 1;
 pub const QCMS_DATA_RGB_8: qcms_data_type = 0;
-#[derive(Copy, Clone)]
-#[repr(C)]
+
+#[repr(C)]#[derive(Copy, Clone)]
 pub struct qcms_CIE_xyY {
     pub x: libc::c_double,
     pub y: libc::c_double,
     pub Y: libc::c_double,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
+
+#[repr(C)]#[derive(Copy, Clone)]
 pub struct qcms_CIE_xyYTRIPLE {
     pub red: qcms_CIE_xyY,
     pub green: qcms_CIE_xyY,
     pub blue: qcms_CIE_xyY,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
+
+#[repr(C)]#[derive(Copy, Clone)]
 pub struct CIE_XYZ {
     pub X: libc::c_double,
     pub Y: libc::c_double,
@@ -373,22 +373,22 @@ impl GrayFormat for GrayAlpha {
 }
 
 
-#[derive(Copy, Clone)]
-#[repr(C)]
+
+#[repr(C)]#[derive(Copy, Clone)]
 pub struct vector {
     pub v: [libc::c_float; 3],
 }
 #[inline]
 unsafe extern "C" fn double_to_s15Fixed16Number(mut v: libc::c_double)
  -> s15Fixed16Number {
-    return (v * 65536 as libc::c_int as libc::c_double) as int32_t;
+    return (v * 65536f64) as int32_t;
 }
 #[inline]
 unsafe extern "C" fn clamp_u8(mut v: libc::c_float) -> libc::c_uchar {
     if v as libc::c_double > 255.0f64 {
-        return 255 as libc::c_int as libc::c_uchar
-    } else if v < 0 as libc::c_int as libc::c_float {
-        return 0 as libc::c_int as libc::c_uchar
+        return 255u8
+    } else if v < 0f32 {
+        return 0u8
     } else {
         return floorf((v as libc::c_double + 0.5f64) as libc::c_float) as
                    libc::c_uchar
@@ -408,12 +408,12 @@ unsafe extern "C" fn clamp_float(mut a: libc::c_float) -> libc::c_float {
   for most consumers.
   */
     if a as libc::c_double > 1.0f64 {
-        return 1.0f64 as libc::c_float
-    } else if a >= 0 as libc::c_int as libc::c_float {
+        return 1f32
+    } else if a >= 0f32 {
         return a
     } else {
         // a < 0 or a is NaN
-        return 0 as libc::c_int as libc::c_float
+        return 0f32
     };
 }
 /* vim: set ts=8 sw=8 noexpandtab: */
@@ -488,58 +488,58 @@ unsafe extern "C" fn build_RGB_to_XYZ_transfer_matrix(mut white: qcms_CIE_xyY,
     yg = primrs.green.y;
     xb = primrs.blue.x;
     yb = primrs.blue.y;
-    primaries.m[0 as libc::c_int as usize][0 as libc::c_int as usize] =
+    primaries.m[0usize][0usize] =
         xr as libc::c_float;
-    primaries.m[0 as libc::c_int as usize][1 as libc::c_int as usize] =
+    primaries.m[0usize][1usize] =
         xg as libc::c_float;
-    primaries.m[0 as libc::c_int as usize][2 as libc::c_int as usize] =
+    primaries.m[0usize][2usize] =
         xb as libc::c_float;
-    primaries.m[1 as libc::c_int as usize][0 as libc::c_int as usize] =
+    primaries.m[1usize][0usize] =
         yr as libc::c_float;
-    primaries.m[1 as libc::c_int as usize][1 as libc::c_int as usize] =
+    primaries.m[1usize][1usize] =
         yg as libc::c_float;
-    primaries.m[1 as libc::c_int as usize][2 as libc::c_int as usize] =
+    primaries.m[1usize][2usize] =
         yb as libc::c_float;
-    primaries.m[2 as libc::c_int as usize][0 as libc::c_int as usize] =
-        (1 as libc::c_int as libc::c_double - xr - yr) as libc::c_float;
-    primaries.m[2 as libc::c_int as usize][1 as libc::c_int as usize] =
-        (1 as libc::c_int as libc::c_double - xg - yg) as libc::c_float;
-    primaries.m[2 as libc::c_int as usize][2 as libc::c_int as usize] =
-        (1 as libc::c_int as libc::c_double - xb - yb) as libc::c_float;
-    primaries.invalid = 0 as libc::c_int != 0;
-    white_point.v[0 as libc::c_int as usize] = (xn / yn) as libc::c_float;
-    white_point.v[1 as libc::c_int as usize] = 1.0f64 as libc::c_float;
-    white_point.v[2 as libc::c_int as usize] =
+    primaries.m[2usize][0usize] =
+        (1f64 - xr - yr) as libc::c_float;
+    primaries.m[2usize][1usize] =
+        (1f64 - xg - yg) as libc::c_float;
+    primaries.m[2usize][2usize] =
+        (1f64 - xb - yb) as libc::c_float;
+    primaries.invalid = 0i32 != 0;
+    white_point.v[0usize] = (xn / yn) as libc::c_float;
+    white_point.v[1usize] = 1f32;
+    white_point.v[2usize] =
         ((1.0f64 - xn - yn) / yn) as libc::c_float;
     primaries_invert = matrix_invert(primaries);
     if primaries_invert.invalid { return matrix_invalid() }
     coefs = matrix_eval(primaries_invert, white_point);
-    result.m[0 as libc::c_int as usize][0 as libc::c_int as usize] =
-        (coefs.v[0 as libc::c_int as usize] as libc::c_double * xr) as
+    result.m[0usize][0usize] =
+        (coefs.v[0usize] as libc::c_double * xr) as
             libc::c_float;
-    result.m[0 as libc::c_int as usize][1 as libc::c_int as usize] =
-        (coefs.v[1 as libc::c_int as usize] as libc::c_double * xg) as
+    result.m[0usize][1usize] =
+        (coefs.v[1usize] as libc::c_double * xg) as
             libc::c_float;
-    result.m[0 as libc::c_int as usize][2 as libc::c_int as usize] =
-        (coefs.v[2 as libc::c_int as usize] as libc::c_double * xb) as
+    result.m[0usize][2usize] =
+        (coefs.v[2usize] as libc::c_double * xb) as
             libc::c_float;
-    result.m[1 as libc::c_int as usize][0 as libc::c_int as usize] =
-        (coefs.v[0 as libc::c_int as usize] as libc::c_double * yr) as
+    result.m[1usize][0usize] =
+        (coefs.v[0usize] as libc::c_double * yr) as
             libc::c_float;
-    result.m[1 as libc::c_int as usize][1 as libc::c_int as usize] =
-        (coefs.v[1 as libc::c_int as usize] as libc::c_double * yg) as
+    result.m[1usize][1usize] =
+        (coefs.v[1usize] as libc::c_double * yg) as
             libc::c_float;
-    result.m[1 as libc::c_int as usize][2 as libc::c_int as usize] =
-        (coefs.v[2 as libc::c_int as usize] as libc::c_double * yb) as
+    result.m[1usize][2usize] =
+        (coefs.v[2usize] as libc::c_double * yb) as
             libc::c_float;
-    result.m[2 as libc::c_int as usize][0 as libc::c_int as usize] =
-        (coefs.v[0 as libc::c_int as usize] as libc::c_double *
+    result.m[2usize][0usize] =
+        (coefs.v[0usize] as libc::c_double *
              (1.0f64 - xr - yr)) as libc::c_float;
-    result.m[2 as libc::c_int as usize][1 as libc::c_int as usize] =
-        (coefs.v[1 as libc::c_int as usize] as libc::c_double *
+    result.m[2usize][1usize] =
+        (coefs.v[1usize] as libc::c_double *
              (1.0f64 - xg - yg)) as libc::c_float;
-    result.m[2 as libc::c_int as usize][2 as libc::c_int as usize] =
-        (coefs.v[2 as libc::c_int as usize] as libc::c_double *
+    result.m[2usize][2usize] =
+        (coefs.v[2usize] as libc::c_double *
              (1.0f64 - xb - yb)) as libc::c_float;
     result.invalid = primaries_invert.invalid;
     return result;
@@ -557,7 +557,7 @@ unsafe extern "C" fn xyY2XYZ(mut source: qcms_CIE_xyY) -> CIE_XYZ {
     dest.X = source.x / source.y * source.Y;
     dest.Y = source.Y;
     dest.Z =
-        (1 as libc::c_int as libc::c_double - source.x - source.y) / source.y
+        (1f64 - source.x - source.y) / source.y
             * source.Y;
     return dest;
 }
@@ -577,42 +577,42 @@ unsafe extern "C" fn compute_chromatic_adaption(mut source_white_point:
     tmp = chad;
     chad_inv = matrix_invert(tmp);
     if chad_inv.invalid { return matrix_invalid() }
-    cone_source_XYZ.v[0 as libc::c_int as usize] =
+    cone_source_XYZ.v[0usize] =
         source_white_point.X as libc::c_float;
-    cone_source_XYZ.v[1 as libc::c_int as usize] =
+    cone_source_XYZ.v[1usize] =
         source_white_point.Y as libc::c_float;
-    cone_source_XYZ.v[2 as libc::c_int as usize] =
+    cone_source_XYZ.v[2usize] =
         source_white_point.Z as libc::c_float;
-    cone_dest_XYZ.v[0 as libc::c_int as usize] =
+    cone_dest_XYZ.v[0usize] =
         dest_white_point.X as libc::c_float;
-    cone_dest_XYZ.v[1 as libc::c_int as usize] =
+    cone_dest_XYZ.v[1usize] =
         dest_white_point.Y as libc::c_float;
-    cone_dest_XYZ.v[2 as libc::c_int as usize] =
+    cone_dest_XYZ.v[2usize] =
         dest_white_point.Z as libc::c_float;
     cone_source_rgb = matrix_eval(chad, cone_source_XYZ);
     cone_dest_rgb = matrix_eval(chad, cone_dest_XYZ);
-    cone.m[0 as libc::c_int as usize][0 as libc::c_int as usize] =
-        cone_dest_rgb.v[0 as libc::c_int as usize] /
-            cone_source_rgb.v[0 as libc::c_int as usize];
-    cone.m[0 as libc::c_int as usize][1 as libc::c_int as usize] =
-        0 as libc::c_int as libc::c_float;
-    cone.m[0 as libc::c_int as usize][2 as libc::c_int as usize] =
-        0 as libc::c_int as libc::c_float;
-    cone.m[1 as libc::c_int as usize][0 as libc::c_int as usize] =
-        0 as libc::c_int as libc::c_float;
-    cone.m[1 as libc::c_int as usize][1 as libc::c_int as usize] =
-        cone_dest_rgb.v[1 as libc::c_int as usize] /
-            cone_source_rgb.v[1 as libc::c_int as usize];
-    cone.m[1 as libc::c_int as usize][2 as libc::c_int as usize] =
-        0 as libc::c_int as libc::c_float;
-    cone.m[2 as libc::c_int as usize][0 as libc::c_int as usize] =
-        0 as libc::c_int as libc::c_float;
-    cone.m[2 as libc::c_int as usize][1 as libc::c_int as usize] =
-        0 as libc::c_int as libc::c_float;
-    cone.m[2 as libc::c_int as usize][2 as libc::c_int as usize] =
-        cone_dest_rgb.v[2 as libc::c_int as usize] /
-            cone_source_rgb.v[2 as libc::c_int as usize];
-    cone.invalid = 0 as libc::c_int != 0;
+    cone.m[0usize][0usize] =
+        cone_dest_rgb.v[0usize] /
+            cone_source_rgb.v[0usize];
+    cone.m[0usize][1usize] =
+        0f32;
+    cone.m[0usize][2usize] =
+        0f32;
+    cone.m[1usize][0usize] =
+        0f32;
+    cone.m[1usize][1usize] =
+        cone_dest_rgb.v[1usize] /
+            cone_source_rgb.v[1usize];
+    cone.m[1usize][2usize] =
+        0f32;
+    cone.m[2usize][0usize] =
+        0f32;
+    cone.m[2usize][1usize] =
+        0f32;
+    cone.m[2usize][2usize] =
+        cone_dest_rgb.v[2usize] /
+            cone_source_rgb.v[2usize];
+    cone.invalid = 0i32 != 0;
     // Normalize
     return matrix_multiply(chad_inv, matrix_multiply(cone, chad));
 }
@@ -655,54 +655,36 @@ pub unsafe extern "C" fn set_rgb_colorants(mut profile: *mut qcms_profile,
     let mut colorants: matrix = matrix{m: [[0.; 3]; 3], invalid: false,};
     colorants = build_RGB_to_XYZ_transfer_matrix(white_point, primaries);
     colorants = adapt_matrix_to_D50(colorants, white_point);
-    if colorants.invalid { return 0 as libc::c_int != 0 }
+    if colorants.invalid { return 0i32 != 0 }
     /* note: there's a transpose type of operation going on here */
     (*profile).redColorant.X =
-        double_to_s15Fixed16Number(colorants.m[0 as libc::c_int as
-                                                   usize][0 as libc::c_int as
-                                                              usize] as
+        double_to_s15Fixed16Number(colorants.m[0usize][0usize] as
                                        libc::c_double);
     (*profile).redColorant.Y =
-        double_to_s15Fixed16Number(colorants.m[1 as libc::c_int as
-                                                   usize][0 as libc::c_int as
-                                                              usize] as
+        double_to_s15Fixed16Number(colorants.m[1usize][0usize] as
                                        libc::c_double);
     (*profile).redColorant.Z =
-        double_to_s15Fixed16Number(colorants.m[2 as libc::c_int as
-                                                   usize][0 as libc::c_int as
-                                                              usize] as
+        double_to_s15Fixed16Number(colorants.m[2usize][0usize] as
                                        libc::c_double);
     (*profile).greenColorant.X =
-        double_to_s15Fixed16Number(colorants.m[0 as libc::c_int as
-                                                   usize][1 as libc::c_int as
-                                                              usize] as
+        double_to_s15Fixed16Number(colorants.m[0usize][1usize] as
                                        libc::c_double);
     (*profile).greenColorant.Y =
-        double_to_s15Fixed16Number(colorants.m[1 as libc::c_int as
-                                                   usize][1 as libc::c_int as
-                                                              usize] as
+        double_to_s15Fixed16Number(colorants.m[1usize][1usize] as
                                        libc::c_double);
     (*profile).greenColorant.Z =
-        double_to_s15Fixed16Number(colorants.m[2 as libc::c_int as
-                                                   usize][1 as libc::c_int as
-                                                              usize] as
+        double_to_s15Fixed16Number(colorants.m[2usize][1usize] as
                                        libc::c_double);
     (*profile).blueColorant.X =
-        double_to_s15Fixed16Number(colorants.m[0 as libc::c_int as
-                                                   usize][2 as libc::c_int as
-                                                              usize] as
+        double_to_s15Fixed16Number(colorants.m[0usize][2usize] as
                                        libc::c_double);
     (*profile).blueColorant.Y =
-        double_to_s15Fixed16Number(colorants.m[1 as libc::c_int as
-                                                   usize][2 as libc::c_int as
-                                                              usize] as
+        double_to_s15Fixed16Number(colorants.m[1usize][2usize] as
                                        libc::c_double);
     (*profile).blueColorant.Z =
-        double_to_s15Fixed16Number(colorants.m[2 as libc::c_int as
-                                                   usize][2 as libc::c_int as
-                                                              usize] as
+        double_to_s15Fixed16Number(colorants.m[2usize][2usize] as
                                        libc::c_double);
-    return 1 as libc::c_int != 0;
+    return 1i32 != 0;
 }
 #[no_mangle]
 pub unsafe extern "C" fn get_rgb_colorants(mut colorants: *mut matrix,
@@ -712,8 +694,8 @@ pub unsafe extern "C" fn get_rgb_colorants(mut colorants: *mut matrix,
     *colorants = build_RGB_to_XYZ_transfer_matrix(white_point, primaries);
     *colorants = adapt_matrix_to_D50(*colorants, white_point);
     return if (*colorants).invalid as libc::c_int != 0 {
-               1 as libc::c_int
-           } else { 0 as libc::c_int } != 0;
+               1i32
+           } else { 0i32 } != 0;
 }
 /* Alpha is not corrected.
    A rationale for this is found in Alvy Ray's "Should Alpha Be Nonlinear If
@@ -729,11 +711,11 @@ unsafe extern "C" fn qcms_transform_data_gray_template_lut<I: GrayFormat, F: For
                                                            mut length:
                                                                size_t) {
     let components: libc::c_uint =
-        if F::kAIndex == 0xff as libc::c_int as libc::c_ulong {
-            3 as libc::c_int
-        } else { 4 as libc::c_int } as libc::c_uint;
+        if F::kAIndex == 0xffu64 {
+            3i32
+        } else { 4i32 } as libc::c_uint;
     let mut i: libc::c_uint = 0;
-    i = 0 as libc::c_int as libc::c_uint;
+    i = 0u32;
     while (i as libc::c_ulong) < length {
         let mut out_device_r: libc::c_float = 0.;
         let mut out_device_g: libc::c_float = 0.;
@@ -741,7 +723,7 @@ unsafe extern "C" fn qcms_transform_data_gray_template_lut<I: GrayFormat, F: For
         let fresh0 = src;
         src = src.offset(1);
         let mut device: libc::c_uchar = *fresh0;
-        let mut alpha: libc::c_uchar = 0xff as libc::c_int as libc::c_uchar;
+        let mut alpha: libc::c_uchar = 0xffu8;
         if I::has_alpha {
             let fresh1 = src;
             src = src.offset(1);
@@ -765,12 +747,12 @@ unsafe extern "C" fn qcms_transform_data_gray_template_lut<I: GrayFormat, F: For
                               (*transform).output_gamma_lut_b_length as
                                   libc::c_int);
         *dest.offset(F::kRIndex as isize) =
-            clamp_u8(out_device_r * 255 as libc::c_int as libc::c_float);
+            clamp_u8(out_device_r * 255f32);
         *dest.offset(F::kGIndex as isize) =
-            clamp_u8(out_device_g * 255 as libc::c_int as libc::c_float);
+            clamp_u8(out_device_g * 255f32);
         *dest.offset(F::kBIndex as isize) =
-            clamp_u8(out_device_b * 255 as libc::c_int as libc::c_float);
-        if F::kAIndex != 0xff as libc::c_int as libc::c_ulong {
+            clamp_u8(out_device_b * 255f32);
+        if F::kAIndex != 0xffu64 {
             *dest.offset(F::kAIndex as isize) = alpha
         }
         dest = dest.offset(components as isize);
@@ -835,16 +817,16 @@ unsafe extern "C" fn qcms_transform_data_gray_template_precache<I: GrayFormat, F
                                                                 mut length:
                                                                     size_t) {
     let components: libc::c_uint =
-        if F::kAIndex == 0xff as libc::c_int as libc::c_ulong {
-            3 as libc::c_int
-        } else { 4 as libc::c_int } as libc::c_uint;
+        if F::kAIndex == 0xffu64 {
+            3i32
+        } else { 4i32 } as libc::c_uint;
     let mut i: libc::c_uint = 0;
-    i = 0 as libc::c_int as libc::c_uint;
+    i = 0u32;
     while (i as libc::c_ulong) < length {
         let fresh2 = src;
         src = src.offset(1);
         let mut device: libc::c_uchar = *fresh2;
-        let mut alpha: libc::c_uchar = 0xff as libc::c_int as libc::c_uchar;
+        let mut alpha: libc::c_uchar = 0xffu8;
         if I::has_alpha {
             let fresh3 = src;
             src = src.offset(1);
@@ -856,7 +838,7 @@ unsafe extern "C" fn qcms_transform_data_gray_template_precache<I: GrayFormat, F
         /* we could round here... */
         gray =
             (linear *
-                 (8192 as libc::c_int - 1 as libc::c_int) as libc::c_float) as
+                 (8192i32 - 1i32) as libc::c_float) as
                 uint16_t;
         *dest.offset(F::kRIndex as isize) =
             (*(*transform).output_table_r).data[gray as usize];
@@ -864,7 +846,7 @@ unsafe extern "C" fn qcms_transform_data_gray_template_precache<I: GrayFormat, F
             (*(*transform).output_table_g).data[gray as usize];
         *dest.offset(F::kBIndex as isize) =
             (*(*transform).output_table_b).data[gray as usize];
-        if F::kAIndex != 0xff as libc::c_int as libc::c_ulong {
+        if F::kAIndex != 0xffu64 {
             *dest.offset(F::kAIndex as isize) = alpha
         }
         dest = dest.offset(components as isize);
@@ -931,18 +913,18 @@ unsafe extern "C" fn qcms_transform_data_template_lut_precache<F: Format>(mut tr
                                                                mut length:
                                                                    size_t) {
     let components: libc::c_uint =
-        if F::kAIndex == 0xff as libc::c_int as libc::c_ulong {
-            3 as libc::c_int
-        } else { 4 as libc::c_int } as libc::c_uint;
+        if F::kAIndex == 0xffu64 {
+            3i32
+        } else { 4i32 } as libc::c_uint;
     let mut i: libc::c_uint = 0;
     let mut mat: *const [libc::c_float; 4] = (*transform).matrix.as_ptr();
-    i = 0 as libc::c_int as libc::c_uint;
+    i = 0u32;
     while (i as libc::c_ulong) < length {
         let mut device_r: libc::c_uchar = *src.offset(F::kRIndex as isize);
         let mut device_g: libc::c_uchar = *src.offset(F::kGIndex as isize);
         let mut device_b: libc::c_uchar = *src.offset(F::kBIndex as isize);
         let mut alpha: libc::c_uchar = 0;
-        if F::kAIndex != 0xff as libc::c_int as libc::c_ulong {
+        if F::kAIndex != 0xffu64 {
             alpha = *src.offset(F::kAIndex as isize)
         }
         src = src.offset(components as isize);
@@ -956,31 +938,22 @@ unsafe extern "C" fn qcms_transform_data_template_lut_precache<F: Format>(mut tr
         let mut linear_b: libc::c_float =
             *(*transform).input_gamma_table_b.offset(device_b as isize);
         let mut out_linear_r: libc::c_float =
-            (*mat.offset(0 as libc::c_int as
-                             isize))[0 as libc::c_int as usize] * linear_r +
-                (*mat.offset(1 as libc::c_int as
-                                 isize))[0 as libc::c_int as usize] * linear_g
+            (*mat.offset(0isize))[0usize] * linear_r +
+                (*mat.offset(1isize))[0usize] * linear_g
                 +
-                (*mat.offset(2 as libc::c_int as
-                                 isize))[0 as libc::c_int as usize] *
+                (*mat.offset(2isize))[0usize] *
                     linear_b;
         let mut out_linear_g: libc::c_float =
-            (*mat.offset(0 as libc::c_int as
-                             isize))[1 as libc::c_int as usize] * linear_r +
-                (*mat.offset(1 as libc::c_int as
-                                 isize))[1 as libc::c_int as usize] * linear_g
+            (*mat.offset(0isize))[1usize] * linear_r +
+                (*mat.offset(1isize))[1usize] * linear_g
                 +
-                (*mat.offset(2 as libc::c_int as
-                                 isize))[1 as libc::c_int as usize] *
+                (*mat.offset(2isize))[1usize] *
                     linear_b;
         let mut out_linear_b: libc::c_float =
-            (*mat.offset(0 as libc::c_int as
-                             isize))[2 as libc::c_int as usize] * linear_r +
-                (*mat.offset(1 as libc::c_int as
-                                 isize))[2 as libc::c_int as usize] * linear_g
+            (*mat.offset(0isize))[2usize] * linear_r +
+                (*mat.offset(1isize))[2usize] * linear_g
                 +
-                (*mat.offset(2 as libc::c_int as
-                                 isize))[2 as libc::c_int as usize] *
+                (*mat.offset(2isize))[2usize] *
                     linear_b;
         out_linear_r = clamp_float(out_linear_r);
         out_linear_g = clamp_float(out_linear_g);
@@ -988,15 +961,15 @@ unsafe extern "C" fn qcms_transform_data_template_lut_precache<F: Format>(mut tr
         /* we could round here... */
         r =
             (out_linear_r *
-                 (8192 as libc::c_int - 1 as libc::c_int) as libc::c_float) as
+                 (8192i32 - 1i32) as libc::c_float) as
                 uint16_t;
         g =
             (out_linear_g *
-                 (8192 as libc::c_int - 1 as libc::c_int) as libc::c_float) as
+                 (8192i32 - 1i32) as libc::c_float) as
                 uint16_t;
         b =
             (out_linear_b *
-                 (8192 as libc::c_int - 1 as libc::c_int) as libc::c_float) as
+                 (8192i32 - 1i32) as libc::c_float) as
                 uint16_t;
         *dest.offset(F::kRIndex as isize) =
             (*(*transform).output_table_r).data[r as usize];
@@ -1004,7 +977,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut_precache<F: Format>(mut tr
             (*(*transform).output_table_g).data[g as usize];
         *dest.offset(F::kBIndex as isize) =
             (*(*transform).output_table_b).data[b as usize];
-        if F::kAIndex != 0xff as libc::c_int as libc::c_ulong {
+        if F::kAIndex != 0xffu64 {
             *dest.offset(F::kAIndex as isize) = alpha
         }
         dest = dest.offset(components as isize);
@@ -1103,7 +1076,7 @@ static void qcms_transform_data_clut(const qcms_transform *transform, const unsi
 */
 unsafe extern "C" fn int_div_ceil(mut value: libc::c_int,
                                   mut div: libc::c_int) -> libc::c_int {
-    return (value + div - 1 as libc::c_int) / div;
+    return (value + div - 1i32) / div;
 }
 // Using lcms' tetra interpolation algorithm.
 unsafe extern "C" fn qcms_transform_data_tetra_clut_template<F: Format>(mut transform:
@@ -1115,11 +1088,11 @@ unsafe extern "C" fn qcms_transform_data_tetra_clut_template<F: Format>(mut tran
                                                              mut length:
                                                                  size_t) {
     let components: libc::c_uint =
-        if F::kAIndex == 0xff as libc::c_int as libc::c_ulong {
-            3 as libc::c_int
-        } else { 4 as libc::c_int } as libc::c_uint;
+        if F::kAIndex == 0xffu64 {
+            3i32
+        } else { 4i32 } as libc::c_uint;
     let mut i: libc::c_uint = 0;
-    let mut xy_len: libc::c_int = 1 as libc::c_int;
+    let mut xy_len: libc::c_int = 1i32;
     let mut x_len: libc::c_int = (*transform).grid_size as libc::c_int;
     let mut len: libc::c_int = x_len * x_len;
     let mut r_table: *mut libc::c_float = (*transform).r_clut;
@@ -1140,13 +1113,13 @@ unsafe extern "C" fn qcms_transform_data_tetra_clut_template<F: Format>(mut tran
     let mut clut_r: libc::c_float = 0.;
     let mut clut_g: libc::c_float = 0.;
     let mut clut_b: libc::c_float = 0.;
-    i = 0 as libc::c_int as libc::c_uint;
+    i = 0u32;
     while (i as libc::c_ulong) < length {
         let mut in_r: libc::c_uchar = *src.offset(F::kRIndex as isize);
         let mut in_g: libc::c_uchar = *src.offset(F::kGIndex as isize);
         let mut in_b: libc::c_uchar = *src.offset(F::kBIndex as isize);
         let mut in_a: libc::c_uchar = 0;
-        if F::kAIndex != 0xff as libc::c_int as libc::c_ulong {
+        if F::kAIndex != 0xffu64 {
             in_a = *src.offset(F::kAIndex as isize)
         }
         src = src.offset(components as isize);
@@ -1158,306 +1131,306 @@ unsafe extern "C" fn qcms_transform_data_tetra_clut_template<F: Format>(mut tran
             in_b as libc::c_int as libc::c_float / 255.0f32;
         let mut x: libc::c_int =
             in_r as libc::c_int *
-                ((*transform).grid_size as libc::c_int - 1 as libc::c_int) /
-                255 as libc::c_int;
+                ((*transform).grid_size as libc::c_int - 1i32) /
+                255i32;
         let mut y: libc::c_int =
             in_g as libc::c_int *
-                ((*transform).grid_size as libc::c_int - 1 as libc::c_int) /
-                255 as libc::c_int;
+                ((*transform).grid_size as libc::c_int - 1i32) /
+                255i32;
         let mut z: libc::c_int =
             in_b as libc::c_int *
-                ((*transform).grid_size as libc::c_int - 1 as libc::c_int) /
-                255 as libc::c_int;
+                ((*transform).grid_size as libc::c_int - 1i32) /
+                255i32;
         let mut x_n: libc::c_int =
             int_div_ceil(in_r as libc::c_int *
                              ((*transform).grid_size as libc::c_int -
-                                  1 as libc::c_int), 255 as libc::c_int);
+                                  1i32), 255i32);
         let mut y_n: libc::c_int =
             int_div_ceil(in_g as libc::c_int *
                              ((*transform).grid_size as libc::c_int -
-                                  1 as libc::c_int), 255 as libc::c_int);
+                                  1i32), 255i32);
         let mut z_n: libc::c_int =
             int_div_ceil(in_b as libc::c_int *
                              ((*transform).grid_size as libc::c_int -
-                                  1 as libc::c_int), 255 as libc::c_int);
+                                  1i32), 255i32);
         let mut rx: libc::c_float =
             linear_r *
-                ((*transform).grid_size as libc::c_int - 1 as libc::c_int) as
+                ((*transform).grid_size as libc::c_int - 1i32) as
                     libc::c_float - x as libc::c_float;
         let mut ry: libc::c_float =
             linear_g *
-                ((*transform).grid_size as libc::c_int - 1 as libc::c_int) as
+                ((*transform).grid_size as libc::c_int - 1i32) as
                     libc::c_float - y as libc::c_float;
         let mut rz: libc::c_float =
             linear_b *
-                ((*transform).grid_size as libc::c_int - 1 as libc::c_int) as
+                ((*transform).grid_size as libc::c_int - 1i32) as
                     libc::c_float - z as libc::c_float;
         c0_r =
             *r_table.offset(((x * len + y * x_len + z * xy_len) *
-                                 3 as libc::c_int) as isize);
+                                 3i32) as isize);
         c0_g =
             *g_table.offset(((x * len + y * x_len + z * xy_len) *
-                                 3 as libc::c_int) as isize);
+                                 3i32) as isize);
         c0_b =
             *b_table.offset(((x * len + y * x_len + z * xy_len) *
-                                 3 as libc::c_int) as isize);
+                                 3i32) as isize);
         if rx >= ry {
             if ry >= rz {
                 //rx >= ry && ry >= rz
                 c1_r =
                     *r_table.offset(((x_n * len + y * x_len + z * xy_len) *
-                                         3 as libc::c_int) as isize) -
+                                         3i32) as isize) -
                         c0_r; //rz > rx && rx >= ry
                 c2_r =
                     *r_table.offset(((x_n * len + y_n * x_len + z * xy_len) *
-                                         3 as libc::c_int) as isize) -
+                                         3i32) as isize) -
                         *r_table.offset(((x_n * len + y * x_len + z * xy_len)
-                                             * 3 as libc::c_int) as isize);
+                                             * 3i32) as isize);
                 c3_r =
                     *r_table.offset(((x_n * len + y_n * x_len + z_n * xy_len)
-                                         * 3 as libc::c_int) as isize) -
+                                         * 3i32) as isize) -
                         *r_table.offset(((x_n * len + y_n * x_len +
-                                              z * xy_len) * 3 as libc::c_int)
+                                              z * xy_len) * 3i32)
                                             as isize);
                 c1_g =
                     *g_table.offset(((x_n * len + y * x_len + z * xy_len) *
-                                         3 as libc::c_int) as isize) - c0_g;
+                                         3i32) as isize) - c0_g;
                 c2_g =
                     *g_table.offset(((x_n * len + y_n * x_len + z * xy_len) *
-                                         3 as libc::c_int) as isize) -
+                                         3i32) as isize) -
                         *g_table.offset(((x_n * len + y * x_len + z * xy_len)
-                                             * 3 as libc::c_int) as isize);
+                                             * 3i32) as isize);
                 c3_g =
                     *g_table.offset(((x_n * len + y_n * x_len + z_n * xy_len)
-                                         * 3 as libc::c_int) as isize) -
+                                         * 3i32) as isize) -
                         *g_table.offset(((x_n * len + y_n * x_len +
-                                              z * xy_len) * 3 as libc::c_int)
+                                              z * xy_len) * 3i32)
                                             as isize);
                 c1_b =
                     *b_table.offset(((x_n * len + y * x_len + z * xy_len) *
-                                         3 as libc::c_int) as isize) - c0_b;
+                                         3i32) as isize) - c0_b;
                 c2_b =
                     *b_table.offset(((x_n * len + y_n * x_len + z * xy_len) *
-                                         3 as libc::c_int) as isize) -
+                                         3i32) as isize) -
                         *b_table.offset(((x_n * len + y * x_len + z * xy_len)
-                                             * 3 as libc::c_int) as isize);
+                                             * 3i32) as isize);
                 c3_b =
                     *b_table.offset(((x_n * len + y_n * x_len + z_n * xy_len)
-                                         * 3 as libc::c_int) as isize) -
+                                         * 3i32) as isize) -
                         *b_table.offset(((x_n * len + y_n * x_len +
-                                              z * xy_len) * 3 as libc::c_int)
+                                              z * xy_len) * 3i32)
                                             as isize)
             } else if rx >= rz {
                 //rx >= rz && rz >= ry
                 c1_r =
                     *r_table.offset(((x_n * len + y * x_len + z * xy_len) *
-                                         3 as libc::c_int) as isize) - c0_r;
+                                         3i32) as isize) - c0_r;
                 c2_r =
                     *r_table.offset(((x_n * len + y_n * x_len + z_n * xy_len)
-                                         * 3 as libc::c_int) as isize) -
+                                         * 3i32) as isize) -
                         *r_table.offset(((x_n * len + y * x_len +
                                               z_n * xy_len) *
-                                             3 as libc::c_int) as isize);
+                                             3i32) as isize);
                 c3_r =
                     *r_table.offset(((x_n * len + y * x_len + z_n * xy_len) *
-                                         3 as libc::c_int) as isize) -
+                                         3i32) as isize) -
                         *r_table.offset(((x_n * len + y * x_len + z * xy_len)
-                                             * 3 as libc::c_int) as isize);
+                                             * 3i32) as isize);
                 c1_g =
                     *g_table.offset(((x_n * len + y * x_len + z * xy_len) *
-                                         3 as libc::c_int) as isize) - c0_g;
+                                         3i32) as isize) - c0_g;
                 c2_g =
                     *g_table.offset(((x_n * len + y_n * x_len + z_n * xy_len)
-                                         * 3 as libc::c_int) as isize) -
+                                         * 3i32) as isize) -
                         *g_table.offset(((x_n * len + y * x_len +
                                               z_n * xy_len) *
-                                             3 as libc::c_int) as isize);
+                                             3i32) as isize);
                 c3_g =
                     *g_table.offset(((x_n * len + y * x_len + z_n * xy_len) *
-                                         3 as libc::c_int) as isize) -
+                                         3i32) as isize) -
                         *g_table.offset(((x_n * len + y * x_len + z * xy_len)
-                                             * 3 as libc::c_int) as isize);
+                                             * 3i32) as isize);
                 c1_b =
                     *b_table.offset(((x_n * len + y * x_len + z * xy_len) *
-                                         3 as libc::c_int) as isize) - c0_b;
+                                         3i32) as isize) - c0_b;
                 c2_b =
                     *b_table.offset(((x_n * len + y_n * x_len + z_n * xy_len)
-                                         * 3 as libc::c_int) as isize) -
+                                         * 3i32) as isize) -
                         *b_table.offset(((x_n * len + y * x_len +
                                               z_n * xy_len) *
-                                             3 as libc::c_int) as isize);
+                                             3i32) as isize);
                 c3_b =
                     *b_table.offset(((x_n * len + y * x_len + z_n * xy_len) *
-                                         3 as libc::c_int) as isize) -
+                                         3i32) as isize) -
                         *b_table.offset(((x_n * len + y * x_len + z * xy_len)
-                                             * 3 as libc::c_int) as isize)
+                                             * 3i32) as isize)
             } else {
                 c1_r =
                     *r_table.offset(((x_n * len + y * x_len + z_n * xy_len) *
-                                         3 as libc::c_int) as isize) -
+                                         3i32) as isize) -
                         *r_table.offset(((x * len + y * x_len + z_n * xy_len)
-                                             * 3 as libc::c_int) as isize);
+                                             * 3i32) as isize);
                 c2_r =
                     *r_table.offset(((x_n * len + y_n * x_len + z_n * xy_len)
-                                         * 3 as libc::c_int) as isize) -
+                                         * 3i32) as isize) -
                         *r_table.offset(((x_n * len + y * x_len +
                                               z_n * xy_len) *
-                                             3 as libc::c_int) as isize);
+                                             3i32) as isize);
                 c3_r =
                     *r_table.offset(((x * len + y * x_len + z_n * xy_len) *
-                                         3 as libc::c_int) as isize) - c0_r;
+                                         3i32) as isize) - c0_r;
                 c1_g =
                     *g_table.offset(((x_n * len + y * x_len + z_n * xy_len) *
-                                         3 as libc::c_int) as isize) -
+                                         3i32) as isize) -
                         *g_table.offset(((x * len + y * x_len + z_n * xy_len)
-                                             * 3 as libc::c_int) as isize);
+                                             * 3i32) as isize);
                 c2_g =
                     *g_table.offset(((x_n * len + y_n * x_len + z_n * xy_len)
-                                         * 3 as libc::c_int) as isize) -
+                                         * 3i32) as isize) -
                         *g_table.offset(((x_n * len + y * x_len +
                                               z_n * xy_len) *
-                                             3 as libc::c_int) as isize);
+                                             3i32) as isize);
                 c3_g =
                     *g_table.offset(((x * len + y * x_len + z_n * xy_len) *
-                                         3 as libc::c_int) as isize) - c0_g;
+                                         3i32) as isize) - c0_g;
                 c1_b =
                     *b_table.offset(((x_n * len + y * x_len + z_n * xy_len) *
-                                         3 as libc::c_int) as isize) -
+                                         3i32) as isize) -
                         *b_table.offset(((x * len + y * x_len + z_n * xy_len)
-                                             * 3 as libc::c_int) as isize);
+                                             * 3i32) as isize);
                 c2_b =
                     *b_table.offset(((x_n * len + y_n * x_len + z_n * xy_len)
-                                         * 3 as libc::c_int) as isize) -
+                                         * 3i32) as isize) -
                         *b_table.offset(((x_n * len + y * x_len +
                                               z_n * xy_len) *
-                                             3 as libc::c_int) as isize);
+                                             3i32) as isize);
                 c3_b =
                     *b_table.offset(((x * len + y * x_len + z_n * xy_len) *
-                                         3 as libc::c_int) as isize) - c0_b
+                                         3i32) as isize) - c0_b
             }
         } else if rx >= rz {
             //ry > rx && rx >= rz
             c1_r =
                 *r_table.offset(((x_n * len + y_n * x_len + z * xy_len) *
-                                     3 as libc::c_int) as isize) -
+                                     3i32) as isize) -
                     *r_table.offset(((x * len + y_n * x_len + z * xy_len) *
-                                         3 as libc::c_int) as
+                                         3i32) as
                                         isize); //rz > ry && ry > rx
             c2_r =
                 *r_table.offset(((x * len + y_n * x_len + z * xy_len) *
-                                     3 as libc::c_int) as isize) - c0_r;
+                                     3i32) as isize) - c0_r;
             c3_r =
                 *r_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) *
-                                     3 as libc::c_int) as isize) -
+                                     3i32) as isize) -
                     *r_table.offset(((x_n * len + y_n * x_len + z * xy_len) *
-                                         3 as libc::c_int) as isize);
+                                         3i32) as isize);
             c1_g =
                 *g_table.offset(((x_n * len + y_n * x_len + z * xy_len) *
-                                     3 as libc::c_int) as isize) -
+                                     3i32) as isize) -
                     *g_table.offset(((x * len + y_n * x_len + z * xy_len) *
-                                         3 as libc::c_int) as isize);
+                                         3i32) as isize);
             c2_g =
                 *g_table.offset(((x * len + y_n * x_len + z * xy_len) *
-                                     3 as libc::c_int) as isize) - c0_g;
+                                     3i32) as isize) - c0_g;
             c3_g =
                 *g_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) *
-                                     3 as libc::c_int) as isize) -
+                                     3i32) as isize) -
                     *g_table.offset(((x_n * len + y_n * x_len + z * xy_len) *
-                                         3 as libc::c_int) as isize);
+                                         3i32) as isize);
             c1_b =
                 *b_table.offset(((x_n * len + y_n * x_len + z * xy_len) *
-                                     3 as libc::c_int) as isize) -
+                                     3i32) as isize) -
                     *b_table.offset(((x * len + y_n * x_len + z * xy_len) *
-                                         3 as libc::c_int) as isize);
+                                         3i32) as isize);
             c2_b =
                 *b_table.offset(((x * len + y_n * x_len + z * xy_len) *
-                                     3 as libc::c_int) as isize) - c0_b;
+                                     3i32) as isize) - c0_b;
             c3_b =
                 *b_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) *
-                                     3 as libc::c_int) as isize) -
+                                     3i32) as isize) -
                     *b_table.offset(((x_n * len + y_n * x_len + z * xy_len) *
-                                         3 as libc::c_int) as isize)
+                                         3i32) as isize)
         } else if ry >= rz {
             //ry >= rz && rz > rx 
             c1_r =
                 *r_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) *
-                                     3 as libc::c_int) as isize) -
+                                     3i32) as isize) -
                     *r_table.offset(((x * len + y_n * x_len + z_n * xy_len) *
-                                         3 as libc::c_int) as isize);
+                                         3i32) as isize);
             c2_r =
                 *r_table.offset(((x * len + y_n * x_len + z * xy_len) *
-                                     3 as libc::c_int) as isize) - c0_r;
+                                     3i32) as isize) - c0_r;
             c3_r =
                 *r_table.offset(((x * len + y_n * x_len + z_n * xy_len) *
-                                     3 as libc::c_int) as isize) -
+                                     3i32) as isize) -
                     *r_table.offset(((x * len + y_n * x_len + z * xy_len) *
-                                         3 as libc::c_int) as isize);
+                                         3i32) as isize);
             c1_g =
                 *g_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) *
-                                     3 as libc::c_int) as isize) -
+                                     3i32) as isize) -
                     *g_table.offset(((x * len + y_n * x_len + z_n * xy_len) *
-                                         3 as libc::c_int) as isize);
+                                         3i32) as isize);
             c2_g =
                 *g_table.offset(((x * len + y_n * x_len + z * xy_len) *
-                                     3 as libc::c_int) as isize) - c0_g;
+                                     3i32) as isize) - c0_g;
             c3_g =
                 *g_table.offset(((x * len + y_n * x_len + z_n * xy_len) *
-                                     3 as libc::c_int) as isize) -
+                                     3i32) as isize) -
                     *g_table.offset(((x * len + y_n * x_len + z * xy_len) *
-                                         3 as libc::c_int) as isize);
+                                         3i32) as isize);
             c1_b =
                 *b_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) *
-                                     3 as libc::c_int) as isize) -
+                                     3i32) as isize) -
                     *b_table.offset(((x * len + y_n * x_len + z_n * xy_len) *
-                                         3 as libc::c_int) as isize);
+                                         3i32) as isize);
             c2_b =
                 *b_table.offset(((x * len + y_n * x_len + z * xy_len) *
-                                     3 as libc::c_int) as isize) - c0_b;
+                                     3i32) as isize) - c0_b;
             c3_b =
                 *b_table.offset(((x * len + y_n * x_len + z_n * xy_len) *
-                                     3 as libc::c_int) as isize) -
+                                     3i32) as isize) -
                     *b_table.offset(((x * len + y_n * x_len + z * xy_len) *
-                                         3 as libc::c_int) as isize)
+                                         3i32) as isize)
         } else {
             c1_r =
                 *r_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) *
-                                     3 as libc::c_int) as isize) -
+                                     3i32) as isize) -
                     *r_table.offset(((x * len + y_n * x_len + z_n * xy_len) *
-                                         3 as libc::c_int) as isize);
+                                         3i32) as isize);
             c2_r =
                 *r_table.offset(((x * len + y_n * x_len + z_n * xy_len) *
-                                     3 as libc::c_int) as isize) -
+                                     3i32) as isize) -
                     *r_table.offset(((x * len + y * x_len + z_n * xy_len) *
-                                         3 as libc::c_int) as isize);
+                                         3i32) as isize);
             c3_r =
                 *r_table.offset(((x * len + y * x_len + z_n * xy_len) *
-                                     3 as libc::c_int) as isize) - c0_r;
+                                     3i32) as isize) - c0_r;
             c1_g =
                 *g_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) *
-                                     3 as libc::c_int) as isize) -
+                                     3i32) as isize) -
                     *g_table.offset(((x * len + y_n * x_len + z_n * xy_len) *
-                                         3 as libc::c_int) as isize);
+                                         3i32) as isize);
             c2_g =
                 *g_table.offset(((x * len + y_n * x_len + z_n * xy_len) *
-                                     3 as libc::c_int) as isize) -
+                                     3i32) as isize) -
                     *g_table.offset(((x * len + y * x_len + z_n * xy_len) *
-                                         3 as libc::c_int) as isize);
+                                         3i32) as isize);
             c3_g =
                 *g_table.offset(((x * len + y * x_len + z_n * xy_len) *
-                                     3 as libc::c_int) as isize) - c0_g;
+                                     3i32) as isize) - c0_g;
             c1_b =
                 *b_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) *
-                                     3 as libc::c_int) as isize) -
+                                     3i32) as isize) -
                     *b_table.offset(((x * len + y_n * x_len + z_n * xy_len) *
-                                         3 as libc::c_int) as isize);
+                                         3i32) as isize);
             c2_b =
                 *b_table.offset(((x * len + y_n * x_len + z_n * xy_len) *
-                                     3 as libc::c_int) as isize) -
+                                     3i32) as isize) -
                     *b_table.offset(((x * len + y * x_len + z_n * xy_len) *
-                                         3 as libc::c_int) as isize);
+                                         3i32) as isize);
             c3_b =
                 *b_table.offset(((x * len + y * x_len + z_n * xy_len) *
-                                     3 as libc::c_int) as isize) - c0_b
+                                     3i32) as isize) - c0_b
         }
         clut_r = c0_r + c1_r * rx + c2_r * ry + c3_r * rz;
         clut_g = c0_g + c1_g * rx + c2_g * ry + c3_g * rz;
@@ -1465,7 +1438,7 @@ unsafe extern "C" fn qcms_transform_data_tetra_clut_template<F: Format>(mut tran
         *dest.offset(F::kRIndex as isize) = clamp_u8(clut_r * 255.0f32);
         *dest.offset(F::kGIndex as isize) = clamp_u8(clut_g * 255.0f32);
         *dest.offset(F::kBIndex as isize) = clamp_u8(clut_b * 255.0f32);
-        if F::kAIndex != 0xff as libc::c_int as libc::c_ulong {
+        if F::kAIndex != 0xffu64 {
             *dest.offset(F::kAIndex as isize) = in_a
         }
         dest = dest.offset(components as isize);
@@ -1508,18 +1481,18 @@ unsafe extern "C" fn qcms_transform_data_template_lut<F: Format>(mut transform:
                                                           *mut libc::c_uchar,
                                                       mut length: size_t) {
     let components: libc::c_uint =
-        if F::kAIndex == 0xff as libc::c_int as libc::c_ulong {
-            3 as libc::c_int
-        } else { 4 as libc::c_int } as libc::c_uint;
+        if F::kAIndex == 0xffu64 {
+            3i32
+        } else { 4i32 } as libc::c_uint;
     let mut i: libc::c_uint = 0;
     let mut mat: *const [libc::c_float; 4] = (*transform).matrix.as_ptr();
-    i = 0 as libc::c_int as libc::c_uint;
+    i = 0u32;
     while (i as libc::c_ulong) < length {
         let mut device_r: libc::c_uchar = *src.offset(F::kRIndex as isize);
         let mut device_g: libc::c_uchar = *src.offset(F::kGIndex as isize);
         let mut device_b: libc::c_uchar = *src.offset(F::kBIndex as isize);
         let mut alpha: libc::c_uchar = 0;
-        if F::kAIndex != 0xff as libc::c_int as libc::c_ulong {
+        if F::kAIndex != 0xffu64 {
             alpha = *src.offset(F::kAIndex as isize)
         }
         src = src.offset(components as isize);
@@ -1533,31 +1506,22 @@ unsafe extern "C" fn qcms_transform_data_template_lut<F: Format>(mut transform:
         let mut linear_b: libc::c_float =
             *(*transform).input_gamma_table_b.offset(device_b as isize);
         let mut out_linear_r: libc::c_float =
-            (*mat.offset(0 as libc::c_int as
-                             isize))[0 as libc::c_int as usize] * linear_r +
-                (*mat.offset(1 as libc::c_int as
-                                 isize))[0 as libc::c_int as usize] * linear_g
+            (*mat.offset(0isize))[0usize] * linear_r +
+                (*mat.offset(1isize))[0usize] * linear_g
                 +
-                (*mat.offset(2 as libc::c_int as
-                                 isize))[0 as libc::c_int as usize] *
+                (*mat.offset(2isize))[0usize] *
                     linear_b;
         let mut out_linear_g: libc::c_float =
-            (*mat.offset(0 as libc::c_int as
-                             isize))[1 as libc::c_int as usize] * linear_r +
-                (*mat.offset(1 as libc::c_int as
-                                 isize))[1 as libc::c_int as usize] * linear_g
+            (*mat.offset(0isize))[1usize] * linear_r +
+                (*mat.offset(1isize))[1usize] * linear_g
                 +
-                (*mat.offset(2 as libc::c_int as
-                                 isize))[1 as libc::c_int as usize] *
+                (*mat.offset(2isize))[1usize] *
                     linear_b;
         let mut out_linear_b: libc::c_float =
-            (*mat.offset(0 as libc::c_int as
-                             isize))[2 as libc::c_int as usize] * linear_r +
-                (*mat.offset(1 as libc::c_int as
-                                 isize))[2 as libc::c_int as usize] * linear_g
+            (*mat.offset(0isize))[2usize] * linear_r +
+                (*mat.offset(1isize))[2usize] * linear_g
                 +
-                (*mat.offset(2 as libc::c_int as
-                                 isize))[2 as libc::c_int as usize] *
+                (*mat.offset(2isize))[2usize] *
                     linear_b;
         out_linear_r = clamp_float(out_linear_r);
         out_linear_g = clamp_float(out_linear_g);
@@ -1578,12 +1542,12 @@ unsafe extern "C" fn qcms_transform_data_template_lut<F: Format>(mut transform:
                               (*transform).output_gamma_lut_b_length as
                                   libc::c_int);
         *dest.offset(F::kRIndex as isize) =
-            clamp_u8(out_device_r * 255 as libc::c_int as libc::c_float);
+            clamp_u8(out_device_r * 255f32);
         *dest.offset(F::kGIndex as isize) =
-            clamp_u8(out_device_g * 255 as libc::c_int as libc::c_float);
+            clamp_u8(out_device_g * 255f32);
         *dest.offset(F::kBIndex as isize) =
-            clamp_u8(out_device_b * 255 as libc::c_int as libc::c_float);
-        if F::kAIndex != 0xff as libc::c_int as libc::c_ulong {
+            clamp_u8(out_device_b * 255f32);
+        if F::kAIndex != 0xffu64 {
             *dest.offset(F::kAIndex as isize) = alpha
         }
         dest = dest.offset(components as isize);
@@ -1633,7 +1597,7 @@ pub unsafe extern "C" fn qcms_transform_data_bgra_out_lut(mut transform:
 unsafe extern "C" fn precache_reference(mut p: *mut precache_output)
  -> *mut precache_output {
     let fresh4 = &mut (*p).ref_count;
-    let fresh5 = 1 as libc::c_int;
+    let fresh5 = 1i32;
     (::std::intrinsics::atomic_xadd(fresh4, fresh5)) + fresh5;
     return p;
 }
@@ -1641,7 +1605,7 @@ unsafe extern "C" fn precache_create() -> *mut precache_output {
     let mut p: *mut precache_output =
         malloc(::std::mem::size_of::<precache_output>() as libc::c_ulong) as
             *mut precache_output;
-    if !p.is_null() { (*p).ref_count = 1 as libc::c_int }
+    if !p.is_null() { (*p).ref_count = 1i32 }
     return p;
 }
 /* produces the nearest float to 'a' with a maximum error
@@ -1649,9 +1613,9 @@ unsafe extern "C" fn precache_create() -> *mut precache_output {
 #[no_mangle]
 pub unsafe extern "C" fn precache_release(mut p: *mut precache_output) {
     let fresh6 = &mut (*p).ref_count as *mut libc::c_int;
-    let fresh7 = 1 as libc::c_int;
+    let fresh7 = 1i32;
     if ::std::intrinsics::atomic_xsub(fresh6, fresh7) - fresh7 ==
-           0 as libc::c_int {
+           0i32 {
         free(p as *mut libc::c_void);
     };
 }
@@ -1661,22 +1625,17 @@ unsafe extern "C" fn transform_alloc() -> *mut qcms_transform {
         calloc((::std::mem::size_of::<qcms_transform>() as
                     libc::c_ulong).wrapping_add(::std::mem::size_of::<*mut libc::c_void>()
                                                     as
-                                                    libc::c_ulong).wrapping_add(16
-                                                                                    as
-                                                                                    libc::c_int
-                                                                                    as
-                                                                                    libc::c_ulong),
-               1 as libc::c_int as libc::c_ulong) as *mut libc::c_char;
+                                                    libc::c_ulong).wrapping_add(16u64),
+               1u64) as *mut libc::c_char;
     /* make room for a pointer to the block returned by calloc */
     let mut transform_start: *mut libc::c_void =
-        original_block.offset(::std::mem::size_of::<*mut libc::c_void>() as
-                                  libc::c_ulong as isize) as
+        original_block.offset(::std::mem::size_of::<*mut libc::c_void>() as isize) as
             *mut libc::c_void;
     /* align transform_start */
     let mut transform_aligned: *mut qcms_transform =
         ((transform_start as
-              uintptr_t).wrapping_add(15 as libc::c_int as libc::c_ulong) &
-             !(0xf as libc::c_int) as libc::c_ulong) as *mut qcms_transform;
+              uintptr_t).wrapping_add(15u64) &
+             !(0xfi32) as libc::c_ulong) as *mut qcms_transform;
     /* store a pointer to the block returned by calloc so that we can free it later */
     let mut original_block_ptr: *mut *mut libc::c_void =
         transform_aligned as *mut *mut libc::c_void;
@@ -1730,7 +1689,7 @@ unsafe extern "C" fn sse_version_available() -> libc::c_int {
     /* we know at build time that 64-bit CPUs always have SSE2
 	 * this tells the compiler that non-SSE2 branches will never be
 	 * taken (i.e. OK to optimze away the SSE1 and non-SIMD code */
-    return 2 as libc::c_int;
+    return 2i32;
 }
 static mut bradford_matrix: matrix =
     {
@@ -1739,7 +1698,7 @@ static mut bradford_matrix: matrix =
                        [[0.8951f32, 0.2664f32, -0.1614f32],
                         [-0.7502f32, 1.7135f32, 0.0367f32],
                         [0.0389f32, -0.0685f32, 1.0296f32]],
-                   invalid: 0 as libc::c_int != 0,};
+                   invalid: 0i32 != 0,};
         init
     };
 static mut bradford_matrix_inv: matrix =
@@ -1749,7 +1708,7 @@ static mut bradford_matrix_inv: matrix =
                        [[0.9869929f32, -0.1470543f32, 0.1599627f32],
                         [0.4323053f32, 0.5183603f32, 0.0492912f32],
                         [-0.0085287f32, 0.0400428f32, 0.9684867f32]],
-                   invalid: 0 as libc::c_int != 0,};
+                   invalid: 0i32 != 0,};
         init
     };
 // See ICCv4 E.3
@@ -1760,72 +1719,54 @@ pub unsafe extern "C" fn compute_whitepoint_adaption(mut X: libc::c_float,
  -> matrix {
     let mut p: libc::c_float =
         (0.96422f32 *
-             bradford_matrix.m[0 as libc::c_int as
-                                   usize][0 as libc::c_int as usize] +
+             bradford_matrix.m[0usize][0usize] +
              1.000f32 *
-                 bradford_matrix.m[1 as libc::c_int as
-                                       usize][0 as libc::c_int as usize] +
+                 bradford_matrix.m[1usize][0usize] +
              0.82521f32 *
-                 bradford_matrix.m[2 as libc::c_int as
-                                       usize][0 as libc::c_int as usize]) /
+                 bradford_matrix.m[2usize][0usize]) /
             (X *
-                 bradford_matrix.m[0 as libc::c_int as
-                                       usize][0 as libc::c_int as usize] +
+                 bradford_matrix.m[0usize][0usize] +
                  Y *
-                     bradford_matrix.m[1 as libc::c_int as
-                                           usize][0 as libc::c_int as usize] +
+                     bradford_matrix.m[1usize][0usize] +
                  Z *
-                     bradford_matrix.m[2 as libc::c_int as
-                                           usize][0 as libc::c_int as usize]);
+                     bradford_matrix.m[2usize][0usize]);
     let mut y: libc::c_float =
         (0.96422f32 *
-             bradford_matrix.m[0 as libc::c_int as
-                                   usize][1 as libc::c_int as usize] +
+             bradford_matrix.m[0usize][1usize] +
              1.000f32 *
-                 bradford_matrix.m[1 as libc::c_int as
-                                       usize][1 as libc::c_int as usize] +
+                 bradford_matrix.m[1usize][1usize] +
              0.82521f32 *
-                 bradford_matrix.m[2 as libc::c_int as
-                                       usize][1 as libc::c_int as usize]) /
+                 bradford_matrix.m[2usize][1usize]) /
             (X *
-                 bradford_matrix.m[0 as libc::c_int as
-                                       usize][1 as libc::c_int as usize] +
+                 bradford_matrix.m[0usize][1usize] +
                  Y *
-                     bradford_matrix.m[1 as libc::c_int as
-                                           usize][1 as libc::c_int as usize] +
+                     bradford_matrix.m[1usize][1usize] +
                  Z *
-                     bradford_matrix.m[2 as libc::c_int as
-                                           usize][1 as libc::c_int as usize]);
+                     bradford_matrix.m[2usize][1usize]);
     let mut b: libc::c_float =
         (0.96422f32 *
-             bradford_matrix.m[0 as libc::c_int as
-                                   usize][2 as libc::c_int as usize] +
+             bradford_matrix.m[0usize][2usize] +
              1.000f32 *
-                 bradford_matrix.m[1 as libc::c_int as
-                                       usize][2 as libc::c_int as usize] +
+                 bradford_matrix.m[1usize][2usize] +
              0.82521f32 *
-                 bradford_matrix.m[2 as libc::c_int as
-                                       usize][2 as libc::c_int as usize]) /
+                 bradford_matrix.m[2usize][2usize]) /
             (X *
-                 bradford_matrix.m[0 as libc::c_int as
-                                       usize][2 as libc::c_int as usize] +
+                 bradford_matrix.m[0usize][2usize] +
                  Y *
-                     bradford_matrix.m[1 as libc::c_int as
-                                           usize][2 as libc::c_int as usize] +
+                     bradford_matrix.m[1usize][2usize] +
                  Z *
-                     bradford_matrix.m[2 as libc::c_int as
-                                           usize][2 as libc::c_int as usize]);
+                     bradford_matrix.m[2usize][2usize]);
     let mut white_adaption: matrix =
         {
             let mut init =
                 matrix{m:
-                           [[p, 0 as libc::c_int as libc::c_float,
-                             0 as libc::c_int as libc::c_float],
-                            [0 as libc::c_int as libc::c_float, y,
-                             0 as libc::c_int as libc::c_float],
-                            [0 as libc::c_int as libc::c_float,
-                             0 as libc::c_int as libc::c_float, b]],
-                       invalid: 0 as libc::c_int != 0,};
+                           [[p, 0f32,
+                             0f32],
+                            [0f32, y,
+                             0f32],
+                            [0f32,
+                             0f32, b]],
+                       invalid: 0i32 != 0,};
             init
         };
     return matrix_multiply(bradford_matrix_inv,
@@ -1835,7 +1776,7 @@ pub unsafe extern "C" fn compute_whitepoint_adaption(mut X: libc::c_float,
 pub unsafe extern "C" fn qcms_profile_precache_output_transform(mut profile:
                                                                     *mut qcms_profile) {
     /* we only support precaching on rgb profiles */
-    if (*profile).color_space != 0x52474220 as libc::c_int as libc::c_uint {
+    if (*profile).color_space != 0x52474220u32 {
         return
     }
     if qcms_supports_iccv4 {
@@ -1899,7 +1840,7 @@ pub unsafe extern "C" fn qcms_transform_precacheLUT_float(mut transform:
     let mut z: uint16_t = 0;
     let mut l: uint32_t = 0;
     let mut lutSize: uint32_t =
-        (3 as libc::c_int * samples * samples * samples) as uint32_t;
+        (3i32 * samples * samples * samples) as uint32_t;
     let mut src: *mut libc::c_float = 0 as *mut libc::c_float;
     let mut dest: *mut libc::c_float = 0 as *mut libc::c_float;
     let mut lut: *mut libc::c_float = 0 as *mut libc::c_float;
@@ -1915,28 +1856,28 @@ pub unsafe extern "C" fn qcms_transform_precacheLUT_float(mut transform:
             *mut libc::c_float;
     if !src.is_null() && !dest.is_null() {
         /* Prepare a list of points we want to sample */
-        l = 0 as libc::c_int as uint32_t;
-        x = 0 as libc::c_int as uint16_t;
+        l = 0u32;
+        x = 0u16;
         while (x as libc::c_int) < samples {
-            y = 0 as libc::c_int as uint16_t;
+            y = 0u16;
             while (y as libc::c_int) < samples {
-                z = 0 as libc::c_int as uint16_t;
+                z = 0u16;
                 while (z as libc::c_int) < samples {
                     let fresh8 = l;
                     l = l.wrapping_add(1);
                     *src.offset(fresh8 as isize) =
                         x as libc::c_int as libc::c_float /
-                            (samples - 1 as libc::c_int) as libc::c_float;
+                            (samples - 1i32) as libc::c_float;
                     let fresh9 = l;
                     l = l.wrapping_add(1);
                     *src.offset(fresh9 as isize) =
                         y as libc::c_int as libc::c_float /
-                            (samples - 1 as libc::c_int) as libc::c_float;
+                            (samples - 1i32) as libc::c_float;
                     let fresh10 = l;
                     l = l.wrapping_add(1);
                     *src.offset(fresh10 as isize) =
                         z as libc::c_int as libc::c_float /
-                            (samples - 1 as libc::c_int) as libc::c_float;
+                            (samples - 1i32) as libc::c_float;
                     z = z.wrapping_add(1)
                 }
                 y = y.wrapping_add(1)
@@ -1946,33 +1887,36 @@ pub unsafe extern "C" fn qcms_transform_precacheLUT_float(mut transform:
         lut = qcms_chain_transform(in_0, out, src, dest, lutSize as size_t);
         if !lut.is_null() {
             (*transform).r_clut =
-                &mut *lut.offset(0 as libc::c_int as isize) as
+                &mut *lut.offset(0isize) as
                     *mut libc::c_float;
             (*transform).g_clut =
-                &mut *lut.offset(1 as libc::c_int as isize) as
+                &mut *lut.offset(1isize) as
                     *mut libc::c_float;
             (*transform).b_clut =
-                &mut *lut.offset(2 as libc::c_int as isize) as
+                &mut *lut.offset(2isize) as
                     *mut libc::c_float;
             (*transform).grid_size = samples as uint16_t;
-            if in_type as libc::c_uint ==
-                   QCMS_DATA_RGBA_8 as libc::c_int as libc::c_uint {
+            if  in_type ==
+                   
+                   QCMS_DATA_RGBA_8 {
                 (*transform).transform_fn =
                     Some(qcms_transform_data_tetra_clut_rgba as
                              unsafe extern "C" fn(_: *const qcms_transform,
                                                   _: *const libc::c_uchar,
                                                   _: *mut libc::c_uchar,
                                                   _: size_t) -> ())
-            } else if in_type as libc::c_uint ==
-                          QCMS_DATA_BGRA_8 as libc::c_int as libc::c_uint {
+            } else if  in_type ==
+                          
+                          QCMS_DATA_BGRA_8 {
                 (*transform).transform_fn =
                     Some(qcms_transform_data_tetra_clut_bgra as
                              unsafe extern "C" fn(_: *const qcms_transform,
                                                   _: *const libc::c_uchar,
                                                   _: *mut libc::c_uchar,
                                                   _: size_t) -> ())
-            } else if in_type as libc::c_uint ==
-                          QCMS_DATA_RGB_8 as libc::c_int as libc::c_uint {
+            } else if  in_type ==
+                          
+                          QCMS_DATA_RGB_8 {
                 (*transform).transform_fn =
                     Some(qcms_transform_data_tetra_clut_rgb as
                              unsafe extern "C" fn(_: *const qcms_transform,
@@ -1985,7 +1929,7 @@ pub unsafe extern "C" fn qcms_transform_precacheLUT_float(mut transform:
                 __assert_rtn((*::std::mem::transmute::<&[u8; 33],
                                                        &[libc::c_char; 33]>(b"qcms_transform_precacheLUT_float\x00")).as_ptr(),
                              b"transform.c\x00" as *const u8 as
-                                 *const libc::c_char, 1130 as libc::c_int,
+                                 *const libc::c_char, 1130i32,
                              b"transform->transform_fn\x00" as *const u8 as
                                  *const libc::c_char);
             } else { };
@@ -2006,48 +1950,69 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
                                                mut intent: qcms_intent)
  -> *mut qcms_transform {
     // Ensure the requested input and output types make sense.
-    let mut match_0: bool = 0 as libc::c_int != 0;
-    if in_type as libc::c_uint ==
-           QCMS_DATA_RGB_8 as libc::c_int as libc::c_uint {
+    let mut match_0: bool = 0i32 != 0;
+    if  in_type ==
+           
+           QCMS_DATA_RGB_8 {
         match_0 =
-            out_type as libc::c_uint ==
-                QCMS_DATA_RGB_8 as libc::c_int as libc::c_uint
-    } else if in_type as libc::c_uint ==
-                  QCMS_DATA_RGBA_8 as libc::c_int as libc::c_uint {
+            
+            out_type ==
+                
+                QCMS_DATA_RGB_8
+    } else if  in_type ==
+                  
+                  QCMS_DATA_RGBA_8 {
         match_0 =
-            out_type as libc::c_uint ==
-                QCMS_DATA_RGBA_8 as libc::c_int as libc::c_uint
-    } else if in_type as libc::c_uint ==
-                  QCMS_DATA_BGRA_8 as libc::c_int as libc::c_uint {
+            
+            out_type ==
+                
+                QCMS_DATA_RGBA_8
+    } else if  in_type ==
+                  
+                  QCMS_DATA_BGRA_8 {
         match_0 =
-            out_type as libc::c_uint ==
-                QCMS_DATA_BGRA_8 as libc::c_int as libc::c_uint
-    } else if in_type as libc::c_uint ==
-                  QCMS_DATA_GRAY_8 as libc::c_int as libc::c_uint {
+            
+            out_type ==
+                
+                QCMS_DATA_BGRA_8
+    } else if  in_type ==
+                  
+                  QCMS_DATA_GRAY_8 {
         match_0 =
-            out_type as libc::c_uint ==
-                QCMS_DATA_RGB_8 as libc::c_int as libc::c_uint ||
-                out_type as libc::c_uint ==
-                    QCMS_DATA_RGBA_8 as libc::c_int as libc::c_uint ||
-                out_type as libc::c_uint ==
-                    QCMS_DATA_BGRA_8 as libc::c_int as libc::c_uint
-    } else if in_type as libc::c_uint ==
-                  QCMS_DATA_GRAYA_8 as libc::c_int as libc::c_uint {
+            
+            out_type ==
+                
+                QCMS_DATA_RGB_8 ||
+                
+                out_type ==
+                    
+                    QCMS_DATA_RGBA_8 ||
+                
+                out_type ==
+                    
+                    QCMS_DATA_BGRA_8
+    } else if  in_type ==
+                  
+                  QCMS_DATA_GRAYA_8 {
         match_0 =
-            out_type as libc::c_uint ==
-                QCMS_DATA_RGBA_8 as libc::c_int as libc::c_uint ||
-                out_type as libc::c_uint ==
-                    QCMS_DATA_BGRA_8 as libc::c_int as libc::c_uint
+            
+            out_type ==
+                
+                QCMS_DATA_RGBA_8 ||
+                
+                out_type ==
+                    
+                    QCMS_DATA_BGRA_8
     }
     if !match_0 {
-        if !(0 as libc::c_int != 0 &&
+        if !(0i32 != 0 &&
                  !(b"input/output type\x00" as *const u8 as
                        *const libc::c_char).is_null()) as libc::c_int as
                libc::c_long != 0 {
             __assert_rtn((*::std::mem::transmute::<&[u8; 22],
                                                    &[libc::c_char; 22]>(b"qcms_transform_create\x00")).as_ptr(),
                          b"transform.c\x00" as *const u8 as
-                             *const libc::c_char, 1171 as libc::c_int,
+                             *const libc::c_char, 1171i32,
                          b"0 && \"input/output type\"\x00" as *const u8 as
                              *const libc::c_char);
         } else { };
@@ -2055,19 +2020,24 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
     }
     let mut transform: *mut qcms_transform = transform_alloc();
     if transform.is_null() { return 0 as *mut qcms_transform }
-    let mut precache: bool = 0 as libc::c_int != 0;
+    let mut precache: bool = 0i32 != 0;
     if !(*out).output_table_r.is_null() && !(*out).output_table_g.is_null() &&
            !(*out).output_table_b.is_null() {
-        precache = 1 as libc::c_int != 0
+        precache = 1i32 != 0
     }
     // This precache assumes RGB_SIGNATURE (fails on GRAY_SIGNATURE, for instance)
     if qcms_supports_iccv4 as libc::c_int != 0 &&
-           (in_type as libc::c_uint ==
-                QCMS_DATA_RGB_8 as libc::c_int as libc::c_uint ||
-                in_type as libc::c_uint ==
-                    QCMS_DATA_RGBA_8 as libc::c_int as libc::c_uint ||
-                in_type as libc::c_uint ==
-                    QCMS_DATA_BGRA_8 as libc::c_int as libc::c_uint) &&
+           (in_type ==
+                
+                QCMS_DATA_RGB_8 ||
+                
+                in_type ==
+                    
+                    QCMS_DATA_RGBA_8 ||
+                
+                in_type ==
+                    
+                    QCMS_DATA_BGRA_8) &&
            (!(*in_0).A2B0.is_null() || !(*out).B2A0.is_null() ||
                 !(*in_0).mAB.is_null() || !(*out).mAB.is_null()) {
         // Precache the transformation to a CLUT 33x33x33 in size.
@@ -2077,16 +2047,16 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
 		// precaching should be avoided.
         let mut result: *mut qcms_transform =
             qcms_transform_precacheLUT_float(transform, in_0, out,
-                                             33 as libc::c_int, in_type);
+                                             33i32, in_type);
         if result.is_null() {
-            if !(0 as libc::c_int != 0 &&
+            if !(0i32 != 0 &&
                      !(b"precacheLUT failed\x00" as *const u8 as
                            *const libc::c_char).is_null()) as libc::c_int as
                    libc::c_long != 0 {
                 __assert_rtn((*::std::mem::transmute::<&[u8; 22],
                                                        &[libc::c_char; 22]>(b"qcms_transform_create\x00")).as_ptr(),
                              b"transform.c\x00" as *const u8 as
-                                 *const libc::c_char, 1199 as libc::c_int,
+                                 *const libc::c_char, 1199i32,
                              b"0 && \"precacheLUT failed\"\x00" as *const u8
                                  as *const libc::c_char);
             } else { };
@@ -2122,14 +2092,15 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
             return 0 as *mut qcms_transform
         }
     }
-    if (*in_0).color_space == 0x52474220 as libc::c_int as libc::c_uint {
+    if (*in_0).color_space == 0x52474220u32 {
         let mut in_matrix: matrix = matrix{m: [[0.; 3]; 3], invalid: false,};
         let mut out_matrix: matrix = matrix{m: [[0.; 3]; 3], invalid: false,};
         let mut result_0: matrix = matrix{m: [[0.; 3]; 3], invalid: false,};
         if precache {
             if qcms_supports_avx {
-                if in_type as libc::c_uint ==
-                       QCMS_DATA_RGB_8 as libc::c_int as libc::c_uint {
+                if  in_type ==
+                       
+                       QCMS_DATA_RGB_8 {
                     (*transform).transform_fn =
                         Some(qcms_transform_data_rgb_out_lut_avx as
                                  unsafe extern "C" fn(_:
@@ -2137,8 +2108,9 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
                                                       _: *const libc::c_uchar,
                                                       _: *mut libc::c_uchar,
                                                       _: size_t) -> ())
-                } else if in_type as libc::c_uint ==
-                              QCMS_DATA_RGBA_8 as libc::c_int as libc::c_uint
+                } else if  in_type ==
+                              
+                              QCMS_DATA_RGBA_8
                  {
                     (*transform).transform_fn =
                         Some(qcms_transform_data_rgba_out_lut_avx as
@@ -2147,8 +2119,9 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
                                                       _: *const libc::c_uchar,
                                                       _: *mut libc::c_uchar,
                                                       _: size_t) -> ())
-                } else if in_type as libc::c_uint ==
-                              QCMS_DATA_BGRA_8 as libc::c_int as libc::c_uint
+                } else if  in_type ==
+                              
+                              QCMS_DATA_BGRA_8
                  {
                     (*transform).transform_fn =
                         Some(qcms_transform_data_bgra_out_lut_avx as
@@ -2158,9 +2131,10 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
                                                       _: *mut libc::c_uchar,
                                                       _: size_t) -> ())
                 }
-            } else if sse_version_available() >= 2 as libc::c_int {
-                if in_type as libc::c_uint ==
-                       QCMS_DATA_RGB_8 as libc::c_int as libc::c_uint {
+            } else if sse_version_available() >= 2i32 {
+                if  in_type ==
+                       
+                       QCMS_DATA_RGB_8 {
                     (*transform).transform_fn =
                         Some(qcms_transform_data_rgb_out_lut_sse2 as
                                  unsafe extern "C" fn(_:
@@ -2168,8 +2142,9 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
                                                       _: *const libc::c_uchar,
                                                       _: *mut libc::c_uchar,
                                                       _: size_t) -> ())
-                } else if in_type as libc::c_uint ==
-                              QCMS_DATA_RGBA_8 as libc::c_int as libc::c_uint
+                } else if  in_type ==
+                              
+                              QCMS_DATA_RGBA_8
                  {
                     (*transform).transform_fn =
                         Some(qcms_transform_data_rgba_out_lut_sse2 as
@@ -2178,8 +2153,9 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
                                                       _: *const libc::c_uchar,
                                                       _: *mut libc::c_uchar,
                                                       _: size_t) -> ())
-                } else if in_type as libc::c_uint ==
-                              QCMS_DATA_BGRA_8 as libc::c_int as libc::c_uint
+                } else if  in_type ==
+                              
+                              QCMS_DATA_BGRA_8
                  {
                     (*transform).transform_fn =
                         Some(qcms_transform_data_bgra_out_lut_sse2 as
@@ -2191,9 +2167,10 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
                 }
                 /* Microsoft Compiler for x64 doesn't support MMX.
                      * SSE code uses MMX so that we disable on x64 */
-            } else if sse_version_available() >= 1 as libc::c_int {
-                if in_type as libc::c_uint ==
-                       QCMS_DATA_RGB_8 as libc::c_int as libc::c_uint {
+            } else if sse_version_available() >= 1i32 {
+                if  in_type ==
+                       
+                       QCMS_DATA_RGB_8 {
                     (*transform).transform_fn =
                         Some(qcms_transform_data_rgb_out_lut_sse1 as
                                  unsafe extern "C" fn(_:
@@ -2201,8 +2178,9 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
                                                       _: *const libc::c_uchar,
                                                       _: *mut libc::c_uchar,
                                                       _: size_t) -> ())
-                } else if in_type as libc::c_uint ==
-                              QCMS_DATA_RGBA_8 as libc::c_int as libc::c_uint
+                } else if  in_type ==
+                              
+                              QCMS_DATA_RGBA_8
                  {
                     (*transform).transform_fn =
                         Some(qcms_transform_data_rgba_out_lut_sse1 as
@@ -2211,8 +2189,9 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
                                                       _: *const libc::c_uchar,
                                                       _: *mut libc::c_uchar,
                                                       _: size_t) -> ())
-                } else if in_type as libc::c_uint ==
-                              QCMS_DATA_BGRA_8 as libc::c_int as libc::c_uint
+                } else if  in_type ==
+                              
+                              QCMS_DATA_BGRA_8
                  {
                     (*transform).transform_fn =
                         Some(qcms_transform_data_bgra_out_lut_sse1 as
@@ -2222,24 +2201,27 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
                                                       _: *mut libc::c_uchar,
                                                       _: size_t) -> ())
                 }
-            } else if in_type as libc::c_uint ==
-                          QCMS_DATA_RGB_8 as libc::c_int as libc::c_uint {
+            } else if  in_type ==
+                          
+                          QCMS_DATA_RGB_8 {
                 (*transform).transform_fn =
                     Some(qcms_transform_data_rgb_out_lut_precache as
                              unsafe extern "C" fn(_: *const qcms_transform,
                                                   _: *const libc::c_uchar,
                                                   _: *mut libc::c_uchar,
                                                   _: size_t) -> ())
-            } else if in_type as libc::c_uint ==
-                          QCMS_DATA_RGBA_8 as libc::c_int as libc::c_uint {
+            } else if  in_type ==
+                          
+                          QCMS_DATA_RGBA_8 {
                 (*transform).transform_fn =
                     Some(qcms_transform_data_rgba_out_lut_precache as
                              unsafe extern "C" fn(_: *const qcms_transform,
                                                   _: *const libc::c_uchar,
                                                   _: *mut libc::c_uchar,
                                                   _: size_t) -> ())
-            } else if in_type as libc::c_uint ==
-                          QCMS_DATA_BGRA_8 as libc::c_int as libc::c_uint {
+            } else if  in_type ==
+                          
+                          QCMS_DATA_BGRA_8 {
                 (*transform).transform_fn =
                     Some(qcms_transform_data_bgra_out_lut_precache as
                              unsafe extern "C" fn(_: *const qcms_transform,
@@ -2247,24 +2229,27 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
                                                   _: *mut libc::c_uchar,
                                                   _: size_t) -> ())
             }
-        } else if in_type as libc::c_uint ==
-                      QCMS_DATA_RGB_8 as libc::c_int as libc::c_uint {
+        } else if  in_type ==
+                      
+                      QCMS_DATA_RGB_8 {
             (*transform).transform_fn =
                 Some(qcms_transform_data_rgb_out_lut as
                          unsafe extern "C" fn(_: *const qcms_transform,
                                               _: *const libc::c_uchar,
                                               _: *mut libc::c_uchar,
                                               _: size_t) -> ())
-        } else if in_type as libc::c_uint ==
-                      QCMS_DATA_RGBA_8 as libc::c_int as libc::c_uint {
+        } else if  in_type ==
+                      
+                      QCMS_DATA_RGBA_8 {
             (*transform).transform_fn =
                 Some(qcms_transform_data_rgba_out_lut as
                          unsafe extern "C" fn(_: *const qcms_transform,
                                               _: *const libc::c_uchar,
                                               _: *mut libc::c_uchar,
                                               _: size_t) -> ())
-        } else if in_type as libc::c_uint ==
-                      QCMS_DATA_BGRA_8 as libc::c_int as libc::c_uint {
+        } else if  in_type ==
+                      
+                      QCMS_DATA_BGRA_8 {
             (*transform).transform_fn =
                 Some(qcms_transform_data_bgra_out_lut as
                          unsafe extern "C" fn(_: *const qcms_transform,
@@ -2295,10 +2280,10 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
         }
         result_0 = matrix_multiply(out_matrix, in_matrix);
         /* check for NaN values in the matrix and bail if we find any */
-        let mut i: libc::c_uint = 0 as libc::c_int as libc::c_uint;
-        while i < 3 as libc::c_int as libc::c_uint {
-            let mut j: libc::c_uint = 0 as libc::c_int as libc::c_uint;
-            while j < 3 as libc::c_int as libc::c_uint {
+        let mut i: libc::c_uint = 0u32;
+        while i < 3u32 {
+            let mut j: libc::c_uint = 0u32;
+            while j < 3u32 {
                 if result_0.m[i as usize][j as usize] !=
                        result_0.m[i as usize][j as usize] {
                     qcms_transform_release(transform);
@@ -2310,34 +2295,25 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
         }
         /* store the results in column major mode
 		 * this makes doing the multiplication with sse easier */
-        (*transform).matrix[0 as libc::c_int as
-                                usize][0 as libc::c_int as usize] =
-            result_0.m[0 as libc::c_int as usize][0 as libc::c_int as usize];
-        (*transform).matrix[1 as libc::c_int as
-                                usize][0 as libc::c_int as usize] =
-            result_0.m[0 as libc::c_int as usize][1 as libc::c_int as usize];
-        (*transform).matrix[2 as libc::c_int as
-                                usize][0 as libc::c_int as usize] =
-            result_0.m[0 as libc::c_int as usize][2 as libc::c_int as usize];
-        (*transform).matrix[0 as libc::c_int as
-                                usize][1 as libc::c_int as usize] =
-            result_0.m[1 as libc::c_int as usize][0 as libc::c_int as usize];
-        (*transform).matrix[1 as libc::c_int as
-                                usize][1 as libc::c_int as usize] =
-            result_0.m[1 as libc::c_int as usize][1 as libc::c_int as usize];
-        (*transform).matrix[2 as libc::c_int as
-                                usize][1 as libc::c_int as usize] =
-            result_0.m[1 as libc::c_int as usize][2 as libc::c_int as usize];
-        (*transform).matrix[0 as libc::c_int as
-                                usize][2 as libc::c_int as usize] =
-            result_0.m[2 as libc::c_int as usize][0 as libc::c_int as usize];
-        (*transform).matrix[1 as libc::c_int as
-                                usize][2 as libc::c_int as usize] =
-            result_0.m[2 as libc::c_int as usize][1 as libc::c_int as usize];
-        (*transform).matrix[2 as libc::c_int as
-                                usize][2 as libc::c_int as usize] =
-            result_0.m[2 as libc::c_int as usize][2 as libc::c_int as usize]
-    } else if (*in_0).color_space == 0x47524159 as libc::c_int as libc::c_uint
+        (*transform).matrix[0usize][0usize] =
+            result_0.m[0usize][0usize];
+        (*transform).matrix[1usize][0usize] =
+            result_0.m[0usize][1usize];
+        (*transform).matrix[2usize][0usize] =
+            result_0.m[0usize][2usize];
+        (*transform).matrix[0usize][1usize] =
+            result_0.m[1usize][0usize];
+        (*transform).matrix[1usize][1usize] =
+            result_0.m[1usize][1usize];
+        (*transform).matrix[2usize][1usize] =
+            result_0.m[1usize][2usize];
+        (*transform).matrix[0usize][2usize] =
+            result_0.m[2usize][0usize];
+        (*transform).matrix[1usize][2usize] =
+            result_0.m[2usize][1usize];
+        (*transform).matrix[2usize][2usize] =
+            result_0.m[2usize][2usize]
+    } else if (*in_0).color_space == 0x47524159u32
      {
         (*transform).input_gamma_table_gray =
             build_input_gamma_table((*in_0).grayTRC);
@@ -2346,18 +2322,21 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
             return 0 as *mut qcms_transform
         }
         if precache {
-            if out_type as libc::c_uint ==
-                   QCMS_DATA_RGB_8 as libc::c_int as libc::c_uint {
+            if  out_type ==
+                   
+                   QCMS_DATA_RGB_8 {
                 (*transform).transform_fn =
                     Some(qcms_transform_data_gray_out_precache as
                              unsafe extern "C" fn(_: *const qcms_transform,
                                                   _: *const libc::c_uchar,
                                                   _: *mut libc::c_uchar,
                                                   _: size_t) -> ())
-            } else if out_type as libc::c_uint ==
-                          QCMS_DATA_RGBA_8 as libc::c_int as libc::c_uint {
-                if in_type as libc::c_uint ==
-                       QCMS_DATA_GRAY_8 as libc::c_int as libc::c_uint {
+            } else if  out_type ==
+                          
+                          QCMS_DATA_RGBA_8 {
+                if  in_type ==
+                       
+                       QCMS_DATA_GRAY_8 {
                     (*transform).transform_fn =
                         Some(qcms_transform_data_gray_rgba_out_precache as
                                  unsafe extern "C" fn(_:
@@ -2374,10 +2353,12 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
                                                       _: *mut libc::c_uchar,
                                                       _: size_t) -> ())
                 }
-            } else if out_type as libc::c_uint ==
-                          QCMS_DATA_BGRA_8 as libc::c_int as libc::c_uint {
-                if in_type as libc::c_uint ==
-                       QCMS_DATA_GRAY_8 as libc::c_int as libc::c_uint {
+            } else if  out_type ==
+                          
+                          QCMS_DATA_BGRA_8 {
+                if  in_type ==
+                       
+                       QCMS_DATA_GRAY_8 {
                     (*transform).transform_fn =
                         Some(qcms_transform_data_gray_bgra_out_precache as
                                  unsafe extern "C" fn(_:
@@ -2395,18 +2376,21 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
                                                       _: size_t) -> ())
                 }
             }
-        } else if out_type as libc::c_uint ==
-                      QCMS_DATA_RGB_8 as libc::c_int as libc::c_uint {
+        } else if  out_type ==
+                      
+                      QCMS_DATA_RGB_8 {
             (*transform).transform_fn =
                 Some(qcms_transform_data_gray_out_lut as
                          unsafe extern "C" fn(_: *const qcms_transform,
                                               _: *const libc::c_uchar,
                                               _: *mut libc::c_uchar,
                                               _: size_t) -> ())
-        } else if out_type as libc::c_uint ==
-                      QCMS_DATA_RGBA_8 as libc::c_int as libc::c_uint {
-            if in_type as libc::c_uint ==
-                   QCMS_DATA_GRAY_8 as libc::c_int as libc::c_uint {
+        } else if  out_type ==
+                      
+                      QCMS_DATA_RGBA_8 {
+            if  in_type ==
+                   
+                   QCMS_DATA_GRAY_8 {
                 (*transform).transform_fn =
                     Some(qcms_transform_data_gray_rgba_out_lut as
                              unsafe extern "C" fn(_: *const qcms_transform,
@@ -2421,10 +2405,12 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
                                                   _: *mut libc::c_uchar,
                                                   _: size_t) -> ())
             }
-        } else if out_type as libc::c_uint ==
-                      QCMS_DATA_BGRA_8 as libc::c_int as libc::c_uint {
-            if in_type as libc::c_uint ==
-                   QCMS_DATA_GRAY_8 as libc::c_int as libc::c_uint {
+        } else if  out_type ==
+                      
+                      QCMS_DATA_BGRA_8 {
+            if  in_type ==
+                   
+                   QCMS_DATA_GRAY_8 {
                 (*transform).transform_fn =
                     Some(qcms_transform_data_gray_bgra_out_lut as
                              unsafe extern "C" fn(_: *const qcms_transform,
@@ -2441,14 +2427,14 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
             }
         }
     } else {
-        if !(0 as libc::c_int != 0 &&
+        if !(0i32 != 0 &&
                  !(b"unexpected colorspace\x00" as *const u8 as
                        *const libc::c_char).is_null()) as libc::c_int as
                libc::c_long != 0 {
             __assert_rtn((*::std::mem::transmute::<&[u8; 22],
                                                    &[libc::c_char; 22]>(b"qcms_transform_create\x00")).as_ptr(),
                          b"transform.c\x00" as *const u8 as
-                             *const libc::c_char, 1384 as libc::c_int,
+                             *const libc::c_char, 1384i32,
                          b"0 && \"unexpected colorspace\"\x00" as *const u8 as
                              *const libc::c_char);
         } else { };
@@ -2460,7 +2446,7 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
         __assert_rtn((*::std::mem::transmute::<&[u8; 22],
                                                &[libc::c_char; 22]>(b"qcms_transform_create\x00")).as_ptr(),
                      b"transform.c\x00" as *const u8 as *const libc::c_char,
-                     1388 as libc::c_int,
+                     1388i32,
                      b"transform->transform_fn\x00" as *const u8 as
                          *const libc::c_char);
     } else { };
@@ -2483,7 +2469,7 @@ pub unsafe extern "C" fn qcms_transform_data(mut transform:
 pub static mut qcms_supports_iccv4: bool = false;
 #[no_mangle]
 pub unsafe extern "C" fn qcms_enable_iccv4() {
-    qcms_supports_iccv4 = 1 as libc::c_int != 0;
+    qcms_supports_iccv4 = 1i32 != 0;
 }
 #[no_mangle]
 pub unsafe extern "C" fn qcms_enable_neon() { }
@@ -2491,5 +2477,5 @@ pub unsafe extern "C" fn qcms_enable_neon() { }
 pub static mut qcms_supports_avx: bool = false;
 #[no_mangle]
 pub unsafe extern "C" fn qcms_enable_avx() {
-    qcms_supports_avx = 1 as libc::c_int != 0;
+    qcms_supports_avx = 1i32 != 0;
 }

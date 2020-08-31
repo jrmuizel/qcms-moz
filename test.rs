@@ -125,15 +125,15 @@ A million repetitions of "a"
 */
 /* public api for steve reid's public domain SHA-1 implementation */
 /* this file is in the public domain */
-#[derive(Copy, Clone)]
-#[repr(C)]
+
+#[repr(C)]#[derive(Copy, Clone)]
 pub struct SHA1_CTX {
     pub state: [uint32_t; 5],
     pub count: [uint32_t; 2],
     pub buffer: [uint8_t; 64],
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
+
+#[repr(C)]#[derive(Copy, Clone)]
 pub union CHAR64LONG16 {
     pub c: [uint8_t; 64],
     pub l: [uint32_t; 16],
@@ -155,17 +155,17 @@ pub union CHAR64LONG16 {
 /* SHA1Init - Initialize new context */
 unsafe extern "C" fn SHA1_Init(mut context: *mut SHA1_CTX) {
     /* SHA1 initialization constants */
-    (*context).state[0 as libc::c_int as usize] =
-        0x67452301 as libc::c_int as uint32_t;
-    (*context).state[1 as libc::c_int as usize] = 0xefcdab89 as libc::c_uint;
-    (*context).state[2 as libc::c_int as usize] = 0x98badcfe as libc::c_uint;
-    (*context).state[3 as libc::c_int as usize] =
-        0x10325476 as libc::c_int as uint32_t;
-    (*context).state[4 as libc::c_int as usize] = 0xc3d2e1f0 as libc::c_uint;
-    (*context).count[1 as libc::c_int as usize] =
-        0 as libc::c_int as uint32_t;
-    (*context).count[0 as libc::c_int as usize] =
-        (*context).count[1 as libc::c_int as usize];
+    (*context).state[0usize] =
+        0x67452301u32;
+    (*context).state[1usize] = 0xefcdab89u32;
+    (*context).state[2usize] = 0x98badcfeu32;
+    (*context).state[3usize] =
+        0x10325476u32;
+    (*context).state[4usize] = 0xc3d2e1f0u32;
+    (*context).count[1usize] =
+        0u32;
+    (*context).count[0usize] =
+        (*context).count[1usize];
 }
 /* Run your data through this. */
 unsafe extern "C" fn SHA1_Update(mut context: *mut SHA1_CTX,
@@ -173,39 +173,39 @@ unsafe extern "C" fn SHA1_Update(mut context: *mut SHA1_CTX,
     let mut i: size_t = 0;
     let mut j: size_t = 0;
     j =
-        ((*context).count[0 as libc::c_int as usize] >> 3 as libc::c_int &
-             63 as libc::c_int as libc::c_uint) as size_t;
-    (*context).count[0 as libc::c_int as usize] =
-        ((*context).count[0 as libc::c_int as usize] as
-             libc::c_ulong).wrapping_add(len << 3 as libc::c_int) as uint32_t
+        ((*context).count[0usize] >> 3i32 &
+             63u32) as size_t;
+    (*context).count[0usize] =
+        
+        ((*context).count[0usize] as
+             libc::c_ulong).wrapping_add(len << 3i32)
             as uint32_t;
-    if ((*context).count[0 as libc::c_int as usize] as libc::c_ulong) <
-           len << 3 as libc::c_int {
-        (*context).count[1 as libc::c_int as usize] =
-            (*context).count[1 as libc::c_int as usize].wrapping_add(1)
+    if ((*context).count[0usize] as libc::c_ulong) <
+           len << 3i32 {
+        (*context).count[1usize] =
+            (*context).count[1usize].wrapping_add(1)
     }
-    (*context).count[1 as libc::c_int as usize] =
-        ((*context).count[1 as libc::c_int as usize] as
-             libc::c_ulong).wrapping_add(len >> 29 as libc::c_int) as uint32_t
+    (*context).count[1usize] =
+        
+        ((*context).count[1usize] as
+             libc::c_ulong).wrapping_add(len >> 29i32)
             as uint32_t;
-    if j.wrapping_add(len) > 63 as libc::c_int as libc::c_ulong {
-        i = (64 as libc::c_int as libc::c_ulong).wrapping_sub(j);
+    if j.wrapping_add(len) > 63u64 {
+        i = (64u64).wrapping_sub(j);
         memcpy(&mut *(*context).buffer.as_mut_ptr().offset(j as isize) as
                    *mut uint8_t as *mut libc::c_void,
                data as *const libc::c_void, i);
         SHA1_Transform((*context).state.as_mut_ptr(),
                        (*context).buffer.as_mut_ptr() as *const uint8_t);
-        while i.wrapping_add(63 as libc::c_int as libc::c_ulong) < len {
+        while i.wrapping_add(63u64) < len {
             SHA1_Transform((*context).state.as_mut_ptr(),
                            data.offset(i as isize));
             i =
-                (i as
-                     libc::c_ulong).wrapping_add(64 as libc::c_int as
-                                                     libc::c_ulong) as size_t
-                    as size_t
+                
+                (i).wrapping_add(64u64)
         }
-        j = 0 as libc::c_int as size_t
-    } else { i = 0 as libc::c_int as size_t }
+        j = 0u64
+    } else { i = 0u64 }
     memcpy(&mut *(*context).buffer.as_mut_ptr().offset(j as isize) as
                *mut uint8_t as *mut libc::c_void,
            &*data.offset(i as isize) as *const uint8_t as *const libc::c_void,
@@ -222,3636 +222,2581 @@ unsafe extern "C" fn SHA1_Transform(mut state: *mut uint32_t,
     static mut workspace: [uint8_t; 64] = [0; 64];
     block = workspace.as_mut_ptr() as *mut CHAR64LONG16;
     memcpy(block as *mut libc::c_void, buffer as *const libc::c_void,
-           64 as libc::c_int as libc::c_ulong);
-    a = *state.offset(0 as libc::c_int as isize);
-    b = *state.offset(1 as libc::c_int as isize);
-    c = *state.offset(2 as libc::c_int as isize);
-    d = *state.offset(3 as libc::c_int as isize);
-    e = *state.offset(4 as libc::c_int as isize);
-    (*block).l[0 as libc::c_int as usize] =
-        ((*block).l[0 as libc::c_int as usize] << 24 as libc::c_int |
-             (*block).l[0 as libc::c_int as usize] >>
-                 32 as libc::c_int - 24 as libc::c_int) &
-            0xff00ff00 as libc::c_uint |
-            ((*block).l[0 as libc::c_int as usize] << 8 as libc::c_int |
-                 (*block).l[0 as libc::c_int as usize] >>
-                     32 as libc::c_int - 8 as libc::c_int) &
-                0xff00ff as libc::c_int as libc::c_uint;
+           64u64);
+    a = *state.offset(0isize);
+    b = *state.offset(1isize);
+    c = *state.offset(2isize);
+    d = *state.offset(3isize);
+    e = *state.offset(4isize);
+    (*block).l[0usize] =
+        ((*block).l[0usize] << 24i32 |
+             (*block).l[0usize] >>
+                 32i32 - 24i32) &
+            0xff00ff00u32 |
+            ((*block).l[0usize] << 8i32 |
+                 (*block).l[0usize] >>
+                     32i32 - 8i32) &
+                0xff00ffu32;
     e =
-        (e as
-             libc::c_uint).wrapping_add((b & (c ^ d) ^
-                                             d).wrapping_add((*block).l[0 as
-                                                                            libc::c_int
-                                                                            as
-                                                                            usize]).wrapping_add(0x5a827999
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(a
+        
+        (e).wrapping_add((b & (c ^ d) ^
+                                             d).wrapping_add((*block).l[0usize]).wrapping_add(0x5a827999u32).wrapping_add(a
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     a
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    b = b << 30 as libc::c_int | b >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[1 as libc::c_int as usize] =
-        ((*block).l[1 as libc::c_int as usize] << 24 as libc::c_int |
-             (*block).l[1 as libc::c_int as usize] >>
-                 32 as libc::c_int - 24 as libc::c_int) &
-            0xff00ff00 as libc::c_uint |
-            ((*block).l[1 as libc::c_int as usize] << 8 as libc::c_int |
-                 (*block).l[1 as libc::c_int as usize] >>
-                     32 as libc::c_int - 8 as libc::c_int) &
-                0xff00ff as libc::c_int as libc::c_uint;
+                                                                                                                                            5i32));
+    b = b << 30i32 | b >> 32i32 - 30i32;
+    (*block).l[1usize] =
+        ((*block).l[1usize] << 24i32 |
+             (*block).l[1usize] >>
+                 32i32 - 24i32) &
+            0xff00ff00u32 |
+            ((*block).l[1usize] << 8i32 |
+                 (*block).l[1usize] >>
+                     32i32 - 8i32) &
+                0xff00ffu32;
     d =
-        (d as
-             libc::c_uint).wrapping_add((a & (b ^ c) ^
-                                             c).wrapping_add((*block).l[1 as
-                                                                            libc::c_int
-                                                                            as
-                                                                            usize]).wrapping_add(0x5a827999
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(e
+        
+        (d).wrapping_add((a & (b ^ c) ^
+                                             c).wrapping_add((*block).l[1usize]).wrapping_add(0x5a827999u32).wrapping_add(e
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     e
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    a = a << 30 as libc::c_int | a >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[2 as libc::c_int as usize] =
-        ((*block).l[2 as libc::c_int as usize] << 24 as libc::c_int |
-             (*block).l[2 as libc::c_int as usize] >>
-                 32 as libc::c_int - 24 as libc::c_int) &
-            0xff00ff00 as libc::c_uint |
-            ((*block).l[2 as libc::c_int as usize] << 8 as libc::c_int |
-                 (*block).l[2 as libc::c_int as usize] >>
-                     32 as libc::c_int - 8 as libc::c_int) &
-                0xff00ff as libc::c_int as libc::c_uint;
+                                                                                                                                            5i32));
+    a = a << 30i32 | a >> 32i32 - 30i32;
+    (*block).l[2usize] =
+        ((*block).l[2usize] << 24i32 |
+             (*block).l[2usize] >>
+                 32i32 - 24i32) &
+            0xff00ff00u32 |
+            ((*block).l[2usize] << 8i32 |
+                 (*block).l[2usize] >>
+                     32i32 - 8i32) &
+                0xff00ffu32;
     c =
-        (c as
-             libc::c_uint).wrapping_add((e & (a ^ b) ^
-                                             b).wrapping_add((*block).l[2 as
-                                                                            libc::c_int
-                                                                            as
-                                                                            usize]).wrapping_add(0x5a827999
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(d
+        
+        (c).wrapping_add((e & (a ^ b) ^
+                                             b).wrapping_add((*block).l[2usize]).wrapping_add(0x5a827999u32).wrapping_add(d
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     d
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    e = e << 30 as libc::c_int | e >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[3 as libc::c_int as usize] =
-        ((*block).l[3 as libc::c_int as usize] << 24 as libc::c_int |
-             (*block).l[3 as libc::c_int as usize] >>
-                 32 as libc::c_int - 24 as libc::c_int) &
-            0xff00ff00 as libc::c_uint |
-            ((*block).l[3 as libc::c_int as usize] << 8 as libc::c_int |
-                 (*block).l[3 as libc::c_int as usize] >>
-                     32 as libc::c_int - 8 as libc::c_int) &
-                0xff00ff as libc::c_int as libc::c_uint;
+                                                                                                                                            5i32));
+    e = e << 30i32 | e >> 32i32 - 30i32;
+    (*block).l[3usize] =
+        ((*block).l[3usize] << 24i32 |
+             (*block).l[3usize] >>
+                 32i32 - 24i32) &
+            0xff00ff00u32 |
+            ((*block).l[3usize] << 8i32 |
+                 (*block).l[3usize] >>
+                     32i32 - 8i32) &
+                0xff00ffu32;
     b =
-        (b as
-             libc::c_uint).wrapping_add((d & (e ^ a) ^
-                                             a).wrapping_add((*block).l[3 as
-                                                                            libc::c_int
-                                                                            as
-                                                                            usize]).wrapping_add(0x5a827999
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(c
+        
+        (b).wrapping_add((d & (e ^ a) ^
+                                             a).wrapping_add((*block).l[3usize]).wrapping_add(0x5a827999u32).wrapping_add(c
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     c
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    d = d << 30 as libc::c_int | d >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[4 as libc::c_int as usize] =
-        ((*block).l[4 as libc::c_int as usize] << 24 as libc::c_int |
-             (*block).l[4 as libc::c_int as usize] >>
-                 32 as libc::c_int - 24 as libc::c_int) &
-            0xff00ff00 as libc::c_uint |
-            ((*block).l[4 as libc::c_int as usize] << 8 as libc::c_int |
-                 (*block).l[4 as libc::c_int as usize] >>
-                     32 as libc::c_int - 8 as libc::c_int) &
-                0xff00ff as libc::c_int as libc::c_uint;
+                                                                                                                                            5i32));
+    d = d << 30i32 | d >> 32i32 - 30i32;
+    (*block).l[4usize] =
+        ((*block).l[4usize] << 24i32 |
+             (*block).l[4usize] >>
+                 32i32 - 24i32) &
+            0xff00ff00u32 |
+            ((*block).l[4usize] << 8i32 |
+                 (*block).l[4usize] >>
+                     32i32 - 8i32) &
+                0xff00ffu32;
     a =
-        (a as
-             libc::c_uint).wrapping_add((c & (d ^ e) ^
-                                             e).wrapping_add((*block).l[4 as
-                                                                            libc::c_int
-                                                                            as
-                                                                            usize]).wrapping_add(0x5a827999
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(b
+        
+        (a).wrapping_add((c & (d ^ e) ^
+                                             e).wrapping_add((*block).l[4usize]).wrapping_add(0x5a827999u32).wrapping_add(b
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     b
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    c = c << 30 as libc::c_int | c >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[5 as libc::c_int as usize] =
-        ((*block).l[5 as libc::c_int as usize] << 24 as libc::c_int |
-             (*block).l[5 as libc::c_int as usize] >>
-                 32 as libc::c_int - 24 as libc::c_int) &
-            0xff00ff00 as libc::c_uint |
-            ((*block).l[5 as libc::c_int as usize] << 8 as libc::c_int |
-                 (*block).l[5 as libc::c_int as usize] >>
-                     32 as libc::c_int - 8 as libc::c_int) &
-                0xff00ff as libc::c_int as libc::c_uint;
+                                                                                                                                            5i32));
+    c = c << 30i32 | c >> 32i32 - 30i32;
+    (*block).l[5usize] =
+        ((*block).l[5usize] << 24i32 |
+             (*block).l[5usize] >>
+                 32i32 - 24i32) &
+            0xff00ff00u32 |
+            ((*block).l[5usize] << 8i32 |
+                 (*block).l[5usize] >>
+                     32i32 - 8i32) &
+                0xff00ffu32;
     e =
-        (e as
-             libc::c_uint).wrapping_add((b & (c ^ d) ^
-                                             d).wrapping_add((*block).l[5 as
-                                                                            libc::c_int
-                                                                            as
-                                                                            usize]).wrapping_add(0x5a827999
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(a
+        
+        (e).wrapping_add((b & (c ^ d) ^
+                                             d).wrapping_add((*block).l[5usize]).wrapping_add(0x5a827999u32).wrapping_add(a
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     a
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    b = b << 30 as libc::c_int | b >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[6 as libc::c_int as usize] =
-        ((*block).l[6 as libc::c_int as usize] << 24 as libc::c_int |
-             (*block).l[6 as libc::c_int as usize] >>
-                 32 as libc::c_int - 24 as libc::c_int) &
-            0xff00ff00 as libc::c_uint |
-            ((*block).l[6 as libc::c_int as usize] << 8 as libc::c_int |
-                 (*block).l[6 as libc::c_int as usize] >>
-                     32 as libc::c_int - 8 as libc::c_int) &
-                0xff00ff as libc::c_int as libc::c_uint;
+                                                                                                                                            5i32));
+    b = b << 30i32 | b >> 32i32 - 30i32;
+    (*block).l[6usize] =
+        ((*block).l[6usize] << 24i32 |
+             (*block).l[6usize] >>
+                 32i32 - 24i32) &
+            0xff00ff00u32 |
+            ((*block).l[6usize] << 8i32 |
+                 (*block).l[6usize] >>
+                     32i32 - 8i32) &
+                0xff00ffu32;
     d =
-        (d as
-             libc::c_uint).wrapping_add((a & (b ^ c) ^
-                                             c).wrapping_add((*block).l[6 as
-                                                                            libc::c_int
-                                                                            as
-                                                                            usize]).wrapping_add(0x5a827999
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(e
+        
+        (d).wrapping_add((a & (b ^ c) ^
+                                             c).wrapping_add((*block).l[6usize]).wrapping_add(0x5a827999u32).wrapping_add(e
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     e
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    a = a << 30 as libc::c_int | a >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[7 as libc::c_int as usize] =
-        ((*block).l[7 as libc::c_int as usize] << 24 as libc::c_int |
-             (*block).l[7 as libc::c_int as usize] >>
-                 32 as libc::c_int - 24 as libc::c_int) &
-            0xff00ff00 as libc::c_uint |
-            ((*block).l[7 as libc::c_int as usize] << 8 as libc::c_int |
-                 (*block).l[7 as libc::c_int as usize] >>
-                     32 as libc::c_int - 8 as libc::c_int) &
-                0xff00ff as libc::c_int as libc::c_uint;
+                                                                                                                                            5i32));
+    a = a << 30i32 | a >> 32i32 - 30i32;
+    (*block).l[7usize] =
+        ((*block).l[7usize] << 24i32 |
+             (*block).l[7usize] >>
+                 32i32 - 24i32) &
+            0xff00ff00u32 |
+            ((*block).l[7usize] << 8i32 |
+                 (*block).l[7usize] >>
+                     32i32 - 8i32) &
+                0xff00ffu32;
     c =
-        (c as
-             libc::c_uint).wrapping_add((e & (a ^ b) ^
-                                             b).wrapping_add((*block).l[7 as
-                                                                            libc::c_int
-                                                                            as
-                                                                            usize]).wrapping_add(0x5a827999
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(d
+        
+        (c).wrapping_add((e & (a ^ b) ^
+                                             b).wrapping_add((*block).l[7usize]).wrapping_add(0x5a827999u32).wrapping_add(d
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     d
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    e = e << 30 as libc::c_int | e >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[8 as libc::c_int as usize] =
-        ((*block).l[8 as libc::c_int as usize] << 24 as libc::c_int |
-             (*block).l[8 as libc::c_int as usize] >>
-                 32 as libc::c_int - 24 as libc::c_int) &
-            0xff00ff00 as libc::c_uint |
-            ((*block).l[8 as libc::c_int as usize] << 8 as libc::c_int |
-                 (*block).l[8 as libc::c_int as usize] >>
-                     32 as libc::c_int - 8 as libc::c_int) &
-                0xff00ff as libc::c_int as libc::c_uint;
+                                                                                                                                            5i32));
+    e = e << 30i32 | e >> 32i32 - 30i32;
+    (*block).l[8usize] =
+        ((*block).l[8usize] << 24i32 |
+             (*block).l[8usize] >>
+                 32i32 - 24i32) &
+            0xff00ff00u32 |
+            ((*block).l[8usize] << 8i32 |
+                 (*block).l[8usize] >>
+                     32i32 - 8i32) &
+                0xff00ffu32;
     b =
-        (b as
-             libc::c_uint).wrapping_add((d & (e ^ a) ^
-                                             a).wrapping_add((*block).l[8 as
-                                                                            libc::c_int
-                                                                            as
-                                                                            usize]).wrapping_add(0x5a827999
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(c
+        
+        (b).wrapping_add((d & (e ^ a) ^
+                                             a).wrapping_add((*block).l[8usize]).wrapping_add(0x5a827999u32).wrapping_add(c
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     c
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    d = d << 30 as libc::c_int | d >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[9 as libc::c_int as usize] =
-        ((*block).l[9 as libc::c_int as usize] << 24 as libc::c_int |
-             (*block).l[9 as libc::c_int as usize] >>
-                 32 as libc::c_int - 24 as libc::c_int) &
-            0xff00ff00 as libc::c_uint |
-            ((*block).l[9 as libc::c_int as usize] << 8 as libc::c_int |
-                 (*block).l[9 as libc::c_int as usize] >>
-                     32 as libc::c_int - 8 as libc::c_int) &
-                0xff00ff as libc::c_int as libc::c_uint;
+                                                                                                                                            5i32));
+    d = d << 30i32 | d >> 32i32 - 30i32;
+    (*block).l[9usize] =
+        ((*block).l[9usize] << 24i32 |
+             (*block).l[9usize] >>
+                 32i32 - 24i32) &
+            0xff00ff00u32 |
+            ((*block).l[9usize] << 8i32 |
+                 (*block).l[9usize] >>
+                     32i32 - 8i32) &
+                0xff00ffu32;
     a =
-        (a as
-             libc::c_uint).wrapping_add((c & (d ^ e) ^
-                                             e).wrapping_add((*block).l[9 as
-                                                                            libc::c_int
-                                                                            as
-                                                                            usize]).wrapping_add(0x5a827999
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(b
+        
+        (a).wrapping_add((c & (d ^ e) ^
+                                             e).wrapping_add((*block).l[9usize]).wrapping_add(0x5a827999u32).wrapping_add(b
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     b
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    c = c << 30 as libc::c_int | c >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[10 as libc::c_int as usize] =
-        ((*block).l[10 as libc::c_int as usize] << 24 as libc::c_int |
-             (*block).l[10 as libc::c_int as usize] >>
-                 32 as libc::c_int - 24 as libc::c_int) &
-            0xff00ff00 as libc::c_uint |
-            ((*block).l[10 as libc::c_int as usize] << 8 as libc::c_int |
-                 (*block).l[10 as libc::c_int as usize] >>
-                     32 as libc::c_int - 8 as libc::c_int) &
-                0xff00ff as libc::c_int as libc::c_uint;
+                                                                                                                                            5i32));
+    c = c << 30i32 | c >> 32i32 - 30i32;
+    (*block).l[10usize] =
+        ((*block).l[10usize] << 24i32 |
+             (*block).l[10usize] >>
+                 32i32 - 24i32) &
+            0xff00ff00u32 |
+            ((*block).l[10usize] << 8i32 |
+                 (*block).l[10usize] >>
+                     32i32 - 8i32) &
+                0xff00ffu32;
     e =
-        (e as
-             libc::c_uint).wrapping_add((b & (c ^ d) ^
-                                             d).wrapping_add((*block).l[10 as
-                                                                            libc::c_int
-                                                                            as
-                                                                            usize]).wrapping_add(0x5a827999
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(a
+        
+        (e).wrapping_add((b & (c ^ d) ^
+                                             d).wrapping_add((*block).l[10usize]).wrapping_add(0x5a827999u32).wrapping_add(a
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     a
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    b = b << 30 as libc::c_int | b >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[11 as libc::c_int as usize] =
-        ((*block).l[11 as libc::c_int as usize] << 24 as libc::c_int |
-             (*block).l[11 as libc::c_int as usize] >>
-                 32 as libc::c_int - 24 as libc::c_int) &
-            0xff00ff00 as libc::c_uint |
-            ((*block).l[11 as libc::c_int as usize] << 8 as libc::c_int |
-                 (*block).l[11 as libc::c_int as usize] >>
-                     32 as libc::c_int - 8 as libc::c_int) &
-                0xff00ff as libc::c_int as libc::c_uint;
+                                                                                                                                            5i32));
+    b = b << 30i32 | b >> 32i32 - 30i32;
+    (*block).l[11usize] =
+        ((*block).l[11usize] << 24i32 |
+             (*block).l[11usize] >>
+                 32i32 - 24i32) &
+            0xff00ff00u32 |
+            ((*block).l[11usize] << 8i32 |
+                 (*block).l[11usize] >>
+                     32i32 - 8i32) &
+                0xff00ffu32;
     d =
-        (d as
-             libc::c_uint).wrapping_add((a & (b ^ c) ^
-                                             c).wrapping_add((*block).l[11 as
-                                                                            libc::c_int
-                                                                            as
-                                                                            usize]).wrapping_add(0x5a827999
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(e
+        
+        (d).wrapping_add((a & (b ^ c) ^
+                                             c).wrapping_add((*block).l[11usize]).wrapping_add(0x5a827999u32).wrapping_add(e
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     e
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    a = a << 30 as libc::c_int | a >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[12 as libc::c_int as usize] =
-        ((*block).l[12 as libc::c_int as usize] << 24 as libc::c_int |
-             (*block).l[12 as libc::c_int as usize] >>
-                 32 as libc::c_int - 24 as libc::c_int) &
-            0xff00ff00 as libc::c_uint |
-            ((*block).l[12 as libc::c_int as usize] << 8 as libc::c_int |
-                 (*block).l[12 as libc::c_int as usize] >>
-                     32 as libc::c_int - 8 as libc::c_int) &
-                0xff00ff as libc::c_int as libc::c_uint;
+                                                                                                                                            5i32));
+    a = a << 30i32 | a >> 32i32 - 30i32;
+    (*block).l[12usize] =
+        ((*block).l[12usize] << 24i32 |
+             (*block).l[12usize] >>
+                 32i32 - 24i32) &
+            0xff00ff00u32 |
+            ((*block).l[12usize] << 8i32 |
+                 (*block).l[12usize] >>
+                     32i32 - 8i32) &
+                0xff00ffu32;
     c =
-        (c as
-             libc::c_uint).wrapping_add((e & (a ^ b) ^
-                                             b).wrapping_add((*block).l[12 as
-                                                                            libc::c_int
-                                                                            as
-                                                                            usize]).wrapping_add(0x5a827999
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(d
+        
+        (c).wrapping_add((e & (a ^ b) ^
+                                             b).wrapping_add((*block).l[12usize]).wrapping_add(0x5a827999u32).wrapping_add(d
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     d
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    e = e << 30 as libc::c_int | e >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[13 as libc::c_int as usize] =
-        ((*block).l[13 as libc::c_int as usize] << 24 as libc::c_int |
-             (*block).l[13 as libc::c_int as usize] >>
-                 32 as libc::c_int - 24 as libc::c_int) &
-            0xff00ff00 as libc::c_uint |
-            ((*block).l[13 as libc::c_int as usize] << 8 as libc::c_int |
-                 (*block).l[13 as libc::c_int as usize] >>
-                     32 as libc::c_int - 8 as libc::c_int) &
-                0xff00ff as libc::c_int as libc::c_uint;
+                                                                                                                                            5i32));
+    e = e << 30i32 | e >> 32i32 - 30i32;
+    (*block).l[13usize] =
+        ((*block).l[13usize] << 24i32 |
+             (*block).l[13usize] >>
+                 32i32 - 24i32) &
+            0xff00ff00u32 |
+            ((*block).l[13usize] << 8i32 |
+                 (*block).l[13usize] >>
+                     32i32 - 8i32) &
+                0xff00ffu32;
     b =
-        (b as
-             libc::c_uint).wrapping_add((d & (e ^ a) ^
-                                             a).wrapping_add((*block).l[13 as
-                                                                            libc::c_int
-                                                                            as
-                                                                            usize]).wrapping_add(0x5a827999
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(c
+        
+        (b).wrapping_add((d & (e ^ a) ^
+                                             a).wrapping_add((*block).l[13usize]).wrapping_add(0x5a827999u32).wrapping_add(c
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     c
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    d = d << 30 as libc::c_int | d >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[14 as libc::c_int as usize] =
-        ((*block).l[14 as libc::c_int as usize] << 24 as libc::c_int |
-             (*block).l[14 as libc::c_int as usize] >>
-                 32 as libc::c_int - 24 as libc::c_int) &
-            0xff00ff00 as libc::c_uint |
-            ((*block).l[14 as libc::c_int as usize] << 8 as libc::c_int |
-                 (*block).l[14 as libc::c_int as usize] >>
-                     32 as libc::c_int - 8 as libc::c_int) &
-                0xff00ff as libc::c_int as libc::c_uint;
+                                                                                                                                            5i32));
+    d = d << 30i32 | d >> 32i32 - 30i32;
+    (*block).l[14usize] =
+        ((*block).l[14usize] << 24i32 |
+             (*block).l[14usize] >>
+                 32i32 - 24i32) &
+            0xff00ff00u32 |
+            ((*block).l[14usize] << 8i32 |
+                 (*block).l[14usize] >>
+                     32i32 - 8i32) &
+                0xff00ffu32;
     a =
-        (a as
-             libc::c_uint).wrapping_add((c & (d ^ e) ^
-                                             e).wrapping_add((*block).l[14 as
-                                                                            libc::c_int
-                                                                            as
-                                                                            usize]).wrapping_add(0x5a827999
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(b
+        
+        (a).wrapping_add((c & (d ^ e) ^
+                                             e).wrapping_add((*block).l[14usize]).wrapping_add(0x5a827999u32).wrapping_add(b
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     b
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    c = c << 30 as libc::c_int | c >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[15 as libc::c_int as usize] =
-        ((*block).l[15 as libc::c_int as usize] << 24 as libc::c_int |
-             (*block).l[15 as libc::c_int as usize] >>
-                 32 as libc::c_int - 24 as libc::c_int) &
-            0xff00ff00 as libc::c_uint |
-            ((*block).l[15 as libc::c_int as usize] << 8 as libc::c_int |
-                 (*block).l[15 as libc::c_int as usize] >>
-                     32 as libc::c_int - 8 as libc::c_int) &
-                0xff00ff as libc::c_int as libc::c_uint;
+                                                                                                                                            5i32));
+    c = c << 30i32 | c >> 32i32 - 30i32;
+    (*block).l[15usize] =
+        ((*block).l[15usize] << 24i32 |
+             (*block).l[15usize] >>
+                 32i32 - 24i32) &
+            0xff00ff00u32 |
+            ((*block).l[15usize] << 8i32 |
+                 (*block).l[15usize] >>
+                     32i32 - 8i32) &
+                0xff00ffu32;
     e =
-        (e as
-             libc::c_uint).wrapping_add((b & (c ^ d) ^
-                                             d).wrapping_add((*block).l[15 as
-                                                                            libc::c_int
-                                                                            as
-                                                                            usize]).wrapping_add(0x5a827999
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(a
+        
+        (e).wrapping_add((b & (c ^ d) ^
+                                             d).wrapping_add((*block).l[15usize]).wrapping_add(0x5a827999u32).wrapping_add(a
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     a
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    b = b << 30 as libc::c_int | b >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(16 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(16 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(16 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(16 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(16 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(16 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(16 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(16 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(16 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    b = b << 30i32 | b >> 32i32 - 30i32;
+    (*block).l[(16i32 & 15i32) as usize] =
+        ((*block).l[(16i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(16i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(16i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(16i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(16i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(16i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(16i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(16i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     d =
-        (d as
-             libc::c_uint).wrapping_add((a & (b ^ c) ^
-                                             c).wrapping_add((*block).l[(16 as
-                                                                             libc::c_int
+        
+        (d).wrapping_add((a & (b ^ c) ^
+                                             c).wrapping_add((*block).l[(16i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0x5a827999
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(e
+                                                                            usize]).wrapping_add(0x5a827999u32).wrapping_add(e
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     e
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    a = a << 30 as libc::c_int | a >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(17 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(17 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(17 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(17 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(17 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(17 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(17 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(17 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(17 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    a = a << 30i32 | a >> 32i32 - 30i32;
+    (*block).l[(17i32 & 15i32) as usize] =
+        ((*block).l[(17i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(17i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(17i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(17i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(17i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(17i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(17i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(17i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     c =
-        (c as
-             libc::c_uint).wrapping_add((e & (a ^ b) ^
-                                             b).wrapping_add((*block).l[(17 as
-                                                                             libc::c_int
+        
+        (c).wrapping_add((e & (a ^ b) ^
+                                             b).wrapping_add((*block).l[(17i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0x5a827999
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(d
+                                                                            usize]).wrapping_add(0x5a827999u32).wrapping_add(d
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     d
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    e = e << 30 as libc::c_int | e >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(18 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(18 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(18 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(18 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(18 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(18 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(18 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(18 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(18 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    e = e << 30i32 | e >> 32i32 - 30i32;
+    (*block).l[(18i32 & 15i32) as usize] =
+        ((*block).l[(18i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(18i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(18i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(18i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(18i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(18i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(18i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(18i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     b =
-        (b as
-             libc::c_uint).wrapping_add((d & (e ^ a) ^
-                                             a).wrapping_add((*block).l[(18 as
-                                                                             libc::c_int
+        
+        (b).wrapping_add((d & (e ^ a) ^
+                                             a).wrapping_add((*block).l[(18i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0x5a827999
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(c
+                                                                            usize]).wrapping_add(0x5a827999u32).wrapping_add(c
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     c
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    d = d << 30 as libc::c_int | d >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(19 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(19 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(19 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(19 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(19 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(19 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(19 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(19 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(19 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    d = d << 30i32 | d >> 32i32 - 30i32;
+    (*block).l[(19i32 & 15i32) as usize] =
+        ((*block).l[(19i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(19i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(19i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(19i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(19i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(19i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(19i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(19i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     a =
-        (a as
-             libc::c_uint).wrapping_add((c & (d ^ e) ^
-                                             e).wrapping_add((*block).l[(19 as
-                                                                             libc::c_int
+        
+        (a).wrapping_add((c & (d ^ e) ^
+                                             e).wrapping_add((*block).l[(19i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0x5a827999
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(b
+                                                                            usize]).wrapping_add(0x5a827999u32).wrapping_add(b
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     b
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    c = c << 30 as libc::c_int | c >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(20 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(20 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(20 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(20 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(20 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(20 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(20 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(20 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(20 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    c = c << 30i32 | c >> 32i32 - 30i32;
+    (*block).l[(20i32 & 15i32) as usize] =
+        ((*block).l[(20i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(20i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(20i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(20i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(20i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(20i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(20i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(20i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     e =
-        (e as
-             libc::c_uint).wrapping_add((b ^ c ^
-                                             d).wrapping_add((*block).l[(20 as
-                                                                             libc::c_int
+        
+        (e).wrapping_add((b ^ c ^
+                                             d).wrapping_add((*block).l[(20i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0x6ed9eba1
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(a
+                                                                            usize]).wrapping_add(0x6ed9eba1u32).wrapping_add(a
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     a
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    b = b << 30 as libc::c_int | b >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(21 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(21 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(21 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(21 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(21 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(21 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(21 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(21 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(21 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    b = b << 30i32 | b >> 32i32 - 30i32;
+    (*block).l[(21i32 & 15i32) as usize] =
+        ((*block).l[(21i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(21i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(21i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(21i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(21i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(21i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(21i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(21i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     d =
-        (d as
-             libc::c_uint).wrapping_add((a ^ b ^
-                                             c).wrapping_add((*block).l[(21 as
-                                                                             libc::c_int
+        
+        (d).wrapping_add((a ^ b ^
+                                             c).wrapping_add((*block).l[(21i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0x6ed9eba1
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(e
+                                                                            usize]).wrapping_add(0x6ed9eba1u32).wrapping_add(e
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     e
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    a = a << 30 as libc::c_int | a >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(22 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(22 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(22 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(22 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(22 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(22 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(22 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(22 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(22 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    a = a << 30i32 | a >> 32i32 - 30i32;
+    (*block).l[(22i32 & 15i32) as usize] =
+        ((*block).l[(22i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(22i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(22i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(22i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(22i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(22i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(22i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(22i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     c =
-        (c as
-             libc::c_uint).wrapping_add((e ^ a ^
-                                             b).wrapping_add((*block).l[(22 as
-                                                                             libc::c_int
+        
+        (c).wrapping_add((e ^ a ^
+                                             b).wrapping_add((*block).l[(22i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0x6ed9eba1
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(d
+                                                                            usize]).wrapping_add(0x6ed9eba1u32).wrapping_add(d
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     d
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    e = e << 30 as libc::c_int | e >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(23 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(23 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(23 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(23 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(23 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(23 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(23 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(23 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(23 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    e = e << 30i32 | e >> 32i32 - 30i32;
+    (*block).l[(23i32 & 15i32) as usize] =
+        ((*block).l[(23i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(23i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(23i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(23i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(23i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(23i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(23i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(23i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     b =
-        (b as
-             libc::c_uint).wrapping_add((d ^ e ^
-                                             a).wrapping_add((*block).l[(23 as
-                                                                             libc::c_int
+        
+        (b).wrapping_add((d ^ e ^
+                                             a).wrapping_add((*block).l[(23i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0x6ed9eba1
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(c
+                                                                            usize]).wrapping_add(0x6ed9eba1u32).wrapping_add(c
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     c
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    d = d << 30 as libc::c_int | d >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(24 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(24 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(24 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(24 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(24 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(24 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(24 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(24 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(24 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    d = d << 30i32 | d >> 32i32 - 30i32;
+    (*block).l[(24i32 & 15i32) as usize] =
+        ((*block).l[(24i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(24i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(24i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(24i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(24i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(24i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(24i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(24i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     a =
-        (a as
-             libc::c_uint).wrapping_add((c ^ d ^
-                                             e).wrapping_add((*block).l[(24 as
-                                                                             libc::c_int
+        
+        (a).wrapping_add((c ^ d ^
+                                             e).wrapping_add((*block).l[(24i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0x6ed9eba1
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(b
+                                                                            usize]).wrapping_add(0x6ed9eba1u32).wrapping_add(b
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     b
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    c = c << 30 as libc::c_int | c >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(25 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(25 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(25 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(25 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(25 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(25 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(25 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(25 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(25 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    c = c << 30i32 | c >> 32i32 - 30i32;
+    (*block).l[(25i32 & 15i32) as usize] =
+        ((*block).l[(25i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(25i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(25i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(25i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(25i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(25i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(25i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(25i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     e =
-        (e as
-             libc::c_uint).wrapping_add((b ^ c ^
-                                             d).wrapping_add((*block).l[(25 as
-                                                                             libc::c_int
+        
+        (e).wrapping_add((b ^ c ^
+                                             d).wrapping_add((*block).l[(25i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0x6ed9eba1
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(a
+                                                                            usize]).wrapping_add(0x6ed9eba1u32).wrapping_add(a
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     a
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    b = b << 30 as libc::c_int | b >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(26 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(26 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(26 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(26 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(26 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(26 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(26 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(26 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(26 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    b = b << 30i32 | b >> 32i32 - 30i32;
+    (*block).l[(26i32 & 15i32) as usize] =
+        ((*block).l[(26i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(26i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(26i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(26i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(26i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(26i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(26i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(26i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     d =
-        (d as
-             libc::c_uint).wrapping_add((a ^ b ^
-                                             c).wrapping_add((*block).l[(26 as
-                                                                             libc::c_int
+        
+        (d).wrapping_add((a ^ b ^
+                                             c).wrapping_add((*block).l[(26i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0x6ed9eba1
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(e
+                                                                            usize]).wrapping_add(0x6ed9eba1u32).wrapping_add(e
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     e
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    a = a << 30 as libc::c_int | a >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(27 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(27 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(27 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(27 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(27 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(27 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(27 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(27 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(27 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    a = a << 30i32 | a >> 32i32 - 30i32;
+    (*block).l[(27i32 & 15i32) as usize] =
+        ((*block).l[(27i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(27i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(27i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(27i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(27i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(27i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(27i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(27i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     c =
-        (c as
-             libc::c_uint).wrapping_add((e ^ a ^
-                                             b).wrapping_add((*block).l[(27 as
-                                                                             libc::c_int
+        
+        (c).wrapping_add((e ^ a ^
+                                             b).wrapping_add((*block).l[(27i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0x6ed9eba1
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(d
+                                                                            usize]).wrapping_add(0x6ed9eba1u32).wrapping_add(d
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     d
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    e = e << 30 as libc::c_int | e >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(28 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(28 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(28 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(28 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(28 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(28 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(28 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(28 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(28 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    e = e << 30i32 | e >> 32i32 - 30i32;
+    (*block).l[(28i32 & 15i32) as usize] =
+        ((*block).l[(28i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(28i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(28i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(28i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(28i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(28i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(28i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(28i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     b =
-        (b as
-             libc::c_uint).wrapping_add((d ^ e ^
-                                             a).wrapping_add((*block).l[(28 as
-                                                                             libc::c_int
+        
+        (b).wrapping_add((d ^ e ^
+                                             a).wrapping_add((*block).l[(28i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0x6ed9eba1
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(c
+                                                                            usize]).wrapping_add(0x6ed9eba1u32).wrapping_add(c
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     c
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    d = d << 30 as libc::c_int | d >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(29 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(29 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(29 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(29 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(29 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(29 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(29 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(29 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(29 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    d = d << 30i32 | d >> 32i32 - 30i32;
+    (*block).l[(29i32 & 15i32) as usize] =
+        ((*block).l[(29i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(29i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(29i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(29i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(29i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(29i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(29i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(29i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     a =
-        (a as
-             libc::c_uint).wrapping_add((c ^ d ^
-                                             e).wrapping_add((*block).l[(29 as
-                                                                             libc::c_int
+        
+        (a).wrapping_add((c ^ d ^
+                                             e).wrapping_add((*block).l[(29i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0x6ed9eba1
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(b
+                                                                            usize]).wrapping_add(0x6ed9eba1u32).wrapping_add(b
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     b
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    c = c << 30 as libc::c_int | c >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(30 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(30 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(30 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(30 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(30 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(30 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(30 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(30 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(30 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    c = c << 30i32 | c >> 32i32 - 30i32;
+    (*block).l[(30i32 & 15i32) as usize] =
+        ((*block).l[(30i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(30i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(30i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(30i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(30i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(30i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(30i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(30i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     e =
-        (e as
-             libc::c_uint).wrapping_add((b ^ c ^
-                                             d).wrapping_add((*block).l[(30 as
-                                                                             libc::c_int
+        
+        (e).wrapping_add((b ^ c ^
+                                             d).wrapping_add((*block).l[(30i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0x6ed9eba1
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(a
+                                                                            usize]).wrapping_add(0x6ed9eba1u32).wrapping_add(a
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     a
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    b = b << 30 as libc::c_int | b >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(31 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(31 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(31 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(31 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(31 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(31 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(31 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(31 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(31 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    b = b << 30i32 | b >> 32i32 - 30i32;
+    (*block).l[(31i32 & 15i32) as usize] =
+        ((*block).l[(31i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(31i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(31i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(31i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(31i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(31i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(31i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(31i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     d =
-        (d as
-             libc::c_uint).wrapping_add((a ^ b ^
-                                             c).wrapping_add((*block).l[(31 as
-                                                                             libc::c_int
+        
+        (d).wrapping_add((a ^ b ^
+                                             c).wrapping_add((*block).l[(31i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0x6ed9eba1
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(e
+                                                                            usize]).wrapping_add(0x6ed9eba1u32).wrapping_add(e
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     e
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    a = a << 30 as libc::c_int | a >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(32 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(32 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(32 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(32 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(32 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(32 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(32 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(32 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(32 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    a = a << 30i32 | a >> 32i32 - 30i32;
+    (*block).l[(32i32 & 15i32) as usize] =
+        ((*block).l[(32i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(32i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(32i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(32i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(32i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(32i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(32i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(32i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     c =
-        (c as
-             libc::c_uint).wrapping_add((e ^ a ^
-                                             b).wrapping_add((*block).l[(32 as
-                                                                             libc::c_int
+        
+        (c).wrapping_add((e ^ a ^
+                                             b).wrapping_add((*block).l[(32i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0x6ed9eba1
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(d
+                                                                            usize]).wrapping_add(0x6ed9eba1u32).wrapping_add(d
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     d
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    e = e << 30 as libc::c_int | e >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(33 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(33 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(33 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(33 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(33 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(33 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(33 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(33 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(33 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    e = e << 30i32 | e >> 32i32 - 30i32;
+    (*block).l[(33i32 & 15i32) as usize] =
+        ((*block).l[(33i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(33i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(33i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(33i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(33i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(33i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(33i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(33i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     b =
-        (b as
-             libc::c_uint).wrapping_add((d ^ e ^
-                                             a).wrapping_add((*block).l[(33 as
-                                                                             libc::c_int
+        
+        (b).wrapping_add((d ^ e ^
+                                             a).wrapping_add((*block).l[(33i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0x6ed9eba1
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(c
+                                                                            usize]).wrapping_add(0x6ed9eba1u32).wrapping_add(c
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     c
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    d = d << 30 as libc::c_int | d >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(34 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(34 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(34 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(34 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(34 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(34 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(34 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(34 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(34 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    d = d << 30i32 | d >> 32i32 - 30i32;
+    (*block).l[(34i32 & 15i32) as usize] =
+        ((*block).l[(34i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(34i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(34i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(34i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(34i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(34i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(34i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(34i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     a =
-        (a as
-             libc::c_uint).wrapping_add((c ^ d ^
-                                             e).wrapping_add((*block).l[(34 as
-                                                                             libc::c_int
+        
+        (a).wrapping_add((c ^ d ^
+                                             e).wrapping_add((*block).l[(34i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0x6ed9eba1
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(b
+                                                                            usize]).wrapping_add(0x6ed9eba1u32).wrapping_add(b
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     b
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    c = c << 30 as libc::c_int | c >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(35 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(35 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(35 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(35 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(35 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(35 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(35 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(35 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(35 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    c = c << 30i32 | c >> 32i32 - 30i32;
+    (*block).l[(35i32 & 15i32) as usize] =
+        ((*block).l[(35i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(35i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(35i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(35i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(35i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(35i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(35i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(35i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     e =
-        (e as
-             libc::c_uint).wrapping_add((b ^ c ^
-                                             d).wrapping_add((*block).l[(35 as
-                                                                             libc::c_int
+        
+        (e).wrapping_add((b ^ c ^
+                                             d).wrapping_add((*block).l[(35i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0x6ed9eba1
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(a
+                                                                            usize]).wrapping_add(0x6ed9eba1u32).wrapping_add(a
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     a
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    b = b << 30 as libc::c_int | b >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(36 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(36 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(36 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(36 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(36 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(36 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(36 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(36 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(36 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    b = b << 30i32 | b >> 32i32 - 30i32;
+    (*block).l[(36i32 & 15i32) as usize] =
+        ((*block).l[(36i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(36i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(36i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(36i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(36i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(36i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(36i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(36i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     d =
-        (d as
-             libc::c_uint).wrapping_add((a ^ b ^
-                                             c).wrapping_add((*block).l[(36 as
-                                                                             libc::c_int
+        
+        (d).wrapping_add((a ^ b ^
+                                             c).wrapping_add((*block).l[(36i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0x6ed9eba1
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(e
+                                                                            usize]).wrapping_add(0x6ed9eba1u32).wrapping_add(e
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     e
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    a = a << 30 as libc::c_int | a >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(37 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(37 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(37 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(37 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(37 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(37 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(37 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(37 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(37 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    a = a << 30i32 | a >> 32i32 - 30i32;
+    (*block).l[(37i32 & 15i32) as usize] =
+        ((*block).l[(37i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(37i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(37i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(37i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(37i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(37i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(37i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(37i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     c =
-        (c as
-             libc::c_uint).wrapping_add((e ^ a ^
-                                             b).wrapping_add((*block).l[(37 as
-                                                                             libc::c_int
+        
+        (c).wrapping_add((e ^ a ^
+                                             b).wrapping_add((*block).l[(37i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0x6ed9eba1
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(d
+                                                                            usize]).wrapping_add(0x6ed9eba1u32).wrapping_add(d
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     d
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    e = e << 30 as libc::c_int | e >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(38 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(38 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(38 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(38 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(38 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(38 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(38 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(38 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(38 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    e = e << 30i32 | e >> 32i32 - 30i32;
+    (*block).l[(38i32 & 15i32) as usize] =
+        ((*block).l[(38i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(38i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(38i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(38i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(38i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(38i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(38i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(38i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     b =
-        (b as
-             libc::c_uint).wrapping_add((d ^ e ^
-                                             a).wrapping_add((*block).l[(38 as
-                                                                             libc::c_int
+        
+        (b).wrapping_add((d ^ e ^
+                                             a).wrapping_add((*block).l[(38i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0x6ed9eba1
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(c
+                                                                            usize]).wrapping_add(0x6ed9eba1u32).wrapping_add(c
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     c
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    d = d << 30 as libc::c_int | d >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(39 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(39 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(39 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(39 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(39 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(39 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(39 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(39 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(39 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    d = d << 30i32 | d >> 32i32 - 30i32;
+    (*block).l[(39i32 & 15i32) as usize] =
+        ((*block).l[(39i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(39i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(39i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(39i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(39i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(39i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(39i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(39i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     a =
-        (a as
-             libc::c_uint).wrapping_add((c ^ d ^
-                                             e).wrapping_add((*block).l[(39 as
-                                                                             libc::c_int
+        
+        (a).wrapping_add((c ^ d ^
+                                             e).wrapping_add((*block).l[(39i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0x6ed9eba1
-                                                                                                     as
-                                                                                                     libc::c_int
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(b
+                                                                            usize]).wrapping_add(0x6ed9eba1u32).wrapping_add(b
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     b
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    c = c << 30 as libc::c_int | c >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(40 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(40 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(40 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(40 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(40 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(40 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(40 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(40 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(40 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    c = c << 30i32 | c >> 32i32 - 30i32;
+    (*block).l[(40i32 & 15i32) as usize] =
+        ((*block).l[(40i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(40i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(40i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(40i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(40i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(40i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(40i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(40i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     e =
-        (e as
-             libc::c_uint).wrapping_add(((b | c) & d |
+        
+        (e).wrapping_add(((b | c) & d |
                                              b &
-                                                 c).wrapping_add((*block).l[(40
-                                                                                 as
-                                                                                 libc::c_int
+                                                 c).wrapping_add((*block).l[(40i32
                                                                                  &
-                                                                                 15
-                                                                                     as
-                                                                                     libc::c_int)
+                                                                                 15i32)
                                                                                 as
-                                                                                usize]).wrapping_add(0x8f1bbcdc
-                                                                                                         as
-                                                                                                         libc::c_uint).wrapping_add(a
+                                                                                usize]).wrapping_add(0x8f1bbcdcu32).wrapping_add(a
                                                                                                                                         <<
-                                                                                                                                        5
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        5i32
                                                                                                                                         |
                                                                                                                                         a
                                                                                                                                             >>
-                                                                                                                                            32
-                                                                                                                                                as
-                                                                                                                                                libc::c_int
+                                                                                                                                            32i32
                                                                                                                                                 -
-                                                                                                                                                5
-                                                                                                                                                    as
-                                                                                                                                                    libc::c_int))
-            as uint32_t as uint32_t;
-    b = b << 30 as libc::c_int | b >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(41 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(41 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(41 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(41 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(41 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(41 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(41 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(41 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(41 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                                5i32));
+    b = b << 30i32 | b >> 32i32 - 30i32;
+    (*block).l[(41i32 & 15i32) as usize] =
+        ((*block).l[(41i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(41i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(41i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(41i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(41i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(41i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(41i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(41i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     d =
-        (d as
-             libc::c_uint).wrapping_add(((a | b) & c |
+        
+        (d).wrapping_add(((a | b) & c |
                                              a &
-                                                 b).wrapping_add((*block).l[(41
-                                                                                 as
-                                                                                 libc::c_int
+                                                 b).wrapping_add((*block).l[(41i32
                                                                                  &
-                                                                                 15
-                                                                                     as
-                                                                                     libc::c_int)
+                                                                                 15i32)
                                                                                 as
-                                                                                usize]).wrapping_add(0x8f1bbcdc
-                                                                                                         as
-                                                                                                         libc::c_uint).wrapping_add(e
+                                                                                usize]).wrapping_add(0x8f1bbcdcu32).wrapping_add(e
                                                                                                                                         <<
-                                                                                                                                        5
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        5i32
                                                                                                                                         |
                                                                                                                                         e
                                                                                                                                             >>
-                                                                                                                                            32
-                                                                                                                                                as
-                                                                                                                                                libc::c_int
+                                                                                                                                            32i32
                                                                                                                                                 -
-                                                                                                                                                5
-                                                                                                                                                    as
-                                                                                                                                                    libc::c_int))
-            as uint32_t as uint32_t;
-    a = a << 30 as libc::c_int | a >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(42 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(42 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(42 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(42 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(42 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(42 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(42 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(42 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(42 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                                5i32));
+    a = a << 30i32 | a >> 32i32 - 30i32;
+    (*block).l[(42i32 & 15i32) as usize] =
+        ((*block).l[(42i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(42i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(42i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(42i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(42i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(42i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(42i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(42i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     c =
-        (c as
-             libc::c_uint).wrapping_add(((e | a) & b |
+        
+        (c).wrapping_add(((e | a) & b |
                                              e &
-                                                 a).wrapping_add((*block).l[(42
-                                                                                 as
-                                                                                 libc::c_int
+                                                 a).wrapping_add((*block).l[(42i32
                                                                                  &
-                                                                                 15
-                                                                                     as
-                                                                                     libc::c_int)
+                                                                                 15i32)
                                                                                 as
-                                                                                usize]).wrapping_add(0x8f1bbcdc
-                                                                                                         as
-                                                                                                         libc::c_uint).wrapping_add(d
+                                                                                usize]).wrapping_add(0x8f1bbcdcu32).wrapping_add(d
                                                                                                                                         <<
-                                                                                                                                        5
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        5i32
                                                                                                                                         |
                                                                                                                                         d
                                                                                                                                             >>
-                                                                                                                                            32
-                                                                                                                                                as
-                                                                                                                                                libc::c_int
+                                                                                                                                            32i32
                                                                                                                                                 -
-                                                                                                                                                5
-                                                                                                                                                    as
-                                                                                                                                                    libc::c_int))
-            as uint32_t as uint32_t;
-    e = e << 30 as libc::c_int | e >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(43 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(43 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(43 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(43 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(43 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(43 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(43 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(43 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(43 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                                5i32));
+    e = e << 30i32 | e >> 32i32 - 30i32;
+    (*block).l[(43i32 & 15i32) as usize] =
+        ((*block).l[(43i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(43i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(43i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(43i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(43i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(43i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(43i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(43i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     b =
-        (b as
-             libc::c_uint).wrapping_add(((d | e) & a |
+        
+        (b).wrapping_add(((d | e) & a |
                                              d &
-                                                 e).wrapping_add((*block).l[(43
-                                                                                 as
-                                                                                 libc::c_int
+                                                 e).wrapping_add((*block).l[(43i32
                                                                                  &
-                                                                                 15
-                                                                                     as
-                                                                                     libc::c_int)
+                                                                                 15i32)
                                                                                 as
-                                                                                usize]).wrapping_add(0x8f1bbcdc
-                                                                                                         as
-                                                                                                         libc::c_uint).wrapping_add(c
+                                                                                usize]).wrapping_add(0x8f1bbcdcu32).wrapping_add(c
                                                                                                                                         <<
-                                                                                                                                        5
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        5i32
                                                                                                                                         |
                                                                                                                                         c
                                                                                                                                             >>
-                                                                                                                                            32
-                                                                                                                                                as
-                                                                                                                                                libc::c_int
+                                                                                                                                            32i32
                                                                                                                                                 -
-                                                                                                                                                5
-                                                                                                                                                    as
-                                                                                                                                                    libc::c_int))
-            as uint32_t as uint32_t;
-    d = d << 30 as libc::c_int | d >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(44 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(44 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(44 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(44 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(44 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(44 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(44 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(44 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(44 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                                5i32));
+    d = d << 30i32 | d >> 32i32 - 30i32;
+    (*block).l[(44i32 & 15i32) as usize] =
+        ((*block).l[(44i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(44i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(44i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(44i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(44i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(44i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(44i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(44i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     a =
-        (a as
-             libc::c_uint).wrapping_add(((c | d) & e |
+        
+        (a).wrapping_add(((c | d) & e |
                                              c &
-                                                 d).wrapping_add((*block).l[(44
-                                                                                 as
-                                                                                 libc::c_int
+                                                 d).wrapping_add((*block).l[(44i32
                                                                                  &
-                                                                                 15
-                                                                                     as
-                                                                                     libc::c_int)
+                                                                                 15i32)
                                                                                 as
-                                                                                usize]).wrapping_add(0x8f1bbcdc
-                                                                                                         as
-                                                                                                         libc::c_uint).wrapping_add(b
+                                                                                usize]).wrapping_add(0x8f1bbcdcu32).wrapping_add(b
                                                                                                                                         <<
-                                                                                                                                        5
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        5i32
                                                                                                                                         |
                                                                                                                                         b
                                                                                                                                             >>
-                                                                                                                                            32
-                                                                                                                                                as
-                                                                                                                                                libc::c_int
+                                                                                                                                            32i32
                                                                                                                                                 -
-                                                                                                                                                5
-                                                                                                                                                    as
-                                                                                                                                                    libc::c_int))
-            as uint32_t as uint32_t;
-    c = c << 30 as libc::c_int | c >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(45 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(45 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(45 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(45 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(45 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(45 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(45 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(45 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(45 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                                5i32));
+    c = c << 30i32 | c >> 32i32 - 30i32;
+    (*block).l[(45i32 & 15i32) as usize] =
+        ((*block).l[(45i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(45i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(45i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(45i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(45i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(45i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(45i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(45i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     e =
-        (e as
-             libc::c_uint).wrapping_add(((b | c) & d |
+        
+        (e).wrapping_add(((b | c) & d |
                                              b &
-                                                 c).wrapping_add((*block).l[(45
-                                                                                 as
-                                                                                 libc::c_int
+                                                 c).wrapping_add((*block).l[(45i32
                                                                                  &
-                                                                                 15
-                                                                                     as
-                                                                                     libc::c_int)
+                                                                                 15i32)
                                                                                 as
-                                                                                usize]).wrapping_add(0x8f1bbcdc
-                                                                                                         as
-                                                                                                         libc::c_uint).wrapping_add(a
+                                                                                usize]).wrapping_add(0x8f1bbcdcu32).wrapping_add(a
                                                                                                                                         <<
-                                                                                                                                        5
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        5i32
                                                                                                                                         |
                                                                                                                                         a
                                                                                                                                             >>
-                                                                                                                                            32
-                                                                                                                                                as
-                                                                                                                                                libc::c_int
+                                                                                                                                            32i32
                                                                                                                                                 -
-                                                                                                                                                5
-                                                                                                                                                    as
-                                                                                                                                                    libc::c_int))
-            as uint32_t as uint32_t;
-    b = b << 30 as libc::c_int | b >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(46 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(46 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(46 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(46 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(46 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(46 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(46 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(46 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(46 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                                5i32));
+    b = b << 30i32 | b >> 32i32 - 30i32;
+    (*block).l[(46i32 & 15i32) as usize] =
+        ((*block).l[(46i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(46i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(46i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(46i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(46i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(46i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(46i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(46i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     d =
-        (d as
-             libc::c_uint).wrapping_add(((a | b) & c |
+        
+        (d).wrapping_add(((a | b) & c |
                                              a &
-                                                 b).wrapping_add((*block).l[(46
-                                                                                 as
-                                                                                 libc::c_int
+                                                 b).wrapping_add((*block).l[(46i32
                                                                                  &
-                                                                                 15
-                                                                                     as
-                                                                                     libc::c_int)
+                                                                                 15i32)
                                                                                 as
-                                                                                usize]).wrapping_add(0x8f1bbcdc
-                                                                                                         as
-                                                                                                         libc::c_uint).wrapping_add(e
+                                                                                usize]).wrapping_add(0x8f1bbcdcu32).wrapping_add(e
                                                                                                                                         <<
-                                                                                                                                        5
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        5i32
                                                                                                                                         |
                                                                                                                                         e
                                                                                                                                             >>
-                                                                                                                                            32
-                                                                                                                                                as
-                                                                                                                                                libc::c_int
+                                                                                                                                            32i32
                                                                                                                                                 -
-                                                                                                                                                5
-                                                                                                                                                    as
-                                                                                                                                                    libc::c_int))
-            as uint32_t as uint32_t;
-    a = a << 30 as libc::c_int | a >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(47 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(47 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(47 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(47 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(47 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(47 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(47 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(47 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(47 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                                5i32));
+    a = a << 30i32 | a >> 32i32 - 30i32;
+    (*block).l[(47i32 & 15i32) as usize] =
+        ((*block).l[(47i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(47i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(47i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(47i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(47i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(47i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(47i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(47i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     c =
-        (c as
-             libc::c_uint).wrapping_add(((e | a) & b |
+        
+        (c).wrapping_add(((e | a) & b |
                                              e &
-                                                 a).wrapping_add((*block).l[(47
-                                                                                 as
-                                                                                 libc::c_int
+                                                 a).wrapping_add((*block).l[(47i32
                                                                                  &
-                                                                                 15
-                                                                                     as
-                                                                                     libc::c_int)
+                                                                                 15i32)
                                                                                 as
-                                                                                usize]).wrapping_add(0x8f1bbcdc
-                                                                                                         as
-                                                                                                         libc::c_uint).wrapping_add(d
+                                                                                usize]).wrapping_add(0x8f1bbcdcu32).wrapping_add(d
                                                                                                                                         <<
-                                                                                                                                        5
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        5i32
                                                                                                                                         |
                                                                                                                                         d
                                                                                                                                             >>
-                                                                                                                                            32
-                                                                                                                                                as
-                                                                                                                                                libc::c_int
+                                                                                                                                            32i32
                                                                                                                                                 -
-                                                                                                                                                5
-                                                                                                                                                    as
-                                                                                                                                                    libc::c_int))
-            as uint32_t as uint32_t;
-    e = e << 30 as libc::c_int | e >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(48 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(48 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(48 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(48 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(48 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(48 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(48 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(48 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(48 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                                5i32));
+    e = e << 30i32 | e >> 32i32 - 30i32;
+    (*block).l[(48i32 & 15i32) as usize] =
+        ((*block).l[(48i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(48i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(48i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(48i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(48i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(48i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(48i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(48i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     b =
-        (b as
-             libc::c_uint).wrapping_add(((d | e) & a |
+        
+        (b).wrapping_add(((d | e) & a |
                                              d &
-                                                 e).wrapping_add((*block).l[(48
-                                                                                 as
-                                                                                 libc::c_int
+                                                 e).wrapping_add((*block).l[(48i32
                                                                                  &
-                                                                                 15
-                                                                                     as
-                                                                                     libc::c_int)
+                                                                                 15i32)
                                                                                 as
-                                                                                usize]).wrapping_add(0x8f1bbcdc
-                                                                                                         as
-                                                                                                         libc::c_uint).wrapping_add(c
+                                                                                usize]).wrapping_add(0x8f1bbcdcu32).wrapping_add(c
                                                                                                                                         <<
-                                                                                                                                        5
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        5i32
                                                                                                                                         |
                                                                                                                                         c
                                                                                                                                             >>
-                                                                                                                                            32
-                                                                                                                                                as
-                                                                                                                                                libc::c_int
+                                                                                                                                            32i32
                                                                                                                                                 -
-                                                                                                                                                5
-                                                                                                                                                    as
-                                                                                                                                                    libc::c_int))
-            as uint32_t as uint32_t;
-    d = d << 30 as libc::c_int | d >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(49 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(49 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(49 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(49 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(49 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(49 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(49 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(49 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(49 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                                5i32));
+    d = d << 30i32 | d >> 32i32 - 30i32;
+    (*block).l[(49i32 & 15i32) as usize] =
+        ((*block).l[(49i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(49i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(49i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(49i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(49i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(49i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(49i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(49i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     a =
-        (a as
-             libc::c_uint).wrapping_add(((c | d) & e |
+        
+        (a).wrapping_add(((c | d) & e |
                                              c &
-                                                 d).wrapping_add((*block).l[(49
-                                                                                 as
-                                                                                 libc::c_int
+                                                 d).wrapping_add((*block).l[(49i32
                                                                                  &
-                                                                                 15
-                                                                                     as
-                                                                                     libc::c_int)
+                                                                                 15i32)
                                                                                 as
-                                                                                usize]).wrapping_add(0x8f1bbcdc
-                                                                                                         as
-                                                                                                         libc::c_uint).wrapping_add(b
+                                                                                usize]).wrapping_add(0x8f1bbcdcu32).wrapping_add(b
                                                                                                                                         <<
-                                                                                                                                        5
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        5i32
                                                                                                                                         |
                                                                                                                                         b
                                                                                                                                             >>
-                                                                                                                                            32
-                                                                                                                                                as
-                                                                                                                                                libc::c_int
+                                                                                                                                            32i32
                                                                                                                                                 -
-                                                                                                                                                5
-                                                                                                                                                    as
-                                                                                                                                                    libc::c_int))
-            as uint32_t as uint32_t;
-    c = c << 30 as libc::c_int | c >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(50 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(50 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(50 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(50 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(50 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(50 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(50 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(50 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(50 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                                5i32));
+    c = c << 30i32 | c >> 32i32 - 30i32;
+    (*block).l[(50i32 & 15i32) as usize] =
+        ((*block).l[(50i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(50i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(50i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(50i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(50i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(50i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(50i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(50i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     e =
-        (e as
-             libc::c_uint).wrapping_add(((b | c) & d |
+        
+        (e).wrapping_add(((b | c) & d |
                                              b &
-                                                 c).wrapping_add((*block).l[(50
-                                                                                 as
-                                                                                 libc::c_int
+                                                 c).wrapping_add((*block).l[(50i32
                                                                                  &
-                                                                                 15
-                                                                                     as
-                                                                                     libc::c_int)
+                                                                                 15i32)
                                                                                 as
-                                                                                usize]).wrapping_add(0x8f1bbcdc
-                                                                                                         as
-                                                                                                         libc::c_uint).wrapping_add(a
+                                                                                usize]).wrapping_add(0x8f1bbcdcu32).wrapping_add(a
                                                                                                                                         <<
-                                                                                                                                        5
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        5i32
                                                                                                                                         |
                                                                                                                                         a
                                                                                                                                             >>
-                                                                                                                                            32
-                                                                                                                                                as
-                                                                                                                                                libc::c_int
+                                                                                                                                            32i32
                                                                                                                                                 -
-                                                                                                                                                5
-                                                                                                                                                    as
-                                                                                                                                                    libc::c_int))
-            as uint32_t as uint32_t;
-    b = b << 30 as libc::c_int | b >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(51 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(51 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(51 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(51 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(51 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(51 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(51 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(51 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(51 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                                5i32));
+    b = b << 30i32 | b >> 32i32 - 30i32;
+    (*block).l[(51i32 & 15i32) as usize] =
+        ((*block).l[(51i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(51i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(51i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(51i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(51i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(51i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(51i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(51i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     d =
-        (d as
-             libc::c_uint).wrapping_add(((a | b) & c |
+        
+        (d).wrapping_add(((a | b) & c |
                                              a &
-                                                 b).wrapping_add((*block).l[(51
-                                                                                 as
-                                                                                 libc::c_int
+                                                 b).wrapping_add((*block).l[(51i32
                                                                                  &
-                                                                                 15
-                                                                                     as
-                                                                                     libc::c_int)
+                                                                                 15i32)
                                                                                 as
-                                                                                usize]).wrapping_add(0x8f1bbcdc
-                                                                                                         as
-                                                                                                         libc::c_uint).wrapping_add(e
+                                                                                usize]).wrapping_add(0x8f1bbcdcu32).wrapping_add(e
                                                                                                                                         <<
-                                                                                                                                        5
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        5i32
                                                                                                                                         |
                                                                                                                                         e
                                                                                                                                             >>
-                                                                                                                                            32
-                                                                                                                                                as
-                                                                                                                                                libc::c_int
+                                                                                                                                            32i32
                                                                                                                                                 -
-                                                                                                                                                5
-                                                                                                                                                    as
-                                                                                                                                                    libc::c_int))
-            as uint32_t as uint32_t;
-    a = a << 30 as libc::c_int | a >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(52 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(52 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(52 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(52 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(52 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(52 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(52 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(52 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(52 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                                5i32));
+    a = a << 30i32 | a >> 32i32 - 30i32;
+    (*block).l[(52i32 & 15i32) as usize] =
+        ((*block).l[(52i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(52i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(52i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(52i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(52i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(52i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(52i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(52i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     c =
-        (c as
-             libc::c_uint).wrapping_add(((e | a) & b |
+        
+        (c).wrapping_add(((e | a) & b |
                                              e &
-                                                 a).wrapping_add((*block).l[(52
-                                                                                 as
-                                                                                 libc::c_int
+                                                 a).wrapping_add((*block).l[(52i32
                                                                                  &
-                                                                                 15
-                                                                                     as
-                                                                                     libc::c_int)
+                                                                                 15i32)
                                                                                 as
-                                                                                usize]).wrapping_add(0x8f1bbcdc
-                                                                                                         as
-                                                                                                         libc::c_uint).wrapping_add(d
+                                                                                usize]).wrapping_add(0x8f1bbcdcu32).wrapping_add(d
                                                                                                                                         <<
-                                                                                                                                        5
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        5i32
                                                                                                                                         |
                                                                                                                                         d
                                                                                                                                             >>
-                                                                                                                                            32
-                                                                                                                                                as
-                                                                                                                                                libc::c_int
+                                                                                                                                            32i32
                                                                                                                                                 -
-                                                                                                                                                5
-                                                                                                                                                    as
-                                                                                                                                                    libc::c_int))
-            as uint32_t as uint32_t;
-    e = e << 30 as libc::c_int | e >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(53 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(53 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(53 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(53 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(53 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(53 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(53 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(53 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(53 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                                5i32));
+    e = e << 30i32 | e >> 32i32 - 30i32;
+    (*block).l[(53i32 & 15i32) as usize] =
+        ((*block).l[(53i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(53i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(53i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(53i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(53i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(53i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(53i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(53i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     b =
-        (b as
-             libc::c_uint).wrapping_add(((d | e) & a |
+        
+        (b).wrapping_add(((d | e) & a |
                                              d &
-                                                 e).wrapping_add((*block).l[(53
-                                                                                 as
-                                                                                 libc::c_int
+                                                 e).wrapping_add((*block).l[(53i32
                                                                                  &
-                                                                                 15
-                                                                                     as
-                                                                                     libc::c_int)
+                                                                                 15i32)
                                                                                 as
-                                                                                usize]).wrapping_add(0x8f1bbcdc
-                                                                                                         as
-                                                                                                         libc::c_uint).wrapping_add(c
+                                                                                usize]).wrapping_add(0x8f1bbcdcu32).wrapping_add(c
                                                                                                                                         <<
-                                                                                                                                        5
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        5i32
                                                                                                                                         |
                                                                                                                                         c
                                                                                                                                             >>
-                                                                                                                                            32
-                                                                                                                                                as
-                                                                                                                                                libc::c_int
+                                                                                                                                            32i32
                                                                                                                                                 -
-                                                                                                                                                5
-                                                                                                                                                    as
-                                                                                                                                                    libc::c_int))
-            as uint32_t as uint32_t;
-    d = d << 30 as libc::c_int | d >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(54 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(54 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(54 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(54 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(54 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(54 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(54 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(54 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(54 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                                5i32));
+    d = d << 30i32 | d >> 32i32 - 30i32;
+    (*block).l[(54i32 & 15i32) as usize] =
+        ((*block).l[(54i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(54i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(54i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(54i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(54i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(54i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(54i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(54i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     a =
-        (a as
-             libc::c_uint).wrapping_add(((c | d) & e |
+        
+        (a).wrapping_add(((c | d) & e |
                                              c &
-                                                 d).wrapping_add((*block).l[(54
-                                                                                 as
-                                                                                 libc::c_int
+                                                 d).wrapping_add((*block).l[(54i32
                                                                                  &
-                                                                                 15
-                                                                                     as
-                                                                                     libc::c_int)
+                                                                                 15i32)
                                                                                 as
-                                                                                usize]).wrapping_add(0x8f1bbcdc
-                                                                                                         as
-                                                                                                         libc::c_uint).wrapping_add(b
+                                                                                usize]).wrapping_add(0x8f1bbcdcu32).wrapping_add(b
                                                                                                                                         <<
-                                                                                                                                        5
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        5i32
                                                                                                                                         |
                                                                                                                                         b
                                                                                                                                             >>
-                                                                                                                                            32
-                                                                                                                                                as
-                                                                                                                                                libc::c_int
+                                                                                                                                            32i32
                                                                                                                                                 -
-                                                                                                                                                5
-                                                                                                                                                    as
-                                                                                                                                                    libc::c_int))
-            as uint32_t as uint32_t;
-    c = c << 30 as libc::c_int | c >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(55 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(55 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(55 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(55 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(55 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(55 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(55 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(55 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(55 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                                5i32));
+    c = c << 30i32 | c >> 32i32 - 30i32;
+    (*block).l[(55i32 & 15i32) as usize] =
+        ((*block).l[(55i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(55i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(55i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(55i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(55i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(55i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(55i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(55i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     e =
-        (e as
-             libc::c_uint).wrapping_add(((b | c) & d |
+        
+        (e).wrapping_add(((b | c) & d |
                                              b &
-                                                 c).wrapping_add((*block).l[(55
-                                                                                 as
-                                                                                 libc::c_int
+                                                 c).wrapping_add((*block).l[(55i32
                                                                                  &
-                                                                                 15
-                                                                                     as
-                                                                                     libc::c_int)
+                                                                                 15i32)
                                                                                 as
-                                                                                usize]).wrapping_add(0x8f1bbcdc
-                                                                                                         as
-                                                                                                         libc::c_uint).wrapping_add(a
+                                                                                usize]).wrapping_add(0x8f1bbcdcu32).wrapping_add(a
                                                                                                                                         <<
-                                                                                                                                        5
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        5i32
                                                                                                                                         |
                                                                                                                                         a
                                                                                                                                             >>
-                                                                                                                                            32
-                                                                                                                                                as
-                                                                                                                                                libc::c_int
+                                                                                                                                            32i32
                                                                                                                                                 -
-                                                                                                                                                5
-                                                                                                                                                    as
-                                                                                                                                                    libc::c_int))
-            as uint32_t as uint32_t;
-    b = b << 30 as libc::c_int | b >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(56 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(56 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(56 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(56 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(56 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(56 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(56 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(56 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(56 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                                5i32));
+    b = b << 30i32 | b >> 32i32 - 30i32;
+    (*block).l[(56i32 & 15i32) as usize] =
+        ((*block).l[(56i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(56i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(56i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(56i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(56i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(56i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(56i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(56i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     d =
-        (d as
-             libc::c_uint).wrapping_add(((a | b) & c |
+        
+        (d).wrapping_add(((a | b) & c |
                                              a &
-                                                 b).wrapping_add((*block).l[(56
-                                                                                 as
-                                                                                 libc::c_int
+                                                 b).wrapping_add((*block).l[(56i32
                                                                                  &
-                                                                                 15
-                                                                                     as
-                                                                                     libc::c_int)
+                                                                                 15i32)
                                                                                 as
-                                                                                usize]).wrapping_add(0x8f1bbcdc
-                                                                                                         as
-                                                                                                         libc::c_uint).wrapping_add(e
+                                                                                usize]).wrapping_add(0x8f1bbcdcu32).wrapping_add(e
                                                                                                                                         <<
-                                                                                                                                        5
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        5i32
                                                                                                                                         |
                                                                                                                                         e
                                                                                                                                             >>
-                                                                                                                                            32
-                                                                                                                                                as
-                                                                                                                                                libc::c_int
+                                                                                                                                            32i32
                                                                                                                                                 -
-                                                                                                                                                5
-                                                                                                                                                    as
-                                                                                                                                                    libc::c_int))
-            as uint32_t as uint32_t;
-    a = a << 30 as libc::c_int | a >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(57 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(57 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(57 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(57 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(57 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(57 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(57 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(57 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(57 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                                5i32));
+    a = a << 30i32 | a >> 32i32 - 30i32;
+    (*block).l[(57i32 & 15i32) as usize] =
+        ((*block).l[(57i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(57i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(57i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(57i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(57i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(57i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(57i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(57i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     c =
-        (c as
-             libc::c_uint).wrapping_add(((e | a) & b |
+        
+        (c).wrapping_add(((e | a) & b |
                                              e &
-                                                 a).wrapping_add((*block).l[(57
-                                                                                 as
-                                                                                 libc::c_int
+                                                 a).wrapping_add((*block).l[(57i32
                                                                                  &
-                                                                                 15
-                                                                                     as
-                                                                                     libc::c_int)
+                                                                                 15i32)
                                                                                 as
-                                                                                usize]).wrapping_add(0x8f1bbcdc
-                                                                                                         as
-                                                                                                         libc::c_uint).wrapping_add(d
+                                                                                usize]).wrapping_add(0x8f1bbcdcu32).wrapping_add(d
                                                                                                                                         <<
-                                                                                                                                        5
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        5i32
                                                                                                                                         |
                                                                                                                                         d
                                                                                                                                             >>
-                                                                                                                                            32
-                                                                                                                                                as
-                                                                                                                                                libc::c_int
+                                                                                                                                            32i32
                                                                                                                                                 -
-                                                                                                                                                5
-                                                                                                                                                    as
-                                                                                                                                                    libc::c_int))
-            as uint32_t as uint32_t;
-    e = e << 30 as libc::c_int | e >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(58 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(58 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(58 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(58 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(58 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(58 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(58 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(58 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(58 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                                5i32));
+    e = e << 30i32 | e >> 32i32 - 30i32;
+    (*block).l[(58i32 & 15i32) as usize] =
+        ((*block).l[(58i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(58i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(58i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(58i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(58i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(58i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(58i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(58i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     b =
-        (b as
-             libc::c_uint).wrapping_add(((d | e) & a |
+        
+        (b).wrapping_add(((d | e) & a |
                                              d &
-                                                 e).wrapping_add((*block).l[(58
-                                                                                 as
-                                                                                 libc::c_int
+                                                 e).wrapping_add((*block).l[(58i32
                                                                                  &
-                                                                                 15
-                                                                                     as
-                                                                                     libc::c_int)
+                                                                                 15i32)
                                                                                 as
-                                                                                usize]).wrapping_add(0x8f1bbcdc
-                                                                                                         as
-                                                                                                         libc::c_uint).wrapping_add(c
+                                                                                usize]).wrapping_add(0x8f1bbcdcu32).wrapping_add(c
                                                                                                                                         <<
-                                                                                                                                        5
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        5i32
                                                                                                                                         |
                                                                                                                                         c
                                                                                                                                             >>
-                                                                                                                                            32
-                                                                                                                                                as
-                                                                                                                                                libc::c_int
+                                                                                                                                            32i32
                                                                                                                                                 -
-                                                                                                                                                5
-                                                                                                                                                    as
-                                                                                                                                                    libc::c_int))
-            as uint32_t as uint32_t;
-    d = d << 30 as libc::c_int | d >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(59 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(59 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(59 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(59 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(59 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(59 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(59 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(59 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(59 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                                5i32));
+    d = d << 30i32 | d >> 32i32 - 30i32;
+    (*block).l[(59i32 & 15i32) as usize] =
+        ((*block).l[(59i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(59i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(59i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(59i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(59i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(59i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(59i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(59i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     a =
-        (a as
-             libc::c_uint).wrapping_add(((c | d) & e |
+        
+        (a).wrapping_add(((c | d) & e |
                                              c &
-                                                 d).wrapping_add((*block).l[(59
-                                                                                 as
-                                                                                 libc::c_int
+                                                 d).wrapping_add((*block).l[(59i32
                                                                                  &
-                                                                                 15
-                                                                                     as
-                                                                                     libc::c_int)
+                                                                                 15i32)
                                                                                 as
-                                                                                usize]).wrapping_add(0x8f1bbcdc
-                                                                                                         as
-                                                                                                         libc::c_uint).wrapping_add(b
+                                                                                usize]).wrapping_add(0x8f1bbcdcu32).wrapping_add(b
                                                                                                                                         <<
-                                                                                                                                        5
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        5i32
                                                                                                                                         |
                                                                                                                                         b
                                                                                                                                             >>
-                                                                                                                                            32
-                                                                                                                                                as
-                                                                                                                                                libc::c_int
+                                                                                                                                            32i32
                                                                                                                                                 -
-                                                                                                                                                5
-                                                                                                                                                    as
-                                                                                                                                                    libc::c_int))
-            as uint32_t as uint32_t;
-    c = c << 30 as libc::c_int | c >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(60 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(60 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(60 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(60 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(60 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(60 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(60 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(60 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(60 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                                5i32));
+    c = c << 30i32 | c >> 32i32 - 30i32;
+    (*block).l[(60i32 & 15i32) as usize] =
+        ((*block).l[(60i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(60i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(60i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(60i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(60i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(60i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(60i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(60i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     e =
-        (e as
-             libc::c_uint).wrapping_add((b ^ c ^
-                                             d).wrapping_add((*block).l[(60 as
-                                                                             libc::c_int
+        
+        (e).wrapping_add((b ^ c ^
+                                             d).wrapping_add((*block).l[(60i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0xca62c1d6
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(a
+                                                                            usize]).wrapping_add(0xca62c1d6u32).wrapping_add(a
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     a
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    b = b << 30 as libc::c_int | b >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(61 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(61 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(61 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(61 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(61 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(61 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(61 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(61 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(61 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    b = b << 30i32 | b >> 32i32 - 30i32;
+    (*block).l[(61i32 & 15i32) as usize] =
+        ((*block).l[(61i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(61i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(61i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(61i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(61i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(61i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(61i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(61i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     d =
-        (d as
-             libc::c_uint).wrapping_add((a ^ b ^
-                                             c).wrapping_add((*block).l[(61 as
-                                                                             libc::c_int
+        
+        (d).wrapping_add((a ^ b ^
+                                             c).wrapping_add((*block).l[(61i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0xca62c1d6
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(e
+                                                                            usize]).wrapping_add(0xca62c1d6u32).wrapping_add(e
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     e
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    a = a << 30 as libc::c_int | a >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(62 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(62 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(62 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(62 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(62 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(62 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(62 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(62 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(62 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    a = a << 30i32 | a >> 32i32 - 30i32;
+    (*block).l[(62i32 & 15i32) as usize] =
+        ((*block).l[(62i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(62i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(62i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(62i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(62i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(62i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(62i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(62i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     c =
-        (c as
-             libc::c_uint).wrapping_add((e ^ a ^
-                                             b).wrapping_add((*block).l[(62 as
-                                                                             libc::c_int
+        
+        (c).wrapping_add((e ^ a ^
+                                             b).wrapping_add((*block).l[(62i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0xca62c1d6
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(d
+                                                                            usize]).wrapping_add(0xca62c1d6u32).wrapping_add(d
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     d
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    e = e << 30 as libc::c_int | e >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(63 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(63 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(63 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(63 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(63 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(63 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(63 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(63 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(63 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    e = e << 30i32 | e >> 32i32 - 30i32;
+    (*block).l[(63i32 & 15i32) as usize] =
+        ((*block).l[(63i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(63i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(63i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(63i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(63i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(63i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(63i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(63i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     b =
-        (b as
-             libc::c_uint).wrapping_add((d ^ e ^
-                                             a).wrapping_add((*block).l[(63 as
-                                                                             libc::c_int
+        
+        (b).wrapping_add((d ^ e ^
+                                             a).wrapping_add((*block).l[(63i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0xca62c1d6
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(c
+                                                                            usize]).wrapping_add(0xca62c1d6u32).wrapping_add(c
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     c
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    d = d << 30 as libc::c_int | d >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(64 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(64 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(64 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(64 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(64 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(64 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(64 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(64 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(64 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    d = d << 30i32 | d >> 32i32 - 30i32;
+    (*block).l[(64i32 & 15i32) as usize] =
+        ((*block).l[(64i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(64i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(64i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(64i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(64i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(64i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(64i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(64i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     a =
-        (a as
-             libc::c_uint).wrapping_add((c ^ d ^
-                                             e).wrapping_add((*block).l[(64 as
-                                                                             libc::c_int
+        
+        (a).wrapping_add((c ^ d ^
+                                             e).wrapping_add((*block).l[(64i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0xca62c1d6
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(b
+                                                                            usize]).wrapping_add(0xca62c1d6u32).wrapping_add(b
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     b
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    c = c << 30 as libc::c_int | c >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(65 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(65 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(65 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(65 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(65 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(65 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(65 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(65 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(65 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    c = c << 30i32 | c >> 32i32 - 30i32;
+    (*block).l[(65i32 & 15i32) as usize] =
+        ((*block).l[(65i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(65i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(65i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(65i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(65i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(65i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(65i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(65i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     e =
-        (e as
-             libc::c_uint).wrapping_add((b ^ c ^
-                                             d).wrapping_add((*block).l[(65 as
-                                                                             libc::c_int
+        
+        (e).wrapping_add((b ^ c ^
+                                             d).wrapping_add((*block).l[(65i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0xca62c1d6
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(a
+                                                                            usize]).wrapping_add(0xca62c1d6u32).wrapping_add(a
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     a
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    b = b << 30 as libc::c_int | b >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(66 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(66 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(66 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(66 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(66 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(66 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(66 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(66 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(66 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    b = b << 30i32 | b >> 32i32 - 30i32;
+    (*block).l[(66i32 & 15i32) as usize] =
+        ((*block).l[(66i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(66i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(66i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(66i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(66i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(66i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(66i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(66i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     d =
-        (d as
-             libc::c_uint).wrapping_add((a ^ b ^
-                                             c).wrapping_add((*block).l[(66 as
-                                                                             libc::c_int
+        
+        (d).wrapping_add((a ^ b ^
+                                             c).wrapping_add((*block).l[(66i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0xca62c1d6
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(e
+                                                                            usize]).wrapping_add(0xca62c1d6u32).wrapping_add(e
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     e
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    a = a << 30 as libc::c_int | a >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(67 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(67 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(67 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(67 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(67 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(67 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(67 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(67 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(67 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    a = a << 30i32 | a >> 32i32 - 30i32;
+    (*block).l[(67i32 & 15i32) as usize] =
+        ((*block).l[(67i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(67i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(67i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(67i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(67i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(67i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(67i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(67i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     c =
-        (c as
-             libc::c_uint).wrapping_add((e ^ a ^
-                                             b).wrapping_add((*block).l[(67 as
-                                                                             libc::c_int
+        
+        (c).wrapping_add((e ^ a ^
+                                             b).wrapping_add((*block).l[(67i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0xca62c1d6
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(d
+                                                                            usize]).wrapping_add(0xca62c1d6u32).wrapping_add(d
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     d
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    e = e << 30 as libc::c_int | e >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(68 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(68 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(68 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(68 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(68 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(68 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(68 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(68 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(68 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    e = e << 30i32 | e >> 32i32 - 30i32;
+    (*block).l[(68i32 & 15i32) as usize] =
+        ((*block).l[(68i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(68i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(68i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(68i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(68i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(68i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(68i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(68i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     b =
-        (b as
-             libc::c_uint).wrapping_add((d ^ e ^
-                                             a).wrapping_add((*block).l[(68 as
-                                                                             libc::c_int
+        
+        (b).wrapping_add((d ^ e ^
+                                             a).wrapping_add((*block).l[(68i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0xca62c1d6
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(c
+                                                                            usize]).wrapping_add(0xca62c1d6u32).wrapping_add(c
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     c
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    d = d << 30 as libc::c_int | d >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(69 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(69 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(69 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(69 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(69 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(69 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(69 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(69 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(69 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    d = d << 30i32 | d >> 32i32 - 30i32;
+    (*block).l[(69i32 & 15i32) as usize] =
+        ((*block).l[(69i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(69i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(69i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(69i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(69i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(69i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(69i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(69i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     a =
-        (a as
-             libc::c_uint).wrapping_add((c ^ d ^
-                                             e).wrapping_add((*block).l[(69 as
-                                                                             libc::c_int
+        
+        (a).wrapping_add((c ^ d ^
+                                             e).wrapping_add((*block).l[(69i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0xca62c1d6
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(b
+                                                                            usize]).wrapping_add(0xca62c1d6u32).wrapping_add(b
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     b
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    c = c << 30 as libc::c_int | c >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(70 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(70 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(70 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(70 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(70 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(70 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(70 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(70 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(70 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    c = c << 30i32 | c >> 32i32 - 30i32;
+    (*block).l[(70i32 & 15i32) as usize] =
+        ((*block).l[(70i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(70i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(70i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(70i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(70i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(70i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(70i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(70i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     e =
-        (e as
-             libc::c_uint).wrapping_add((b ^ c ^
-                                             d).wrapping_add((*block).l[(70 as
-                                                                             libc::c_int
+        
+        (e).wrapping_add((b ^ c ^
+                                             d).wrapping_add((*block).l[(70i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0xca62c1d6
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(a
+                                                                            usize]).wrapping_add(0xca62c1d6u32).wrapping_add(a
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     a
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    b = b << 30 as libc::c_int | b >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(71 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(71 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(71 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(71 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(71 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(71 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(71 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(71 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(71 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    b = b << 30i32 | b >> 32i32 - 30i32;
+    (*block).l[(71i32 & 15i32) as usize] =
+        ((*block).l[(71i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(71i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(71i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(71i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(71i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(71i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(71i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(71i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     d =
-        (d as
-             libc::c_uint).wrapping_add((a ^ b ^
-                                             c).wrapping_add((*block).l[(71 as
-                                                                             libc::c_int
+        
+        (d).wrapping_add((a ^ b ^
+                                             c).wrapping_add((*block).l[(71i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0xca62c1d6
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(e
+                                                                            usize]).wrapping_add(0xca62c1d6u32).wrapping_add(e
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     e
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    a = a << 30 as libc::c_int | a >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(72 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(72 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(72 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(72 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(72 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(72 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(72 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(72 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(72 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    a = a << 30i32 | a >> 32i32 - 30i32;
+    (*block).l[(72i32 & 15i32) as usize] =
+        ((*block).l[(72i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(72i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(72i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(72i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(72i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(72i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(72i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(72i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     c =
-        (c as
-             libc::c_uint).wrapping_add((e ^ a ^
-                                             b).wrapping_add((*block).l[(72 as
-                                                                             libc::c_int
+        
+        (c).wrapping_add((e ^ a ^
+                                             b).wrapping_add((*block).l[(72i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0xca62c1d6
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(d
+                                                                            usize]).wrapping_add(0xca62c1d6u32).wrapping_add(d
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     d
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    e = e << 30 as libc::c_int | e >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(73 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(73 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(73 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(73 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(73 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(73 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(73 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(73 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(73 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    e = e << 30i32 | e >> 32i32 - 30i32;
+    (*block).l[(73i32 & 15i32) as usize] =
+        ((*block).l[(73i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(73i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(73i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(73i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(73i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(73i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(73i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(73i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     b =
-        (b as
-             libc::c_uint).wrapping_add((d ^ e ^
-                                             a).wrapping_add((*block).l[(73 as
-                                                                             libc::c_int
+        
+        (b).wrapping_add((d ^ e ^
+                                             a).wrapping_add((*block).l[(73i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0xca62c1d6
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(c
+                                                                            usize]).wrapping_add(0xca62c1d6u32).wrapping_add(c
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     c
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    d = d << 30 as libc::c_int | d >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(74 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(74 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(74 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(74 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(74 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(74 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(74 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(74 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(74 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    d = d << 30i32 | d >> 32i32 - 30i32;
+    (*block).l[(74i32 & 15i32) as usize] =
+        ((*block).l[(74i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(74i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(74i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(74i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(74i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(74i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(74i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(74i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     a =
-        (a as
-             libc::c_uint).wrapping_add((c ^ d ^
-                                             e).wrapping_add((*block).l[(74 as
-                                                                             libc::c_int
+        
+        (a).wrapping_add((c ^ d ^
+                                             e).wrapping_add((*block).l[(74i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0xca62c1d6
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(b
+                                                                            usize]).wrapping_add(0xca62c1d6u32).wrapping_add(b
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     b
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    c = c << 30 as libc::c_int | c >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(75 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(75 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(75 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(75 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(75 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(75 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(75 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(75 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(75 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    c = c << 30i32 | c >> 32i32 - 30i32;
+    (*block).l[(75i32 & 15i32) as usize] =
+        ((*block).l[(75i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(75i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(75i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(75i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(75i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(75i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(75i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(75i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     e =
-        (e as
-             libc::c_uint).wrapping_add((b ^ c ^
-                                             d).wrapping_add((*block).l[(75 as
-                                                                             libc::c_int
+        
+        (e).wrapping_add((b ^ c ^
+                                             d).wrapping_add((*block).l[(75i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0xca62c1d6
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(a
+                                                                            usize]).wrapping_add(0xca62c1d6u32).wrapping_add(a
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     a
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    b = b << 30 as libc::c_int | b >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(76 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(76 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(76 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(76 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(76 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(76 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(76 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(76 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(76 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    b = b << 30i32 | b >> 32i32 - 30i32;
+    (*block).l[(76i32 & 15i32) as usize] =
+        ((*block).l[(76i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(76i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(76i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(76i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(76i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(76i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(76i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(76i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     d =
-        (d as
-             libc::c_uint).wrapping_add((a ^ b ^
-                                             c).wrapping_add((*block).l[(76 as
-                                                                             libc::c_int
+        
+        (d).wrapping_add((a ^ b ^
+                                             c).wrapping_add((*block).l[(76i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0xca62c1d6
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(e
+                                                                            usize]).wrapping_add(0xca62c1d6u32).wrapping_add(e
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     e
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    a = a << 30 as libc::c_int | a >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(77 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(77 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(77 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(77 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(77 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(77 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(77 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(77 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(77 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    a = a << 30i32 | a >> 32i32 - 30i32;
+    (*block).l[(77i32 & 15i32) as usize] =
+        ((*block).l[(77i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(77i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(77i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(77i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(77i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(77i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(77i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(77i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     c =
-        (c as
-             libc::c_uint).wrapping_add((e ^ a ^
-                                             b).wrapping_add((*block).l[(77 as
-                                                                             libc::c_int
+        
+        (c).wrapping_add((e ^ a ^
+                                             b).wrapping_add((*block).l[(77i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0xca62c1d6
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(d
+                                                                            usize]).wrapping_add(0xca62c1d6u32).wrapping_add(d
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     d
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    e = e << 30 as libc::c_int | e >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(78 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(78 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(78 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(78 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(78 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(78 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(78 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(78 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(78 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    e = e << 30i32 | e >> 32i32 - 30i32;
+    (*block).l[(78i32 & 15i32) as usize] =
+        ((*block).l[(78i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(78i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(78i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(78i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(78i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(78i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(78i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(78i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     b =
-        (b as
-             libc::c_uint).wrapping_add((d ^ e ^
-                                             a).wrapping_add((*block).l[(78 as
-                                                                             libc::c_int
+        
+        (b).wrapping_add((d ^ e ^
+                                             a).wrapping_add((*block).l[(78i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0xca62c1d6
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(c
+                                                                            usize]).wrapping_add(0xca62c1d6u32).wrapping_add(c
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     c
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    d = d << 30 as libc::c_int | d >> 32 as libc::c_int - 30 as libc::c_int;
-    (*block).l[(79 as libc::c_int & 15 as libc::c_int) as usize] =
-        ((*block).l[(79 as libc::c_int + 13 as libc::c_int &
-                         15 as libc::c_int) as usize] ^
-             (*block).l[(79 as libc::c_int + 8 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(79 as libc::c_int + 2 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-             (*block).l[(79 as libc::c_int & 15 as libc::c_int) as usize]) <<
-            1 as libc::c_int |
-            ((*block).l[(79 as libc::c_int + 13 as libc::c_int &
-                             15 as libc::c_int) as usize] ^
-                 (*block).l[(79 as libc::c_int + 8 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(79 as libc::c_int + 2 as libc::c_int &
-                                 15 as libc::c_int) as usize] ^
-                 (*block).l[(79 as libc::c_int & 15 as libc::c_int) as usize])
-                >> 32 as libc::c_int - 1 as libc::c_int;
+                                                                                                                                            5i32));
+    d = d << 30i32 | d >> 32i32 - 30i32;
+    (*block).l[(79i32 & 15i32) as usize] =
+        ((*block).l[(79i32 + 13i32 &
+                         15i32) as usize] ^
+             (*block).l[(79i32 + 8i32 &
+                             15i32) as usize] ^
+             (*block).l[(79i32 + 2i32 &
+                             15i32) as usize] ^
+             (*block).l[(79i32 & 15i32) as usize]) <<
+            1i32 |
+            ((*block).l[(79i32 + 13i32 &
+                             15i32) as usize] ^
+                 (*block).l[(79i32 + 8i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(79i32 + 2i32 &
+                                 15i32) as usize] ^
+                 (*block).l[(79i32 & 15i32) as usize])
+                >> 32i32 - 1i32;
     a =
-        (a as
-             libc::c_uint).wrapping_add((c ^ d ^
-                                             e).wrapping_add((*block).l[(79 as
-                                                                             libc::c_int
+        
+        (a).wrapping_add((c ^ d ^
+                                             e).wrapping_add((*block).l[(79i32
                                                                              &
-                                                                             15
-                                                                                 as
-                                                                                 libc::c_int)
+                                                                             15i32)
                                                                             as
-                                                                            usize]).wrapping_add(0xca62c1d6
-                                                                                                     as
-                                                                                                     libc::c_uint).wrapping_add(b
+                                                                            usize]).wrapping_add(0xca62c1d6u32).wrapping_add(b
                                                                                                                                     <<
-                                                                                                                                    5
-                                                                                                                                        as
-                                                                                                                                        libc::c_int
+                                                                                                                                    5i32
                                                                                                                                     |
                                                                                                                                     b
                                                                                                                                         >>
-                                                                                                                                        32
-                                                                                                                                            as
-                                                                                                                                            libc::c_int
+                                                                                                                                        32i32
                                                                                                                                             -
-                                                                                                                                            5
-                                                                                                                                                as
-                                                                                                                                                libc::c_int))
-            as uint32_t as uint32_t;
-    c = c << 30 as libc::c_int | c >> 32 as libc::c_int - 30 as libc::c_int;
-    let ref mut fresh0 = *state.offset(0 as libc::c_int as isize);
+                                                                                                                                            5i32));
+    c = c << 30i32 | c >> 32i32 - 30i32;
+    let ref mut fresh0 = *state.offset(0isize);
     *fresh0 =
-        (*fresh0 as libc::c_uint).wrapping_add(a) as uint32_t as uint32_t;
-    let ref mut fresh1 = *state.offset(1 as libc::c_int as isize);
+        
+        (((*fresh0))).wrapping_add(a);
+    let ref mut fresh1 = *state.offset(1isize);
     *fresh1 =
-        (*fresh1 as libc::c_uint).wrapping_add(b) as uint32_t as uint32_t;
-    let ref mut fresh2 = *state.offset(2 as libc::c_int as isize);
+        
+        (((*fresh1))).wrapping_add(b);
+    let ref mut fresh2 = *state.offset(2isize);
     *fresh2 =
-        (*fresh2 as libc::c_uint).wrapping_add(c) as uint32_t as uint32_t;
-    let ref mut fresh3 = *state.offset(3 as libc::c_int as isize);
+        
+        (((*fresh2))).wrapping_add(c);
+    let ref mut fresh3 = *state.offset(3isize);
     *fresh3 =
-        (*fresh3 as libc::c_uint).wrapping_add(d) as uint32_t as uint32_t;
-    let ref mut fresh4 = *state.offset(4 as libc::c_int as isize);
+        
+        (((*fresh3))).wrapping_add(d);
+    let ref mut fresh4 = *state.offset(4isize);
     *fresh4 =
-        (*fresh4 as libc::c_uint).wrapping_add(e) as uint32_t as uint32_t;
-    e = 0 as libc::c_int as uint32_t;
+        
+        (((*fresh4))).wrapping_add(e);
+    e = 0u32;
     d = e;
     c = d;
     b = c;
@@ -3862,60 +2807,50 @@ unsafe extern "C" fn SHA1_Final(mut context: *mut SHA1_CTX,
                                 mut digest: *mut uint8_t) {
     let mut i: uint32_t = 0;
     let mut finalcount: [uint8_t; 8] = [0; 8];
-    i = 0 as libc::c_int as uint32_t;
-    while i < 8 as libc::c_int as libc::c_uint {
+    i = 0u32;
+    while i < 8u32 {
         finalcount[i as usize] =
-            ((*context).count[(if i >= 4 as libc::c_int as libc::c_uint {
-                                   0 as libc::c_int
-                               } else { 1 as libc::c_int }) as usize] >>
-                 (3 as libc::c_int as
-                      libc::c_uint).wrapping_sub(i &
-                                                     3 as libc::c_int as
-                                                         libc::c_uint).wrapping_mul(8
-                                                                                        as
-                                                                                        libc::c_int
-                                                                                        as
-                                                                                        libc::c_uint)
-                 & 255 as libc::c_int as libc::c_uint) as libc::c_uchar;
+            ((*context).count[(if i >= 4u32 {
+                                   0i32
+                               } else { 1i32 }) as usize] >>
+                 (3u32).wrapping_sub(i &
+                                                     3u32).wrapping_mul(8u32)
+                 & 255u32) as libc::c_uchar;
         i = i.wrapping_add(1)
         /* Endian independent */
     } /* Should cause a SHA1_Transform() */
     SHA1_Update(context,
-                b"\x80\x00" as *const u8 as *const libc::c_char as
-                    *mut uint8_t, 1 as libc::c_int as size_t);
-    while (*context).count[0 as libc::c_int as usize] &
-              504 as libc::c_int as libc::c_uint !=
-              448 as libc::c_int as libc::c_uint {
+                
+                b"\x80\x00" as *const  u8 as
+                    *mut uint8_t, 1u64);
+    while (*context).count[0usize] &
+              504u32 !=
+              448u32 {
         SHA1_Update(context,
-                    b"\x00\x00" as *const u8 as *const libc::c_char as
-                        *mut uint8_t, 1 as libc::c_int as size_t);
+                    
+                    b"\x00\x00" as *const  u8 as
+                        *mut uint8_t, 1u64);
     }
-    SHA1_Update(context, finalcount.as_mut_ptr(), 8 as libc::c_int as size_t);
-    i = 0 as libc::c_int as uint32_t;
-    while i < 20 as libc::c_int as libc::c_uint {
+    SHA1_Update(context, finalcount.as_mut_ptr(), 8u64);
+    i = 0u32;
+    while i < 20u32 {
         *digest.offset(i as isize) =
-            ((*context).state[(i >> 2 as libc::c_int) as usize] >>
-                 (3 as libc::c_int as
-                      libc::c_uint).wrapping_sub(i &
-                                                     3 as libc::c_int as
-                                                         libc::c_uint).wrapping_mul(8
-                                                                                        as
-                                                                                        libc::c_int
-                                                                                        as
-                                                                                        libc::c_uint)
-                 & 255 as libc::c_int as libc::c_uint) as uint8_t;
+            ((*context).state[(i >> 2i32) as usize] >>
+                 (3u32).wrapping_sub(i &
+                                                     3u32).wrapping_mul(8u32)
+                 & 255u32) as uint8_t;
         i = i.wrapping_add(1)
     }
     /* Wipe variables */
-    i = 0 as libc::c_int as uint32_t; /* SWR */
+    i = 0u32; /* SWR */
     memset((*context).buffer.as_mut_ptr() as *mut libc::c_void,
-           0 as libc::c_int, 64 as libc::c_int as libc::c_ulong);
+           0i32, 64u64);
     memset((*context).state.as_mut_ptr() as *mut libc::c_void,
-           0 as libc::c_int, 20 as libc::c_int as libc::c_ulong);
+           0i32, 20u64);
     memset((*context).count.as_mut_ptr() as *mut libc::c_void,
-           0 as libc::c_int, 8 as libc::c_int as libc::c_ulong);
-    memset(finalcount.as_mut_ptr() as *mut libc::c_void, 0 as libc::c_int,
-           8 as libc::c_int as libc::c_ulong);
+           0i32, 8u64);
+    memset(finalcount.as_mut_ptr() as *mut libc::c_void, 0i32,
+           8u64);
     /* make SHA1Transform overwrite its own static vars */
     SHA1_Transform((*context).state.as_mut_ptr(),
                    (*context).buffer.as_mut_ptr() as *const uint8_t);
@@ -3929,27 +2864,27 @@ unsafe extern "C" fn sum(mut data: *mut libc::c_void, mut len: libc::c_int)
     SHA1_Init(&mut sha);
     SHA1_Update(&mut sha, data as *const uint8_t, len as size_t);
     SHA1_Final(&mut sha, digest.as_mut_ptr());
-    return ((digest[0 as libc::c_int as usize] as libc::c_int) <<
-                24 as libc::c_int |
-                (digest[1 as libc::c_int as usize] as libc::c_int) <<
-                    16 as libc::c_int |
-                (digest[2 as libc::c_int as usize] as libc::c_int) <<
-                    8 as libc::c_int |
-                digest[3 as libc::c_int as usize] as libc::c_int) as
+    return ((digest[0usize] as libc::c_int) <<
+                24i32 |
+                (digest[1usize] as libc::c_int) <<
+                    16i32 |
+                (digest[2usize] as libc::c_int) <<
+                    8i32 |
+                digest[3usize] as libc::c_int) as
                libc::c_ulong;
 }
 unsafe fn main_0() -> libc::c_int {
     let mut srct: [libc::c_uchar; 3] =
-        [221 as libc::c_int as libc::c_uchar,
-         79 as libc::c_int as libc::c_uchar,
-         129 as libc::c_int as libc::c_uchar];
+        [221u8,
+         79u8,
+         129u8];
     let mut outt: [libc::c_uchar; 3] = [0; 3];
     static mut src: [libc::c_uchar; 50331648] = [0; 50331648];
     static mut output: [libc::c_uchar; 50331648] = [0; 50331648];
     let mut i: libc::c_int = 0;
     let mut j: libc::c_int = 0;
     let mut k: libc::c_int = 0;
-    let mut l: libc::c_int = 0 as libc::c_int;
+    let mut l: libc::c_int = 0i32;
     let mut input_profile: *mut qcms_profile = 0 as *mut qcms_profile;
     let mut output_profile: *mut qcms_profile = 0 as *mut qcms_profile;
     let mut transform: *mut qcms_transform = 0 as *mut qcms_transform;
@@ -3963,12 +2898,12 @@ unsafe fn main_0() -> libc::c_int {
         qcms_transform_create(input_profile, QCMS_DATA_RGB_8, output_profile,
                               QCMS_DATA_RGB_8, QCMS_INTENT_PERCEPTUAL);
     //transform = qcms_create_transform(output_profile, input_profile);
-    i = 0 as libc::c_int;
-    while i < 256 as libc::c_int {
-        j = 0 as libc::c_int;
-        while j < 256 as libc::c_int {
-            k = 0 as libc::c_int;
-            while k < 256 as libc::c_int {
+    i = 0i32;
+    while i < 256i32 {
+        j = 0i32;
+        while j < 256i32 {
+            k = 0i32;
+            while k < 256i32 {
                 let fresh5 = l;
                 l = l + 1;
                 src[fresh5 as usize] = i as libc::c_uchar;
@@ -3986,38 +2921,38 @@ unsafe fn main_0() -> libc::c_int {
     }
     qcms_transform_data(transform, srct.as_mut_ptr() as *const libc::c_void,
                         outt.as_mut_ptr() as *mut libc::c_void,
-                        1 as libc::c_int as size_t);
+                        1u64);
     qcms_transform_data(transform, src.as_mut_ptr() as *const libc::c_void,
                         output.as_mut_ptr() as *mut libc::c_void,
-                        (256 as libc::c_int * 256 as libc::c_int *
-                             256 as libc::c_int) as size_t);
-    i = 256 as libc::c_int * 40 as libc::c_int * 3 as libc::c_int;
+                        (256i32 * 256i32 *
+                             256i32) as size_t);
+    i = 256i32 * 40i32 * 3i32;
     while i <
-              30 as libc::c_int +
-                  256 as libc::c_int * 40 as libc::c_int * 3 as libc::c_int {
+              30i32 +
+                  256i32 * 40i32 * 3i32 {
         printf(b"(%d %d %d) -> output (%d %d %d)\n\x00" as *const u8 as
                    *const libc::c_char, src[i as usize] as libc::c_int,
-               src[(i + 1 as libc::c_int) as usize] as libc::c_int,
-               src[(i + 2 as libc::c_int) as usize] as libc::c_int,
+               src[(i + 1i32) as usize] as libc::c_int,
+               src[(i + 2i32) as usize] as libc::c_int,
                output[i as usize] as libc::c_int,
-               output[(i + 1 as libc::c_int) as usize] as libc::c_int,
-               output[(i + 2 as libc::c_int) as usize] as libc::c_int);
-        i += 3 as libc::c_int
+               output[(i + 1i32) as usize] as libc::c_int,
+               output[(i + 2i32) as usize] as libc::c_int);
+        i += 3i32
     }
     qcms_transform_release(transform);
     qcms_profile_release(input_profile);
     qcms_profile_release(output_profile);
     if sum(output.as_mut_ptr() as *mut libc::c_void,
-           256 as libc::c_int * 256 as libc::c_int * 256 as libc::c_int *
-               3 as libc::c_int) !=
-           0xca89c51c as libc::c_uint as libc::c_ulong {
+           256i32 * 256i32 * 256i32 *
+               3i32) !=
+           0xca89c51cu64 {
         printf(b"DATA CHANGED: %lx\n\x00" as *const u8 as *const libc::c_char,
                sum(output.as_mut_ptr() as *mut libc::c_void,
-                   256 as libc::c_int * 256 as libc::c_int *
-                       256 as libc::c_int * 3 as libc::c_int));
+                   256i32 * 256i32 *
+                       256i32 * 3i32));
         abort();
     }
-    return 0 as libc::c_int;
+    return 0i32;
 }
 #[main]
-pub fn main() { unsafe { ::std::process::exit(main_0() as i32) } }
+pub fn main() { unsafe { ::std::process::exit(main_0()) } }

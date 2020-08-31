@@ -26,8 +26,8 @@ pub type size_t = __darwin_size_t;
 pub type uint8_t = libc::c_uchar;
 pub type uint16_t = libc::c_ushort;
 pub type uint32_t = libc::c_uint;
-#[derive(Copy, Clone)]
-#[repr(C)]
+
+#[repr(C)]#[derive(Copy, Clone)]
 pub struct _qcms_transform {
     pub matrix: [[libc::c_float; 4]; 3],
     pub input_gamma_table_r: *mut libc::c_float,
@@ -68,8 +68,8 @@ pub type transform_fn_t
     Option<unsafe extern "C" fn(_: *const _qcms_transform,
                                 _: *const libc::c_uchar,
                                 _: *mut libc::c_uchar, _: size_t) -> ()>;
-#[derive(Copy, Clone)]
-#[repr(C)]
+
+#[repr(C)]#[derive(Copy, Clone)]
 pub struct precache_output {
     pub ref_count: libc::c_int,
     pub data: [uint8_t; 8192],
@@ -91,9 +91,9 @@ unsafe extern "C" fn qcms_transform_data_template_lut_avx<F: Format>(mut transfo
      * because they don't work on stack variables. gcc 4.4 does do the right thing
      * on x86 but that's too new for us right now. For more info: gcc bug #16660 */
     let mut input: *const libc::c_float =
-        (&mut *input_back.as_mut_ptr().offset(32 as libc::c_int as isize) as
+        (&mut *input_back.as_mut_ptr().offset(32isize) as
              *mut libc::c_char as uintptr_t &
-             !(0x1f as libc::c_int) as libc::c_ulong) as *mut libc::c_float;
+             !(0x1fi32) as libc::c_ulong) as *mut libc::c_float;
     /* share input and output locations to save having to keep the
      * locations in separate registers */
     let mut output: *const uint32_t = input as *mut uint32_t;
@@ -103,44 +103,35 @@ unsafe extern "C" fn qcms_transform_data_template_lut_avx<F: Format>(mut transfo
     let mut igtbl_b: *const libc::c_float = (*transform).input_gamma_table_b;
     /* deref *transform now to avoid it in loop */
     let mut otdata_r: *const uint8_t =
-        &mut *(*(*transform).output_table_r).data.as_mut_ptr().offset(0 as
-                                                                          libc::c_int
-                                                                          as
-                                                                          isize)
+        &mut *(*(*transform).output_table_r).data.as_mut_ptr().offset(0isize)
             as *mut uint8_t;
     let mut otdata_g: *const uint8_t =
-        &mut *(*(*transform).output_table_g).data.as_mut_ptr().offset(0 as
-                                                                          libc::c_int
-                                                                          as
-                                                                          isize)
+        &mut *(*(*transform).output_table_g).data.as_mut_ptr().offset(0isize)
             as *mut uint8_t;
     let mut otdata_b: *const uint8_t =
-        &mut *(*(*transform).output_table_b).data.as_mut_ptr().offset(0 as
-                                                                          libc::c_int
-                                                                          as
-                                                                          isize)
+        &mut *(*(*transform).output_table_b).data.as_mut_ptr().offset(0isize)
             as *mut uint8_t;
     /* input matrix values never change */
     let mat0: __m256 =
-        _mm256_broadcast_ps(&*((*mat.offset(0 as libc::c_int as isize)).as_ptr()
+        _mm256_broadcast_ps(&*((*mat.offset(0isize)).as_ptr()
                                 as *const __m128));
     let mat1: __m256 =
-        _mm256_broadcast_ps(&*((*mat.offset(1 as libc::c_int as isize)).as_ptr()
+        _mm256_broadcast_ps(&*((*mat.offset(1isize)).as_ptr()
                                 as *const __m128));
     let mat2: __m256 =
-        _mm256_broadcast_ps(&*((*mat.offset(2 as libc::c_int as isize)).as_ptr()
+        _mm256_broadcast_ps(&*((*mat.offset(2isize)).as_ptr()
                                 as *const __m128));
     /* these values don't change, either */
     let max: __m256 =
-        _mm256_set1_ps((8192 as libc::c_int - 1 as libc::c_int) as
+        _mm256_set1_ps((8192i32 - 1i32) as
                            libc::c_float /
-                           8192 as libc::c_int as libc::c_float);
+                           8192f32);
     let min: __m256 = _mm256_setzero_ps();
-    let scale: __m256 = _mm256_set1_ps(8192 as libc::c_int as libc::c_float);
+    let scale: __m256 = _mm256_set1_ps(8192f32);
     let components: libc::c_uint =
-        if F::kAIndex == 0xff as libc::c_int as libc::c_ulong {
-            3 as libc::c_int
-        } else { 4 as libc::c_int } as libc::c_uint;
+        if F::kAIndex == 0xffu64 {
+            3i32
+        } else { 4i32 } as libc::c_uint;
     /* working variables */
     let mut vec_r: __m256 = _mm256_setzero_ps();
     let mut vec_g: __m256 = _mm256_setzero_ps();
@@ -158,7 +149,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut_avx<F: Format>(mut transfo
     if length == 0 { return }
     /* If there are at least 2 pixels, then we can load their components into
        a single 256-bit register for processing. */
-    if length > 1 as libc::c_int as libc::c_ulong {
+    if length > 1u64 {
         vec_r0 =
             _mm_broadcast_ss(&*igtbl_r.offset(*src.offset(F::kRIndex as isize) as
                                                   isize));
@@ -188,14 +179,14 @@ unsafe extern "C" fn qcms_transform_data_template_lut_avx<F: Format>(mut transfo
                                                   isize));
         vec_r =
             _mm256_insertf128_ps(_mm256_castps128_ps256(vec_r0), vec_r1,
-                                 1 as libc::c_int);
+                                 1i32);
         vec_g =
             _mm256_insertf128_ps(_mm256_castps128_ps256(vec_g0), vec_g1,
-                                 1 as libc::c_int);
+                                 1i32);
         vec_b =
             _mm256_insertf128_ps(_mm256_castps128_ps256(vec_b0), vec_b1,
-                                 1 as libc::c_int);
-        if F::kAIndex != 0xff as libc::c_int as libc::c_ulong {
+                                 1i32);
+        if F::kAIndex != 0xffu64 {
             alpha1 = *src.offset(F::kAIndex as isize);
             alpha2 =
                 *src.offset(F::kAIndex.wrapping_add(components as libc::c_ulong)
@@ -204,17 +195,16 @@ unsafe extern "C" fn qcms_transform_data_template_lut_avx<F: Format>(mut transfo
     }
     /* If there are at least 4 pixels, then we can iterate and preload the
        next 2 while we store the result of the current 2. */
-    while length > 3 as libc::c_int as libc::c_ulong {
+    while length > 3u64 {
         /* Ensure we are pointing at the next 2 pixels for the next load. */
         src =
-            src.offset((2 as libc::c_int as
-                            libc::c_uint).wrapping_mul(components) as isize);
+            src.offset((2u32).wrapping_mul(components) as isize);
         /* gamma * matrix */
         vec_r = _mm256_mul_ps(vec_r, mat0);
         vec_g = _mm256_mul_ps(vec_g, mat1);
         vec_b = _mm256_mul_ps(vec_b, mat2);
         /* store alpha for these pixels; load alpha for next two */
-        if F::kAIndex != 0xff as libc::c_int as libc::c_ulong {
+        if F::kAIndex != 0xffu64 {
             *dest.offset(F::kAIndex as isize) = alpha1;
             *dest.offset(F::kAIndex.wrapping_add(components as libc::c_ulong) as
                              isize) = alpha2;
@@ -261,51 +251,48 @@ unsafe extern "C" fn qcms_transform_data_template_lut_avx<F: Format>(mut transfo
                                                   isize));
         vec_r =
             _mm256_insertf128_ps(_mm256_castps128_ps256(vec_r0), vec_r1,
-                                 1 as libc::c_int);
+                                 1i32);
         vec_g =
             _mm256_insertf128_ps(_mm256_castps128_ps256(vec_g0), vec_g1,
-                                 1 as libc::c_int);
+                                 1i32);
         vec_b =
             _mm256_insertf128_ps(_mm256_castps128_ps256(vec_b0), vec_b1,
-                                 1 as libc::c_int);
+                                 1i32);
         /* use calc'd indices to output RGB values */
         *dest.offset(F::kRIndex as isize) =
-            *otdata_r.offset(*output.offset(0 as libc::c_int as isize) as
+            *otdata_r.offset(*output.offset(0isize) as
                                  isize);
         *dest.offset(F::kGIndex as isize) =
-            *otdata_g.offset(*output.offset(1 as libc::c_int as isize) as
+            *otdata_g.offset(*output.offset(1isize) as
                                  isize);
         *dest.offset(F::kBIndex as isize) =
-            *otdata_b.offset(*output.offset(2 as libc::c_int as isize) as
+            *otdata_b.offset(*output.offset(2isize) as
                                  isize);
         *dest.offset(F::kRIndex.wrapping_add(components as libc::c_ulong) as
                          isize) =
-            *otdata_r.offset(*output.offset(4 as libc::c_int as isize) as
+            *otdata_r.offset(*output.offset(4isize) as
                                  isize);
         *dest.offset(F::kGIndex.wrapping_add(components as libc::c_ulong) as
                          isize) =
-            *otdata_g.offset(*output.offset(5 as libc::c_int as isize) as
+            *otdata_g.offset(*output.offset(5isize) as
                                  isize);
         *dest.offset(F::kBIndex.wrapping_add(components as libc::c_ulong) as
                          isize) =
-            *otdata_b.offset(*output.offset(6 as libc::c_int as isize) as
+            *otdata_b.offset(*output.offset(6isize) as
                                  isize);
         dest =
-            dest.offset((2 as libc::c_int as
-                             libc::c_uint).wrapping_mul(components) as isize);
+            dest.offset((2u32).wrapping_mul(components) as isize);
         length =
-            (length as
-                 libc::c_ulong).wrapping_sub(2 as libc::c_int as
-                                                 libc::c_ulong) as size_t as
-                size_t
+            
+            (length).wrapping_sub(2u64)
     }
     /* There are 0-3 pixels remaining. If there are 2-3 remaining, then we know
        we have already populated the necessary registers to start the transform. */
-    if length > 1 as libc::c_int as libc::c_ulong {
+    if length > 1u64 {
         vec_r = _mm256_mul_ps(vec_r, mat0);
         vec_g = _mm256_mul_ps(vec_g, mat1);
         vec_b = _mm256_mul_ps(vec_b, mat2);
-        if F::kAIndex != 0xff as libc::c_int as libc::c_ulong {
+        if F::kAIndex != 0xffu64 {
             *dest.offset(F::kAIndex as isize) = alpha1;
             *dest.offset(F::kAIndex.wrapping_add(components as libc::c_ulong) as
                              isize) = alpha2
@@ -317,40 +304,36 @@ unsafe extern "C" fn qcms_transform_data_template_lut_avx<F: Format>(mut transfo
         _mm256_store_si256(output as *mut __m256i,
                            _mm256_cvtps_epi32(result));
         *dest.offset(F::kRIndex as isize) =
-            *otdata_r.offset(*output.offset(0 as libc::c_int as isize) as
+            *otdata_r.offset(*output.offset(0isize) as
                                  isize);
         *dest.offset(F::kGIndex as isize) =
-            *otdata_g.offset(*output.offset(1 as libc::c_int as isize) as
+            *otdata_g.offset(*output.offset(1isize) as
                                  isize);
         *dest.offset(F::kBIndex as isize) =
-            *otdata_b.offset(*output.offset(2 as libc::c_int as isize) as
+            *otdata_b.offset(*output.offset(2isize) as
                                  isize);
         *dest.offset(F::kRIndex.wrapping_add(components as libc::c_ulong) as
                          isize) =
-            *otdata_r.offset(*output.offset(4 as libc::c_int as isize) as
+            *otdata_r.offset(*output.offset(4isize) as
                                  isize);
         *dest.offset(F::kGIndex.wrapping_add(components as libc::c_ulong) as
                          isize) =
-            *otdata_g.offset(*output.offset(5 as libc::c_int as isize) as
+            *otdata_g.offset(*output.offset(5isize) as
                                  isize);
         *dest.offset(F::kBIndex.wrapping_add(components as libc::c_ulong) as
                          isize) =
-            *otdata_b.offset(*output.offset(6 as libc::c_int as isize) as
+            *otdata_b.offset(*output.offset(6isize) as
                                  isize);
         src =
-            src.offset((2 as libc::c_int as
-                            libc::c_uint).wrapping_mul(components) as isize);
+            src.offset((2u32).wrapping_mul(components) as isize);
         dest =
-            dest.offset((2 as libc::c_int as
-                             libc::c_uint).wrapping_mul(components) as isize);
+            dest.offset((2u32).wrapping_mul(components) as isize);
         length =
-            (length as
-                 libc::c_ulong).wrapping_sub(2 as libc::c_int as
-                                                 libc::c_ulong) as size_t as
-                size_t
+            
+            (length).wrapping_sub(2u64)
     }
     /* There may be 0-1 pixels remaining. */
-    if length == 1 as libc::c_int as libc::c_ulong {
+    if length == 1u64 {
         vec_r0 =
             _mm_broadcast_ss(&*igtbl_r.offset(*src.offset(F::kRIndex as isize) as
                                                   isize));
@@ -363,7 +346,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut_avx<F: Format>(mut transfo
         vec_r0 = _mm_mul_ps(vec_r0, _mm256_castps256_ps128(mat0));
         vec_g0 = _mm_mul_ps(vec_g0, _mm256_castps256_ps128(mat1));
         vec_b0 = _mm_mul_ps(vec_b0, _mm256_castps256_ps128(mat2));
-        if F::kAIndex != 0xff as libc::c_int as libc::c_ulong {
+        if F::kAIndex != 0xffu64 {
             *dest.offset(F::kAIndex as isize) = *src.offset(F::kAIndex as isize)
         }
         vec_r0 = _mm_add_ps(vec_r0, _mm_add_ps(vec_g0, vec_b0));
@@ -372,13 +355,13 @@ unsafe extern "C" fn qcms_transform_data_template_lut_avx<F: Format>(mut transfo
         vec_r0 = _mm_mul_ps(vec_r0, _mm256_castps256_ps128(scale));
         _mm_store_si128(output as *mut __m128i, _mm_cvtps_epi32(vec_r0));
         *dest.offset(F::kRIndex as isize) =
-            *otdata_r.offset(*output.offset(0 as libc::c_int as isize) as
+            *otdata_r.offset(*output.offset(0isize) as
                                  isize);
         *dest.offset(F::kGIndex as isize) =
-            *otdata_g.offset(*output.offset(1 as libc::c_int as isize) as
+            *otdata_g.offset(*output.offset(1isize) as
                                  isize);
         *dest.offset(F::kBIndex as isize) =
-            *otdata_b.offset(*output.offset(2 as libc::c_int as isize) as
+            *otdata_b.offset(*output.offset(2isize) as
                                  isize)
     };
 }
