@@ -1,9 +1,6 @@
 use ::libc::{self, malloc, free, calloc};
 extern "C" {
     #[no_mangle]
-    fn __assert_rtn(_: *const libc::c_char, _: *const libc::c_char,
-                    _: i32, _: *const libc::c_char) -> !;
-    #[no_mangle]
     fn qcms_transform_data_rgb_out_lut_avx(transform: *const qcms_transform,
                                            src: *const libc::c_uchar,
                                            dest: *mut libc::c_uchar,
@@ -1922,15 +1919,7 @@ pub unsafe extern "C" fn qcms_transform_precacheLUT_float(mut transform:
                                                   _: *mut libc::c_uchar,
                                                   _: size_t) -> ())
             }
-            if (*transform).transform_fn.is_none() as i32 as
-                   libc::c_long != 0 {
-                __assert_rtn((*::std::mem::transmute::<&[u8; 33],
-                                                       &[libc::c_char; 33]>(b"qcms_transform_precacheLUT_float\x00")).as_ptr(),
-                             b"transform.c\x00" as *const u8 as
-                                 *const libc::c_char, 1130i32,
-                             b"transform->transform_fn\x00" as *const u8 as
-                                 *const libc::c_char);
-            } else { };
+            debug_assert!((*transform).transform_fn.is_some());
         }
     }
     //XXX: qcms_modular_transform_data may return either the src or dest buffer. If so it must not be free-ed
@@ -2003,17 +1992,7 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
                     QCMS_DATA_BGRA_8
     }
     if !match_0 {
-        if !(0i32 != 0 &&
-                 !(b"input/output type\x00" as *const u8 as
-                       *const libc::c_char).is_null()) as i32 as
-               libc::c_long != 0 {
-            __assert_rtn((*::std::mem::transmute::<&[u8; 22],
-                                                   &[libc::c_char; 22]>(b"qcms_transform_create\x00")).as_ptr(),
-                         b"transform.c\x00" as *const u8 as
-                             *const libc::c_char, 1171i32,
-                         b"0 && \"input/output type\"\x00" as *const u8 as
-                             *const libc::c_char);
-        } else { };
+        debug_assert!(false, "input/output type");
         return 0 as *mut qcms_transform
     }
     let mut transform: *mut qcms_transform = transform_alloc();
@@ -2047,17 +2026,7 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
             qcms_transform_precacheLUT_float(transform, in_0, out,
                                              33i32, in_type);
         if result.is_null() {
-            if !(0i32 != 0 &&
-                     !(b"precacheLUT failed\x00" as *const u8 as
-                           *const libc::c_char).is_null()) as i32 as
-                   libc::c_long != 0 {
-                __assert_rtn((*::std::mem::transmute::<&[u8; 22],
-                                                       &[libc::c_char; 22]>(b"qcms_transform_create\x00")).as_ptr(),
-                             b"transform.c\x00" as *const u8 as
-                                 *const libc::c_char, 1199i32,
-                             b"0 && \"precacheLUT failed\"\x00" as *const u8
-                                 as *const libc::c_char);
-            } else { };
+            debug_assert!(false, "precacheLUT failed");
             qcms_transform_release(transform);
             return 0 as *mut qcms_transform
         }
@@ -2425,29 +2394,11 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
             }
         }
     } else {
-        if !(0i32 != 0 &&
-                 !(b"unexpected colorspace\x00" as *const u8 as
-                       *const libc::c_char).is_null()) as i32 as
-               libc::c_long != 0 {
-            __assert_rtn((*::std::mem::transmute::<&[u8; 22],
-                                                   &[libc::c_char; 22]>(b"qcms_transform_create\x00")).as_ptr(),
-                         b"transform.c\x00" as *const u8 as
-                             *const libc::c_char, 1384i32,
-                         b"0 && \"unexpected colorspace\"\x00" as *const u8 as
-                             *const libc::c_char);
-        } else { };
+        debug_assert!(false, "unexpected colorspace");
         qcms_transform_release(transform);
         return 0 as *mut qcms_transform
     }
-    if (*transform).transform_fn.is_none() as i32 as libc::c_long != 0
-       {
-        __assert_rtn((*::std::mem::transmute::<&[u8; 22],
-                                               &[libc::c_char; 22]>(b"qcms_transform_create\x00")).as_ptr(),
-                     b"transform.c\x00" as *const u8 as *const libc::c_char,
-                     1388i32,
-                     b"transform->transform_fn\x00" as *const u8 as
-                         *const libc::c_char);
-    } else { };
+    debug_assert!((*transform).transform_fn.is_some());
     return transform;
 }
 #[no_mangle]
