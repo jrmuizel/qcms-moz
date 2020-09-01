@@ -1,17 +1,17 @@
 use ::libc;
 extern "C" {
     #[no_mangle]
-    fn fabs(_: libc::c_double) -> libc::c_double;
+    fn fabs(_: f64) -> f64;
     #[no_mangle]
-    fn pow(_: libc::c_double, _: libc::c_double) -> libc::c_double;
+    fn pow(_: f64, _: f64) -> f64;
     #[no_mangle]
     fn ceilf(_: f32) -> f32;
     #[no_mangle]
-    fn ceil(_: libc::c_double) -> libc::c_double;
+    fn ceil(_: f64) -> f64;
     #[no_mangle]
     fn floorf(_: f32) -> f32;
     #[no_mangle]
-    fn floor(_: libc::c_double) -> libc::c_double;
+    fn floor(_: f64) -> f64;
     #[no_mangle]
     fn __assert_rtn(_: *const libc::c_char, _: *const libc::c_char,
                     _: i32, _: *const libc::c_char) -> !;
@@ -143,11 +143,11 @@ unsafe extern "C" fn s15Fixed16Number_to_float(mut a: s15Fixed16Number)
 #[inline]
 unsafe extern "C" fn u8Fixed8Number_to_float(mut x: uint16_t)
  -> f32 {
-    return (x as i32 as libc::c_double / 256.0f64) as f32;
+    return (x as i32 as f64 / 256.0f64) as f32;
 }
 #[inline]
 unsafe extern "C" fn clamp_float(mut a: f32) -> f32 {
-    if a as libc::c_double > 1.0f64 {
+    if a as f64 > 1.0f64 {
         return 1f32
     } else if a >= 0f32 {
         return a
@@ -158,22 +158,22 @@ unsafe extern "C" fn clamp_float(mut a: f32) -> f32 {
 //XXX: is the above a good restriction to have?
 // the output range of this functions is 0..1
 #[no_mangle]
-pub unsafe extern "C" fn lut_interp_linear(mut input_value: libc::c_double,
+pub unsafe extern "C" fn lut_interp_linear(mut input_value: f64,
                                            mut table: *mut uint16_t,
                                            mut length: i32)
  -> f32 {
     
     
     
-    input_value = input_value * (length - 1i32) as libc::c_double;
+    input_value = input_value * (length - 1i32) as f64;
     
     
      let mut upper:  i32 =  ceil(input_value) as i32; let mut lower:  i32 =  floor(input_value) as i32; let mut value:  f32 =
     
-        (*table.offset(upper as isize) as i32 as libc::c_double *
-             (1.0f64 - (upper as libc::c_double - input_value)) +
-             *table.offset(lower as isize) as i32 as libc::c_double *
-                 (upper as libc::c_double - input_value)) as f32;
+        (*table.offset(upper as isize) as i32 as f64 *
+             (1.0f64 - (upper as f64 - input_value)) +
+             *table.offset(lower as isize) as i32 as f64 *
+                 (upper as f64 - input_value)) as f32;
     /* scale the value */
     return value * (1.0f32 / 65535.0f32);
 }
@@ -278,10 +278,10 @@ pub unsafe extern "C" fn lut_interp_linear_float(mut value: f32,
      let mut upper:  i32 =  ceilf(value) as i32; let mut lower:  i32 =  floorf(value) as i32;
     //XXX: can we be more performant here?
     value =
-        (*table.offset(upper as isize) as libc::c_double *
-             (1.0f64 - (upper as f32 - value) as libc::c_double) +
+        (*table.offset(upper as isize) as f64 *
+             (1.0f64 - (upper as f32 - value) as f64) +
              (*table.offset(lower as isize) *
-                  (upper as f32 - value)) as libc::c_double) as
+                  (upper as f32 - value)) as f64) as
             f32;
     /* scale the value */
     return value;
@@ -297,7 +297,7 @@ pub unsafe extern "C" fn compute_curve_gamma_table_type1(mut gamma_table:
     while i < 256u32 {
         // 0..1^(0..255 + 255/256) will always be between 0 and 1
         *gamma_table.offset(i as isize) =
-            pow(i as libc::c_double / 255.0f64, gamma_float as libc::c_double)
+            pow(i as f64 / 255.0f64, gamma_float as f64)
                 as f32;
         i = i.wrapping_add(1)
     };
@@ -313,7 +313,7 @@ pub unsafe extern "C" fn compute_curve_gamma_table_type2(mut gamma_table:
      let mut i:  libc::c_uint =  0u32;
     while i < 256u32 {
         *gamma_table.offset(i as isize) =
-            lut_interp_linear(i as libc::c_double / 255.0f64, table, length);
+            lut_interp_linear(i as f64 / 255.0f64, table, length);
         i = i.wrapping_add(1)
     };
 }
@@ -399,14 +399,14 @@ pub unsafe extern "C" fn compute_curve_gamma_table_type_parametric(mut gamma_tab
                         //     algebraically equivalent.
                         // TODO Should division by 255 be for the whole expression.
             *gamma_table.offset(X as isize) =
-                clamp_float((pow((a * X as f32) as libc::c_double /
-                                     255.0f64 + b as libc::c_double,
-                                 y as libc::c_double) + c as libc::c_double +
-                                 e as libc::c_double) as f32)
+                clamp_float((pow((a * X as f32) as f64 /
+                                     255.0f64 + b as f64,
+                                 y as f64) + c as f64 +
+                                 e as f64) as f32)
         } else {
             *gamma_table.offset(X as isize) =
-                clamp_float(((c * X as f32) as libc::c_double /
-                                 255.0f64 + f as libc::c_double) as
+                clamp_float(((c * X as f32) as f64 /
+                                 255.0f64 + f as f64) as
                                 f32)
         }
         X = X.wrapping_add(1)
@@ -419,7 +419,7 @@ pub unsafe extern "C" fn compute_curve_gamma_table_type0(mut gamma_table:
      let mut i:  libc::c_uint =  0u32;
     while i < 256u32 {
         *gamma_table.offset(i as isize) =
-            (i as libc::c_double / 255.0f64) as f32;
+            (i as f64 / 255.0f64) as f32;
         i = i.wrapping_add(1)
     };
 }
@@ -573,27 +573,27 @@ pub unsafe extern "C" fn lut_inverse_interp16(mut Value: uint16_t,
     } else { };
     
     
-     let mut val2:  libc::c_double =
+     let mut val2:  f64 =
     
-        (length - 1i32) as libc::c_double *
-            ((x - 1i32) as libc::c_double / 65535.0f64); let mut cell0:  i32 =  floor(val2) as i32; let mut cell1:  i32 =  ceil(val2) as i32;
+        (length - 1i32) as f64 *
+            ((x - 1i32) as f64 / 65535.0f64); let mut cell0:  i32 =  floor(val2) as i32; let mut cell1:  i32 =  ceil(val2) as i32;
     if cell0 == cell1 { return x as uint16_fract_t }
     
     
     
     
     
-     let mut y0:  libc::c_double =
-     *LutTable.offset(cell0 as isize) as libc::c_double; let mut x0:  libc::c_double =
+     let mut y0:  f64 =
+     *LutTable.offset(cell0 as isize) as f64; let mut x0:  f64 =
     
-        65535.0f64 * cell0 as libc::c_double /
-            (length - 1i32) as libc::c_double; let mut y1:  libc::c_double =
-     *LutTable.offset(cell1 as isize) as libc::c_double; let mut x1:  libc::c_double =
+        65535.0f64 * cell0 as f64 /
+            (length - 1i32) as f64; let mut y1:  f64 =
+     *LutTable.offset(cell1 as isize) as f64; let mut x1:  f64 =
     
-        65535.0f64 * cell1 as libc::c_double /
-            (length - 1i32) as libc::c_double; let mut a:  libc::c_double =  (y1 - y0) / (x1 - x0); let mut b:  libc::c_double =  y0 - a * x0;
+        65535.0f64 * cell1 as f64 /
+            (length - 1i32) as f64; let mut a:  f64 =  (y1 - y0) / (x1 - x0); let mut b:  f64 =  y0 - a * x0;
     if fabs(a) < 0.01f64 { return x as uint16_fract_t }
-     let mut f:  libc::c_double =  (Value as i32 as libc::c_double - b) / a;
+     let mut f:  f64 =  (Value as i32 as f64 - b) / a;
     if f < 0.0f64 { return 0u16 }
     if f >= 65535.0f64 { return 0xffffu16 }
     return floor(f + 0.5f64) as uint16_fract_t;
@@ -625,9 +625,9 @@ unsafe extern "C" fn invert_lut(mut table: *mut uint16_t,
     if output.is_null() { return 0 as *mut uint16_t }
      let mut i:  i32 =  0i32;
     while i < out_length {
-        let mut x: libc::c_double =
-            i as libc::c_double * 65535.0f64 /
-                (out_length - 1i32) as libc::c_double;
+        let mut x: f64 =
+            i as f64 * 65535.0f64 /
+                (out_length - 1i32) as f64;
         let mut input: uint16_fract_t = floor(x + 0.5f64) as uint16_fract_t;
         *output.offset(i as isize) =
             lut_inverse_interp16(input, table, length);
@@ -643,9 +643,9 @@ unsafe extern "C" fn compute_precache_pow(mut output: *mut uint8_t,
         //XXX: don't do integer/float conversion... and round?
         *output.offset(v as isize) =
             (255.0f64 *
-                 pow(v as libc::c_double /
+                 pow(v as f64 /
                          (8192i32 - 1i32) as
-                             libc::c_double, gamma as libc::c_double)) as
+                             f64, gamma as f64)) as
                 uint8_t;
         v = v.wrapping_add(1)
     };
@@ -714,7 +714,7 @@ pub unsafe extern "C" fn compute_precache(mut trc: *mut curveType,
         compute_precache_pow(output,
                              (1.0f64 /
                                   u8Fixed8Number_to_float(*(*trc).data.as_mut_ptr().offset(0isize))
-                                      as libc::c_double) as f32);
+                                      as f64) as f32);
     } else {
         
         let mut inverted_size_0: i32 = (*trc).count as i32;
@@ -745,9 +745,9 @@ unsafe extern "C" fn build_linear_table(mut length: i32)
     if output.is_null() { return 0 as *mut uint16_t }
      let mut i:  i32 =  0i32;
     while i < length {
-        let mut x: libc::c_double =
-            i as libc::c_double * 65535.0f64 /
-                (length - 1i32) as libc::c_double;
+        let mut x: f64 =
+            i as f64 * 65535.0f64 /
+                (length - 1i32) as f64;
         let mut input: uint16_fract_t = floor(x + 0.5f64) as uint16_fract_t;
         *output.offset(i as isize) = input;
         i += 1
@@ -766,10 +766,10 @@ unsafe extern "C" fn build_pow_table(mut gamma: f32,
      let mut i:  i32 =  0i32;
     while i < length {
         
-        let mut x: libc::c_double =
-            i as libc::c_double /
-                (length - 1i32) as libc::c_double;
-        x = pow(x, gamma as libc::c_double);
+        let mut x: f64 =
+            i as f64 /
+                (length - 1i32) as f64;
+        x = pow(x, gamma as f64);
          let mut result:  uint16_fract_t =
      floor(x * 65535.0f64 + 0.5f64) as uint16_fract_t;
         *output.offset(i as isize) = result;
@@ -849,7 +849,7 @@ pub unsafe extern "C" fn build_output_lut(mut trc: *mut curveType,
         let mut gamma: f32 =
             (1.0f64 /
                  u8Fixed8Number_to_float(*(*trc).data.as_mut_ptr().offset(0isize))
-                     as libc::c_double) as f32;
+                     as f64) as f32;
         *output_gamma_lut = build_pow_table(gamma, 4096i32);
         *output_gamma_lut_length = 4096u64
     } else {

@@ -138,15 +138,15 @@ pub unsafe extern "C" fn matrix_invert(mut mat: matrix) -> matrix {
             let mut aj: i32 = a[j as usize];
             let mut bi: i32 = b[i as usize];
             let mut bj: i32 = b[j as usize];
-             let mut p:  libc::c_double =
+             let mut p:  f64 =
     
                 (mat.m[ai as usize][aj as usize] *
                      mat.m[bi as usize][bj as usize] -
                      mat.m[ai as usize][bj as usize] *
-                         mat.m[bi as usize][aj as usize]) as libc::c_double;
+                         mat.m[bi as usize][aj as usize]) as f64;
             if i + j & 1i32 != 0i32 { p = -p }
             dest_mat.m[j as usize][i as usize] =
-                (det as libc::c_double * p) as f32;
+                (det as f64 * p) as f32;
             i += 1
         }
         j += 1
@@ -196,12 +196,12 @@ pub unsafe extern "C" fn matrix_multiply(mut a: matrix, mut b: matrix)
     while dy < 3i32 {
         dx = 0i32;
         while dx < 3i32 {
-            let mut v: libc::c_double = 0f64;
+            let mut v: f64 = 0f64;
             o = 0i32;
             while o < 3i32 {
                 v +=
                     (a.m[dy as usize][o as usize] *
-                         b.m[o as usize][dx as usize]) as libc::c_double;
+                         b.m[o as usize][dx as usize]) as f64;
                 o += 1
             }
             result.m[dy as usize][dx as usize] = v as f32;

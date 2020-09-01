@@ -2,11 +2,11 @@ use ::libc;
 extern "C" {
     pub type __sFILEX;
     #[no_mangle]
-    fn pow(_: libc::c_double, _: libc::c_double) -> libc::c_double;
+    fn pow(_: f64, _: f64) -> f64;
     #[no_mangle]
     fn floorf(_: f32) -> f32;
     #[no_mangle]
-    fn floor(_: libc::c_double) -> libc::c_double;
+    fn floor(_: f64) -> f64;
     #[no_mangle]
     fn __assert_rtn(_: *const libc::c_char, _: *const libc::c_char,
                     _: i32, _: *const libc::c_char) -> !;
@@ -227,9 +227,9 @@ pub type qcms_profile = _qcms_profile;
 
 #[repr(C)]#[derive(Copy, Clone)]
 pub struct qcms_CIE_xyY {
-    pub x: libc::c_double,
-    pub y: libc::c_double,
-    pub Y: libc::c_double,
+    pub x: f64,
+    pub y: f64,
+    pub Y: f64,
 }
 
 #[repr(C)]#[derive(Copy, Clone)]
@@ -296,7 +296,7 @@ unsafe extern "C" fn uInt8Number_to_float(mut a: uInt8Number)
     return a as int32_t as f32 / 255.0f32;
 }
 #[inline]
-unsafe extern "C" fn double_to_s15Fixed16Number(mut v: libc::c_double)
+unsafe extern "C" fn double_to_s15Fixed16Number(mut v: f64)
  -> s15Fixed16Number {
     return (v * 65536f64) as int32_t;
 }
@@ -1292,7 +1292,7 @@ unsafe extern "C" fn read_tag_lutType(mut src: *mut mem_source,
                 offset.wrapping_add(10u32) as
                     size_t);
     clut_size =
-        pow(grid_points as libc::c_double, in_chan as libc::c_double) as
+        pow(grid_points as f64, in_chan as f64) as
             uint32_t;
     if clut_size > 500000u32 {
         invalid_source(src,
@@ -1538,11 +1538,11 @@ unsafe extern "C" fn build_sRGB_gamma_table(mut num_entries: i32)
  -> *mut uint16_t {
     let mut i: i32 = 0;
     /* taken from lcms: Build_sRGBGamma() */
-    let mut gamma: libc::c_double = 2.4f64;
-    let mut a: libc::c_double = 1.0f64 / 1.055f64;
-    let mut b: libc::c_double = 0.055f64 / 1.055f64;
-    let mut c: libc::c_double = 1.0f64 / 12.92f64;
-    let mut d: libc::c_double = 0.04045f64;
+    let mut gamma: f64 = 2.4f64;
+    let mut a: f64 = 1.0f64 / 1.055f64;
+    let mut b: f64 = 0.055f64 / 1.055f64;
+    let mut c: f64 = 1.0f64 / 12.92f64;
+    let mut d: f64 = 0.04045f64;
     let mut table: *mut uint16_t =
         malloc((::std::mem::size_of::<uint16_t>() as
                     libc::c_ulong).wrapping_mul(num_entries as libc::c_ulong))
@@ -1550,16 +1550,16 @@ unsafe extern "C" fn build_sRGB_gamma_table(mut num_entries: i32)
     if table.is_null() { return 0 as *mut uint16_t }
     i = 0i32;
     while i < num_entries {
-        let mut x: libc::c_double =
-            i as libc::c_double /
-                (num_entries - 1i32) as libc::c_double;
-        let mut y: libc::c_double = 0.;
-        let mut output: libc::c_double = 0.;
+        let mut x: f64 =
+            i as f64 /
+                (num_entries - 1i32) as f64;
+        let mut y: f64 = 0.;
+        let mut output: f64 = 0.;
         // IEC 61966-2.1 (sRGB)
 		// Y = (aX + b)^Gamma | X >= d
 		// Y = cX             | X < d
         if x >= d {
-            let mut e: libc::c_double = a * x + b;
+            let mut e: f64 = a * x + b;
             if e > 0f64 {
                 y = pow(e, gamma)
             } else { y = 0f64 }
@@ -1715,14 +1715,14 @@ pub unsafe extern "C" fn qcms_profile_create_rgb_with_table(mut white_point:
 unsafe extern "C" fn white_point_from_temp(mut temp_K: i32)
  -> qcms_CIE_xyY {
     let mut white_point: qcms_CIE_xyY = qcms_CIE_xyY{x: 0., y: 0., Y: 0.,};
-    let mut x: libc::c_double = 0.;
-    let mut y: libc::c_double = 0.;
-    let mut T: libc::c_double = 0.;
-    let mut T2: libc::c_double = 0.;
-    let mut T3: libc::c_double = 0.;
+    let mut x: f64 = 0.;
+    let mut y: f64 = 0.;
+    let mut T: f64 = 0.;
+    let mut T2: f64 = 0.;
+    let mut T3: f64 = 0.;
     // double M1, M2;
     // No optimization provided.
-    T = temp_K as libc::c_double; // Square
+    T = temp_K as f64; // Square
     T2 = T * T; // Cube
     T3 = T2 * T;
     // For correlated color temperature (T) between 4000K and 7000K:
@@ -2196,19 +2196,19 @@ pub unsafe extern "C" fn qcms_data_create_rgb_with_gamma(mut white_point:
                   tag_data_offset.wrapping_add(8u64),
                   double_to_s15Fixed16Number(colorants.m[0usize][index as
                                                                         usize]
-                                                 as libc::c_double) as
+                                                 as f64) as
                       uint32_t);
         write_u32(data,
                   tag_data_offset.wrapping_add(12u64),
                   double_to_s15Fixed16Number(colorants.m[1usize][index as
                                                                         usize]
-                                                 as libc::c_double) as
+                                                 as f64) as
                       uint32_t);
         write_u32(data,
                   tag_data_offset.wrapping_add(16u64),
                   double_to_s15Fixed16Number(colorants.m[2usize][index as
                                                                         usize]
-                                                 as libc::c_double) as
+                                                 as f64) as
                       uint32_t);
         tag_table_offset =
             

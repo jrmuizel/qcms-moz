@@ -86,7 +86,7 @@ extern "C" {
     #[no_mangle]
     fn matrix_invalid() -> matrix;
     #[no_mangle]
-    fn lut_interp_linear(value: libc::c_double, table: *mut uint16_t,
+    fn lut_interp_linear(value: f64, table: *mut uint16_t,
                          length: i32) -> f32;
     #[no_mangle]
     fn build_input_gamma_table(TRC: *mut curveType) -> *mut f32;
@@ -279,9 +279,9 @@ pub const QCMS_DATA_RGB_8: qcms_data_type = 0;
 
 #[repr(C)]#[derive(Copy, Clone)]
 pub struct qcms_CIE_xyY {
-    pub x: libc::c_double,
-    pub y: libc::c_double,
-    pub Y: libc::c_double,
+    pub x: f64,
+    pub y: f64,
+    pub Y: f64,
 }
 
 #[repr(C)]#[derive(Copy, Clone)]
@@ -293,9 +293,9 @@ pub struct qcms_CIE_xyYTRIPLE {
 
 #[repr(C)]#[derive(Copy, Clone)]
 pub struct CIE_XYZ {
-    pub X: libc::c_double,
-    pub Y: libc::c_double,
-    pub Z: libc::c_double,
+    pub X: f64,
+    pub Y: f64,
+    pub Z: f64,
 }
 /* vim: set ts=8 sw=8 noexpandtab: */
 //  qcms
@@ -373,18 +373,18 @@ pub struct vector {
     pub v: [f32; 3],
 }
 #[inline]
-unsafe extern "C" fn double_to_s15Fixed16Number(mut v: libc::c_double)
+unsafe extern "C" fn double_to_s15Fixed16Number(mut v: f64)
  -> s15Fixed16Number {
     return (v * 65536f64) as int32_t;
 }
 #[inline]
 unsafe extern "C" fn clamp_u8(mut v: f32) -> libc::c_uchar {
-    if v as libc::c_double > 255.0f64 {
+    if v as f64 > 255.0f64 {
         return 255u8
     } else if v < 0f32 {
         return 0u8
     } else {
-        return floorf((v as libc::c_double + 0.5f64) as f32) as
+        return floorf((v as f64 + 0.5f64) as f32) as
                    libc::c_uchar
     };
 }
@@ -401,7 +401,7 @@ unsafe extern "C" fn clamp_float(mut a: f32) -> f32 {
   However, that version will let NaNs pass through which is undesirable
   for most consumers.
   */
-    if a as libc::c_double > 1.0f64 {
+    if a as f64 > 1.0f64 {
         return 1f32
     } else if a >= 0f32 {
         return a
@@ -473,14 +473,14 @@ unsafe extern "C" fn build_RGB_to_XYZ_transfer_matrix(mut white: qcms_CIE_xyY,
     
     
     
-     let mut xn:  libc::c_double =  white.x; let mut yn:  libc::c_double =  white.y;
+     let mut xn:  f64 =  white.x; let mut yn:  f64 =  white.y;
     if yn == 0.0f64 { return matrix_invalid() }
     
     
     
     
     
-     let mut xr:  libc::c_double =  primrs.red.x; let mut yr:  libc::c_double =  primrs.red.y; let mut xg:  libc::c_double =  primrs.green.x; let mut yg:  libc::c_double =  primrs.green.y; let mut xb:  libc::c_double =  primrs.blue.x; let mut yb:  libc::c_double =  primrs.blue.y;
+     let mut xr:  f64 =  primrs.red.x; let mut yr:  f64 =  primrs.red.y; let mut xg:  f64 =  primrs.green.x; let mut yg:  f64 =  primrs.green.y; let mut xb:  f64 =  primrs.blue.x; let mut yb:  f64 =  primrs.blue.y;
     primaries.m[0usize][0usize] =
         xr as f32;
     primaries.m[0usize][1usize] =
@@ -508,31 +508,31 @@ unsafe extern "C" fn build_RGB_to_XYZ_transfer_matrix(mut white: qcms_CIE_xyY,
     if primaries_invert.invalid { return matrix_invalid() }
      let mut coefs:  vector =  matrix_eval(primaries_invert, white_point);
     result.m[0usize][0usize] =
-        (coefs.v[0usize] as libc::c_double * xr) as
+        (coefs.v[0usize] as f64 * xr) as
             f32;
     result.m[0usize][1usize] =
-        (coefs.v[1usize] as libc::c_double * xg) as
+        (coefs.v[1usize] as f64 * xg) as
             f32;
     result.m[0usize][2usize] =
-        (coefs.v[2usize] as libc::c_double * xb) as
+        (coefs.v[2usize] as f64 * xb) as
             f32;
     result.m[1usize][0usize] =
-        (coefs.v[0usize] as libc::c_double * yr) as
+        (coefs.v[0usize] as f64 * yr) as
             f32;
     result.m[1usize][1usize] =
-        (coefs.v[1usize] as libc::c_double * yg) as
+        (coefs.v[1usize] as f64 * yg) as
             f32;
     result.m[1usize][2usize] =
-        (coefs.v[2usize] as libc::c_double * yb) as
+        (coefs.v[2usize] as f64 * yb) as
             f32;
     result.m[2usize][0usize] =
-        (coefs.v[0usize] as libc::c_double *
+        (coefs.v[0usize] as f64 *
              (1.0f64 - xr - yr)) as f32;
     result.m[2usize][1usize] =
-        (coefs.v[1usize] as libc::c_double *
+        (coefs.v[1usize] as f64 *
              (1.0f64 - xg - yg)) as f32;
     result.m[2usize][2usize] =
-        (coefs.v[2usize] as libc::c_double *
+        (coefs.v[2usize] as f64 *
              (1.0f64 - xb - yb)) as f32;
     result.invalid = primaries_invert.invalid;
     return result;
@@ -653,31 +653,31 @@ pub unsafe extern "C" fn set_rgb_colorants(mut profile: *mut qcms_profile,
     /* note: there's a transpose type of operation going on here */
     (*profile).redColorant.X =
         double_to_s15Fixed16Number(colorants.m[0usize][0usize] as
-                                       libc::c_double);
+                                       f64);
     (*profile).redColorant.Y =
         double_to_s15Fixed16Number(colorants.m[1usize][0usize] as
-                                       libc::c_double);
+                                       f64);
     (*profile).redColorant.Z =
         double_to_s15Fixed16Number(colorants.m[2usize][0usize] as
-                                       libc::c_double);
+                                       f64);
     (*profile).greenColorant.X =
         double_to_s15Fixed16Number(colorants.m[0usize][1usize] as
-                                       libc::c_double);
+                                       f64);
     (*profile).greenColorant.Y =
         double_to_s15Fixed16Number(colorants.m[1usize][1usize] as
-                                       libc::c_double);
+                                       f64);
     (*profile).greenColorant.Z =
         double_to_s15Fixed16Number(colorants.m[2usize][1usize] as
-                                       libc::c_double);
+                                       f64);
     (*profile).blueColorant.X =
         double_to_s15Fixed16Number(colorants.m[0usize][2usize] as
-                                       libc::c_double);
+                                       f64);
     (*profile).blueColorant.Y =
         double_to_s15Fixed16Number(colorants.m[1usize][2usize] as
-                                       libc::c_double);
+                                       f64);
     (*profile).blueColorant.Z =
         double_to_s15Fixed16Number(colorants.m[2usize][2usize] as
-                                       libc::c_double);
+                                       f64);
     return 1i32 != 0;
 }
 #[no_mangle]
@@ -729,17 +729,17 @@ unsafe extern "C" fn qcms_transform_data_gray_template_lut<I: GrayFormat, F: For
         
          let mut out_device_r:  f32 =
     
-            lut_interp_linear(linear as libc::c_double,
+            lut_interp_linear(linear as f64,
                               (*transform).output_gamma_lut_r,
                               (*transform).output_gamma_lut_r_length as
                                   i32); let mut out_device_g:  f32 =
     
-            lut_interp_linear(linear as libc::c_double,
+            lut_interp_linear(linear as f64,
                               (*transform).output_gamma_lut_g,
                               (*transform).output_gamma_lut_g_length as
                                   i32); let mut out_device_b:  f32 =
     
-            lut_interp_linear(linear as libc::c_double,
+            lut_interp_linear(linear as f64,
                               (*transform).output_gamma_lut_b,
                               (*transform).output_gamma_lut_b_length as
                                   i32);
@@ -1530,17 +1530,17 @@ unsafe extern "C" fn qcms_transform_data_template_lut<F: Format>(mut transform:
         
          let mut out_device_r:  f32 =
     
-            lut_interp_linear(out_linear_r as libc::c_double,
+            lut_interp_linear(out_linear_r as f64,
                               (*transform).output_gamma_lut_r,
                               (*transform).output_gamma_lut_r_length as
                                   i32); let mut out_device_g:  f32 =
     
-            lut_interp_linear(out_linear_g as libc::c_double,
+            lut_interp_linear(out_linear_g as f64,
                               (*transform).output_gamma_lut_g,
                               (*transform).output_gamma_lut_g_length as
                                   i32); let mut out_device_b:  f32 =
     
-            lut_interp_linear(out_linear_b as libc::c_double,
+            lut_interp_linear(out_linear_b as f64,
                               (*transform).output_gamma_lut_b,
                               (*transform).output_gamma_lut_b_length as
                                   i32);

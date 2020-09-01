@@ -7,7 +7,7 @@ extern "C" {
     #[no_mangle]
     fn free(_: *mut libc::c_void);
     #[no_mangle]
-    fn pow(_: libc::c_double, _: libc::c_double) -> libc::c_double;
+    fn pow(_: f64, _: f64) -> f64;
     #[no_mangle]
     fn ceilf(_: f32) -> f32;
     #[no_mangle]
@@ -22,7 +22,7 @@ extern "C" {
     fn memset(_: *mut libc::c_void, _: i32, _: libc::c_ulong)
      -> *mut libc::c_void;
     #[no_mangle]
-    fn lut_interp_linear(value: libc::c_double, table: *mut uint16_t,
+    fn lut_interp_linear(value: f64, table: *mut uint16_t,
                          length: i32) -> f32;
     #[no_mangle]
     fn lut_interp_linear_float(value: f32,
@@ -209,7 +209,7 @@ unsafe extern "C" fn clamp_float(mut a: f32) -> f32 {
   However, that version will let NaNs pass through which is undesirable
   for most consumers.
   */
-    if a as libc::c_double > 1.0f64 {
+    if a as f64 > 1.0f64 {
         return 1f32
     } else if a >= 0f32 {
         return a
@@ -329,43 +329,43 @@ unsafe extern "C" fn qcms_transform_module_LAB_to_XYZ(mut transform:
         let mut X: f32 =
             if y + 0.002f32 * device_a <= 24.0f32 / 116.0f32 {
                 (108.0f64 / 841.0f64) *
-                    ((y + 0.002f32 * device_a) as libc::c_double -
+                    ((y + 0.002f32 * device_a) as f64 -
                          16.0f64 / 116.0f64)
             } else {
                 ((y + 0.002f32 * device_a) * (y + 0.002f32 * device_a) *
                      (y + 0.002f32 * device_a) * WhitePointX) as
-                    libc::c_double
+                    f64
             } as f32;
         let mut Y: f32 =
             if y <= 24.0f32 / 116.0f32 {
                 (108.0f64 / 841.0f64) *
-                    (y as libc::c_double - 16.0f64 / 116.0f64)
-            } else { (y * y * y * WhitePointY) as libc::c_double } as
+                    (y as f64 - 16.0f64 / 116.0f64)
+            } else { (y * y * y * WhitePointY) as f64 } as
                 f32;
         let mut Z: f32 =
             if y - 0.005f32 * device_b <= 24.0f32 / 116.0f32 {
                 (108.0f64 / 841.0f64) *
-                    ((y - 0.005f32 * device_b) as libc::c_double -
+                    ((y - 0.005f32 * device_b) as f64 -
                          16.0f64 / 116.0f64)
             } else {
                 ((y - 0.005f32 * device_b) * (y - 0.005f32 * device_b) *
                      (y - 0.005f32 * device_b) * WhitePointZ) as
-                    libc::c_double
+                    f64
             } as f32;
         let fresh3 = dest;
         dest = dest.offset(1);
         *fresh3 =
-            (X as libc::c_double / (1.0f64 + 32767.0f64 / 32768.0f64)) as
+            (X as f64 / (1.0f64 + 32767.0f64 / 32768.0f64)) as
                 f32;
         let fresh4 = dest;
         dest = dest.offset(1);
         *fresh4 =
-            (Y as libc::c_double / (1.0f64 + 32767.0f64 / 32768.0f64)) as
+            (Y as f64 / (1.0f64 + 32767.0f64 / 32768.0f64)) as
                 f32;
         let fresh5 = dest;
         dest = dest.offset(1);
         *fresh5 =
-            (Z as libc::c_double / (1.0f64 + 32767.0f64 / 32768.0f64)) as
+            (Z as f64 / (1.0f64 + 32767.0f64 / 32768.0f64)) as
                 f32;
         i = i.wrapping_add(1)
     };
@@ -388,41 +388,41 @@ unsafe extern "C" fn qcms_transform_module_XYZ_to_LAB(mut transform:
         let fresh6 = src;
         src = src.offset(1);
         let mut device_x: f32 =
-            (*fresh6 as libc::c_double * (1.0f64 + 32767.0f64 / 32768.0f64) /
-                 WhitePointX as libc::c_double) as f32;
+            (*fresh6 as f64 * (1.0f64 + 32767.0f64 / 32768.0f64) /
+                 WhitePointX as f64) as f32;
         let fresh7 = src;
         src = src.offset(1);
         let mut device_y: f32 =
-            (*fresh7 as libc::c_double * (1.0f64 + 32767.0f64 / 32768.0f64) /
-                 WhitePointY as libc::c_double) as f32;
+            (*fresh7 as f64 * (1.0f64 + 32767.0f64 / 32768.0f64) /
+                 WhitePointY as f64) as f32;
         let fresh8 = src;
         src = src.offset(1);
         let mut device_z: f32 =
-            (*fresh8 as libc::c_double * (1.0f64 + 32767.0f64 / 32768.0f64) /
-                 WhitePointZ as libc::c_double) as f32;
+            (*fresh8 as f64 * (1.0f64 + 32767.0f64 / 32768.0f64) /
+                 WhitePointZ as f64) as f32;
         let mut fx: f32 =
             if device_x <=
                    24.0f32 / 116.0f32 * (24.0f32 / 116.0f32) *
                        (24.0f32 / 116.0f32) {
-                (841.0f64 / 108.0f64 * device_x as libc::c_double) +
+                (841.0f64 / 108.0f64 * device_x as f64) +
                     16.0f64 / 116.0f64
-            } else { pow(device_x as libc::c_double, 1.0f64 / 3.0f64) } as
+            } else { pow(device_x as f64, 1.0f64 / 3.0f64) } as
                 f32;
         let mut fy: f32 =
             if device_y <=
                    24.0f32 / 116.0f32 * (24.0f32 / 116.0f32) *
                        (24.0f32 / 116.0f32) {
-                (841.0f64 / 108.0f64 * device_y as libc::c_double) +
+                (841.0f64 / 108.0f64 * device_y as f64) +
                     16.0f64 / 116.0f64
-            } else { pow(device_y as libc::c_double, 1.0f64 / 3.0f64) } as
+            } else { pow(device_y as f64, 1.0f64 / 3.0f64) } as
                 f32;
         let mut fz: f32 =
             if device_z <=
                    24.0f32 / 116.0f32 * (24.0f32 / 116.0f32) *
                        (24.0f32 / 116.0f32) {
-                (841.0f64 / 108.0f64 * device_z as libc::c_double) +
+                (841.0f64 / 108.0f64 * device_z as f64) +
                     16.0f64 / 116.0f64
-            } else { pow(device_z as libc::c_double, 1.0f64 / 3.0f64) } as
+            } else { pow(device_z as f64, 1.0f64 / 3.0f64) } as
                 f32;
         let mut L: f32 = 116.0f32 * fy - 16.0f32;
         let mut a: f32 = 500.0f32 * (fx - fy);
@@ -960,17 +960,17 @@ unsafe extern "C" fn qcms_transform_module_gamma_lut(mut transform:
         src = src.offset(1);
         let mut in_b: f32 = *fresh32;
         out_r =
-            lut_interp_linear(in_r as libc::c_double,
+            lut_interp_linear(in_r as f64,
                               (*transform).output_gamma_lut_r,
                               (*transform).output_gamma_lut_r_length as
                                   i32);
         out_g =
-            lut_interp_linear(in_g as libc::c_double,
+            lut_interp_linear(in_g as f64,
                               (*transform).output_gamma_lut_g,
                               (*transform).output_gamma_lut_g_length as
                                   i32);
         out_b =
-            lut_interp_linear(in_b as libc::c_double,
+            lut_interp_linear(in_b as f64,
                               (*transform).output_gamma_lut_b,
                               (*transform).output_gamma_lut_b_length as
                                   i32);
@@ -1302,9 +1302,9 @@ unsafe extern "C" fn qcms_modular_transform_create_mAB(mut lut:
                         append_transform(transform, &mut next_transform);
                         clut_length =
                             (::std::mem::size_of::<f32>() as
-                                 libc::c_ulong as libc::c_double *
+                                 libc::c_ulong as f64 *
                                  pow((*lut).num_grid_points[0usize] as
-                                         libc::c_double,
+                                         f64,
                                      3f64) *
                                  3f64) as
                                 size_t;
@@ -1492,9 +1492,9 @@ unsafe extern "C" fn qcms_modular_transform_create_lut(mut lut: *mut lutType)
                     // Prepare table
                     clut_length =
                         (::std::mem::size_of::<f32>() as
-                             libc::c_ulong as libc::c_double *
+                             libc::c_ulong as f64 *
                              pow((*lut).num_clut_grid_points as
-                                     libc::c_double,
+                                     f64,
                                  3f64) *
                              3f64) as size_t;
                     clut = malloc(clut_length) as *mut f32;
