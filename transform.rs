@@ -1606,7 +1606,7 @@ unsafe extern "C" fn precache_reference(mut p: *mut precache_output)
 }
 unsafe extern "C" fn precache_create() -> *mut precache_output {
     let mut p: *mut precache_output =
-        malloc(::std::mem::size_of::<precache_output>() as usize) as
+        malloc(::std::mem::size_of::<precache_output>()) as
             *mut precache_output;
     if !p.is_null() { (*p).ref_count = 1i32 }
     return p;
@@ -1625,10 +1625,7 @@ pub unsafe extern "C" fn precache_release(mut p: *mut precache_output) {
 unsafe extern "C" fn transform_alloc() -> *mut qcms_transform {
     /* transform needs to be aligned on a 16byte boundrary */
     let mut original_block: *mut libc::c_char =
-        calloc((::std::mem::size_of::<qcms_transform>() as
-                    usize).wrapping_add(::std::mem::size_of::<*mut libc::c_void>()
-                                                    as
-                                                    usize).wrapping_add(16),
+        calloc((::std::mem::size_of::<qcms_transform>()).wrapping_add(::std::mem::size_of::<*mut libc::c_void>()).wrapping_add(16),
                1) as *mut libc::c_char;
     /* make room for a pointer to the block returned by calloc */
     let mut transform_start: *mut libc::c_void =
@@ -1851,13 +1848,11 @@ pub unsafe extern "C" fn qcms_transform_precacheLUT_float(mut transform:
      let mut src:  *mut f32 =
     
         malloc((lutSize as
-                    usize).wrapping_mul(::std::mem::size_of::<f32>()
-                                                    as usize)) as
+                    usize).wrapping_mul(::std::mem::size_of::<f32>())) as
             *mut f32; let mut dest:  *mut f32 =
     
         malloc((lutSize as
-                    usize).wrapping_mul(::std::mem::size_of::<f32>()
-                                                    as usize)) as
+                    usize).wrapping_mul(::std::mem::size_of::<f32>())) as
             *mut f32;
     if !src.is_null() && !dest.is_null() {
         /* Prepare a list of points we want to sample */
