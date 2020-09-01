@@ -1,8 +1,6 @@
 use ::libc::{self, malloc, free, calloc};
 extern "C" {
     #[no_mangle]
-    fn floorf(_: f32) -> f32;
-    #[no_mangle]
     fn __assert_rtn(_: *const libc::c_char, _: *const libc::c_char,
                     _: i32, _: *const libc::c_char) -> !;
     #[no_mangle]
@@ -384,7 +382,7 @@ unsafe extern "C" fn clamp_u8(mut v: f32) -> libc::c_uchar {
     } else if v < 0f32 {
         return 0u8
     } else {
-        return floorf((v as f64 + 0.5f64) as f32) as
+        return ((v as f64 + 0.5f64) as f32).floor() as
                    libc::c_uchar
     };
 }
