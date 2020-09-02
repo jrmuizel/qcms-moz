@@ -40,7 +40,6 @@ pub struct precache_output {
     pub data: [uint8_t; PRECACHE_OUTPUT_SIZE],
 }
 
-
 extern "C" {
     #[no_mangle]
     fn qcms_transform_data_rgb_out_lut_avx(transform: *const qcms_transform,

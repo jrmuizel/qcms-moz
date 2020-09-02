@@ -1,17 +1,8 @@
 use ::libc;
+
+use crate::iccread::qcms_profile;
+
 extern "C" {
-    #[no_mangle]
-    fn fabs(_: f64) -> f64;
-    #[no_mangle]
-    fn pow(_: f64, _: f64) -> f64;
-    #[no_mangle]
-    fn ceilf(_: f32) -> f32;
-    #[no_mangle]
-    fn ceil(_: f64) -> f64;
-    #[no_mangle]
-    fn floorf(_: f32) -> f32;
-    #[no_mangle]
-    fn floor(_: f64) -> f64;
     #[no_mangle]
     fn __assert_rtn(_: *const libc::c_char, _: *const libc::c_char,
                     _: i32, _: *const libc::c_char) -> !;
@@ -24,36 +15,9 @@ pub type __darwin_size_t = libc::c_ulong;
 pub type size_t = __darwin_size_t;
 pub type int32_t = i32;
 
-#[repr(C)]#[derive(Copy, Clone)]
-pub struct precache_output {
-    pub ref_count: i32,
-    pub data: [uint8_t; 8192],
-}
 pub type uint8_t = libc::c_uchar;
 pub type uint16_t = libc::c_ushort;
 
-#[repr(C)]#[derive(Copy, Clone)]
-pub struct _qcms_profile {
-    pub class_type: uint32_t,
-    pub color_space: uint32_t,
-    pub pcs: uint32_t,
-    pub rendering_intent: qcms_intent,
-    pub redColorant: XYZNumber,
-    pub blueColorant: XYZNumber,
-    pub greenColorant: XYZNumber,
-    pub redTRC: *mut curveType,
-    pub blueTRC: *mut curveType,
-    pub greenTRC: *mut curveType,
-    pub grayTRC: *mut curveType,
-    pub A2B0: *mut lutType,
-    pub B2A0: *mut lutType,
-    pub mAB: *mut lutmABType,
-    pub mBA: *mut lutmABType,
-    pub chromaticAdaption: matrix,
-    pub output_table_r: *mut precache_output,
-    pub output_table_g: *mut precache_output,
-    pub output_table_b: *mut precache_output,
-}
 
 #[repr(C)]#[derive(Copy, Clone)]
 pub struct matrix {
@@ -133,7 +97,6 @@ pub const QCMS_INTENT_SATURATION: qcms_intent = 2;
 pub const QCMS_INTENT_RELATIVE_COLORIMETRIC: qcms_intent = 1;
 pub const QCMS_INTENT_PERCEPTUAL: qcms_intent = 0;
 pub const QCMS_INTENT_MIN: qcms_intent = 0;
-pub type qcms_profile = _qcms_profile;
 pub type uint16_fract_t = uint16_t;
 #[inline]
 unsafe extern "C" fn s15Fixed16Number_to_float(mut a: s15Fixed16Number)
@@ -168,7 +131,7 @@ pub unsafe extern "C" fn lut_interp_linear(mut input_value: f64,
     input_value = input_value * (length - 1i32) as f64;
     
     
-     let mut upper:  i32 =  ceil(input_value) as i32; let mut lower:  i32 =  floor(input_value) as i32; let mut value:  f32 =
+     let mut upper:  i32 =  input_value.ceil() as i32; let mut lower:  i32 = input_value.floor() as i32; let mut value:  f32 =
     
         (*table.offset(upper as isize) as i32 as f64 *
              (1.0f64 - (upper as f64 - input_value)) +
@@ -275,7 +238,7 @@ pub unsafe extern "C" fn lut_interp_linear_float(mut value: f32,
     
     value = value * (length - 1i32) as f32;
     
-     let mut upper:  i32 =  ceilf(value) as i32; let mut lower:  i32 =  floorf(value) as i32;
+     let mut upper:  i32 =  value.ceil() as i32; let mut lower:  i32 = value.floor() as i32;
     //XXX: can we be more performant here?
     value =
         (*table.offset(upper as isize) as f64 *
@@ -297,7 +260,7 @@ pub unsafe extern "C" fn compute_curve_gamma_table_type1(mut gamma_table:
     while i < 256u32 {
         // 0..1^(0..255 + 255/256) will always be between 0 and 1
         *gamma_table.offset(i as isize) =
-            pow(i as f64 / 255.0f64, gamma_float as f64)
+            (i as f64 / 255.0f64).powf(gamma_float as f64)
                 as f32;
         i = i.wrapping_add(1)
     };
@@ -399,8 +362,8 @@ pub unsafe extern "C" fn compute_curve_gamma_table_type_parametric(mut gamma_tab
                         //     algebraically equivalent.
                         // TODO Should division by 255 be for the whole expression.
             *gamma_table.offset(X as isize) =
-                clamp_float((pow((a * X as f32) as f64 /
-                                     255.0f64 + b as f64,
+                clamp_float((((a * X as f32) as f64 /
+                                     255.0f64 + b as f64).powf(
                                  y as f64) + c as f64 +
                                  e as f64) as f32)
         } else {
@@ -576,7 +539,7 @@ pub unsafe extern "C" fn lut_inverse_interp16(mut Value: uint16_t,
      let mut val2:  f64 =
     
         (length - 1i32) as f64 *
-            ((x - 1i32) as f64 / 65535.0f64); let mut cell0:  i32 =  floor(val2) as i32; let mut cell1:  i32 =  ceil(val2) as i32;
+            ((x - 1i32) as f64 / 65535.0f64); let mut cell0:  i32 = val2.floor() as i32; let mut cell1:  i32 =  val2.ceil() as i32;
     if cell0 == cell1 { return x as uint16_fract_t }
     
     
@@ -592,11 +555,11 @@ pub unsafe extern "C" fn lut_inverse_interp16(mut Value: uint16_t,
     
         65535.0f64 * cell1 as f64 /
             (length - 1i32) as f64; let mut a:  f64 =  (y1 - y0) / (x1 - x0); let mut b:  f64 =  y0 - a * x0;
-    if fabs(a) < 0.01f64 { return x as uint16_fract_t }
+    if a.abs() < 0.01f64 { return x as uint16_fract_t }
      let mut f:  f64 =  (Value as i32 as f64 - b) / a;
     if f < 0.0f64 { return 0u16 }
     if f >= 65535.0f64 { return 0xffffu16 }
-    return floor(f + 0.5f64) as uint16_fract_t;
+    return (f + 0.5f64).floor() as uint16_fract_t;
 }
 /*
  The number of entries needed to invert a lookup table should not
@@ -628,7 +591,7 @@ unsafe extern "C" fn invert_lut(mut table: *mut uint16_t,
         let mut x: f64 =
             i as f64 * 65535.0f64 /
                 (out_length - 1i32) as f64;
-        let mut input: uint16_fract_t = floor(x + 0.5f64) as uint16_fract_t;
+        let mut input: uint16_fract_t = (x + 0.5f64).floor() as uint16_fract_t;
         *output.offset(i as isize) =
             lut_inverse_interp16(input, table, length);
         i += 1
@@ -643,9 +606,9 @@ unsafe extern "C" fn compute_precache_pow(mut output: *mut uint8_t,
         //XXX: don't do integer/float conversion... and round?
         *output.offset(v as isize) =
             (255.0f64 *
-                 pow(v as f64 /
+                 (v as f64 /
                          (8192i32 - 1i32) as
-                             f64, gamma as f64)) as
+                             f64).powf(gamma as f64)) as
                 uint8_t;
         v = v.wrapping_add(1)
     };
@@ -748,7 +711,7 @@ unsafe extern "C" fn build_linear_table(mut length: i32)
         let mut x: f64 =
             i as f64 * 65535.0f64 /
                 (length - 1i32) as f64;
-        let mut input: uint16_fract_t = floor(x + 0.5f64) as uint16_fract_t;
+        let mut input: uint16_fract_t = (x + 0.5f64).floor() as uint16_fract_t;
         *output.offset(i as isize) = input;
         i += 1
     }
@@ -769,9 +732,9 @@ unsafe extern "C" fn build_pow_table(mut gamma: f32,
         let mut x: f64 =
             i as f64 /
                 (length - 1i32) as f64;
-        x = pow(x, gamma as f64);
+        x = x.powf(gamma as f64);
          let mut result:  uint16_fract_t =
-     floor(x * 65535.0f64 + 0.5f64) as uint16_fract_t;
+     (x * 65535.0f64 + 0.5f64).floor() as uint16_fract_t;
         *output.offset(i as isize) = result;
         i += 1
     }
