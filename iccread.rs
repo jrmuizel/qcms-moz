@@ -50,43 +50,6 @@ pub const icSigYCbCrData: icColorSpaceSignature = 1497588338;
 pub const icSigLuvData: icColorSpaceSignature = 1282766368;
 pub const icSigLabData: icColorSpaceSignature = 1281450528;
 pub const icSigXYZData: icColorSpaceSignature = 1482250784;
-pub type fpos_t = __darwin_off_t;
-
-#[repr(C)]#[derive(Copy, Clone)]
-pub struct __sbuf {
-    pub _base: *mut libc::c_uchar,
-    pub _size: i32,
-}
-
-#[repr(C)]#[derive(Copy, Clone)]
-pub struct __sFILE {
-    pub _p: *mut libc::c_uchar,
-    pub _r: i32,
-    pub _w: i32,
-    pub _flags: libc::c_short,
-    pub _file: libc::c_short,
-    pub _bf: __sbuf,
-    pub _lbfsize: i32,
-    pub _cookie: *mut libc::c_void,
-    pub _close: Option<unsafe extern "C" fn(_: *mut libc::c_void)
-                           -> i32>,
-    pub _read: Option<unsafe extern "C" fn(_: *mut libc::c_void,
-                                           _: *mut libc::c_char,
-                                           _: i32) -> i32>,
-    pub _seek: Option<unsafe extern "C" fn(_: *mut libc::c_void, _: fpos_t,
-                                           _: i32) -> fpos_t>,
-    pub _write: Option<unsafe extern "C" fn(_: *mut libc::c_void,
-                                            _: *const libc::c_char,
-                                            _: i32) -> i32>,
-    pub _ub: __sbuf,
-    pub _extra: *mut FILE,
-    pub _ur: i32,
-    pub _ubuf: [libc::c_uchar; 3],
-    pub _nbuf: [libc::c_uchar; 1],
-    pub _lb: __sbuf,
-    pub _blksize: i32,
-    pub _offset: fpos_t,
-}
 
 #[repr(C)]#[derive(Copy, Clone)]
 pub struct precache_output {
