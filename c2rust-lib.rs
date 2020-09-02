@@ -5,7 +5,6 @@
 #![allow(non_upper_case_globals)]
 #![allow(unused_assignments)]
 #![allow(unused_mut)]
-#![feature(stdsimd)]
 
 
 
@@ -19,7 +18,6 @@ pub mod matrix;
 pub mod test;
 pub mod transform;
 pub mod transform_avx;
-pub mod transform_sse1;
 pub mod transform_sse2;
 pub mod transform_util;
 
