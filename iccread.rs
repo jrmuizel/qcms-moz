@@ -1,5 +1,8 @@
 use ::libc;
 use libc::{malloc, calloc, memset, memcpy, free, fopen, fread, fclose, FILE};
+
+use crate::transform::precache_output;
+
 extern "C" {
     /* produces the nearest float to 'a' with a maximum error
  * of 1/1024 which happens for large values like 0x40000040 */
@@ -51,11 +54,6 @@ pub const icSigLuvData: icColorSpaceSignature = 1282766368;
 pub const icSigLabData: icColorSpaceSignature = 1281450528;
 pub const icSigXYZData: icColorSpaceSignature = 1482250784;
 
-#[repr(C)]#[derive(Copy, Clone)]
-pub struct precache_output {
-    pub ref_count: i32,
-    pub data: [uint8_t; 8192],
-}
 
 #[repr(C)]#[derive(Copy, Clone)]
 pub struct qcms_profile {

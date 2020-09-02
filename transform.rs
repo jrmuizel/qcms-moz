@@ -1,6 +1,16 @@
 use ::libc::{self, malloc, free, calloc};
 use std::sync::atomic;
 use std::sync::atomic::Ordering;
+use crate::iccread::{qcms_profile, curveType};
+
+
+#[repr(C)]
+pub struct precache_output {
+    pub ref_count: std::sync::atomic::AtomicI32,
+    pub data: [uint8_t; 8192],
+}
+
+
 extern "C" {
     #[no_mangle]
     fn qcms_transform_data_rgb_out_lut_avx(transform: *const qcms_transform,
@@ -155,38 +165,11 @@ pub type transform_fn_t
                                 _: *const libc::c_uchar,
                                 _: *mut libc::c_uchar, _: size_t) -> ()>;
 
-#[repr(C)]
-pub struct precache_output {
-    pub ref_count: std::sync::atomic::AtomicI32,
-    pub data: [uint8_t; 8192],
-}
+
 // 16 is the upperbound, actual is 0..num_in_channels.
 // reversed elements (for mBA)
 /* should lut8Type and lut16Type be different types? */
 // used by lut8Type/lut16Type (mft2) only
-
-#[repr(C)]#[derive(Copy, Clone)]
-pub struct _qcms_profile {
-    pub class_type: uint32_t,
-    pub color_space: uint32_t,
-    pub pcs: uint32_t,
-    pub rendering_intent: qcms_intent,
-    pub redColorant: XYZNumber,
-    pub blueColorant: XYZNumber,
-    pub greenColorant: XYZNumber,
-    pub redTRC: *mut curveType,
-    pub blueTRC: *mut curveType,
-    pub greenTRC: *mut curveType,
-    pub grayTRC: *mut curveType,
-    pub A2B0: *mut lutType,
-    pub B2A0: *mut lutType,
-    pub mAB: *mut lutmABType,
-    pub mBA: *mut lutmABType,
-    pub chromaticAdaption: matrix,
-    pub output_table_r: *mut precache_output,
-    pub output_table_g: *mut precache_output,
-    pub output_table_b: *mut precache_output,
-}
 
 #[repr(C)]#[derive(Copy, Clone)]
 pub struct matrix {
@@ -219,13 +202,6 @@ pub struct lutmABType {
     pub clut_table_data: [f32; 0],
 }
 
-#[repr(C)]#[derive(Copy, Clone)]
-pub struct curveType {
-    pub type_0: uint32_t,
-    pub count: uint32_t,
-    pub parameter: [f32; 7],
-    pub data: [uInt16Number; 0],
-}
 pub type uInt16Number = uint16_t;
 pub type s15Fixed16Number = int32_t;
 
@@ -265,7 +241,6 @@ pub const QCMS_INTENT_SATURATION: qcms_intent = 2;
 pub const QCMS_INTENT_RELATIVE_COLORIMETRIC: qcms_intent = 1;
 pub const QCMS_INTENT_PERCEPTUAL: qcms_intent = 0;
 pub const QCMS_INTENT_MIN: qcms_intent = 0;
-pub type qcms_profile = _qcms_profile;
 pub type qcms_data_type = libc::c_uint;
 pub const QCMS_DATA_GRAYA_8: qcms_data_type = 4;
 pub const QCMS_DATA_GRAY_8: qcms_data_type = 3;
