@@ -147,6 +147,8 @@ pub const QCMS_INTENT_RELATIVE_COLORIMETRIC: qcms_intent = 1;
 pub const QCMS_INTENT_PERCEPTUAL: qcms_intent = 0;
 pub const QCMS_INTENT_MIN: qcms_intent = 0;
 
+
+/* the names for the following two types are sort of ugly */
 #[repr(C)]#[derive(Copy, Clone)]
 pub struct qcms_CIE_xyY {
     pub x: f64,
@@ -515,7 +517,7 @@ authorization from SunSoft Inc.
 	 * cannot reproduce relative + Black Point Compensation.  BPC brings an
 	 * unacceptable performance overhead, so we go with perceptual. */
 //XXX: I don't really like the _DATA_ prefix
-/* the names for the following two types are sort of ugly */
+
 // Checks a profile for obvious inconsistencies and returns
 // true if the profile looks bogus and should probably be
 // ignored.
