@@ -1,18 +1,7 @@
 use ::libc;
+use libc::{malloc, calloc, memset, memcpy, free};
 extern "C" {
     pub type __sFILEX;
-    #[no_mangle]
-    fn malloc(_: libc::c_ulong) -> *mut libc::c_void;
-    #[no_mangle]
-    fn calloc(_: libc::c_ulong, _: libc::c_ulong) -> *mut libc::c_void;
-    #[no_mangle]
-    fn free(_: *mut libc::c_void);
-    #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong)
-     -> *mut libc::c_void;
-    #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: i32, _: libc::c_ulong)
-     -> *mut libc::c_void;
     #[no_mangle]
     fn fclose(_: *mut FILE) -> i32;
     #[no_mangle]
@@ -347,7 +336,7 @@ unsafe extern "C" fn read_u32(mut mem: *mut mem_source, mut offset: size_t)
         let mut k: be32 = 0;
         memcpy(&mut k as *mut be32 as *mut libc::c_void,
                (*mem).buf.offset(offset as isize) as *const libc::c_void,
-               ::std::mem::size_of::<be32>() as libc::c_ulong);
+               ::std::mem::size_of::<be32>() as usize);
         return be32_to_cpu(k)
     };
 }
@@ -362,7 +351,7 @@ unsafe extern "C" fn read_u16(mut mem: *mut mem_source, mut offset: size_t)
         let mut k: be16 = 0;
         memcpy(&mut k as *mut be16 as *mut libc::c_void,
                (*mem).buf.offset(offset as isize) as *const libc::c_void,
-               ::std::mem::size_of::<be16>() as libc::c_ulong);
+               ::std::mem::size_of::<be16>() as usize);
         return be16_to_cpu(k)
     };
 }
@@ -484,7 +473,7 @@ unsafe extern "C" fn read_tag_table(mut profile: *mut qcms_profile,
     }
     index.tags =
         malloc((::std::mem::size_of::<tag>() as
-                    libc::c_ulong).wrapping_mul(index.count as libc::c_ulong))
+                    usize).wrapping_mul(index.count as usize))
             as *mut tag;
     if !index.tags.is_null() {
         i = 0u32;
@@ -786,11 +775,11 @@ unsafe extern "C" fn read_curveType(mut src: *mut mem_source,
         }
         curve =
             malloc((::std::mem::size_of::<curveType>() as
-                        libc::c_ulong).wrapping_add((::std::mem::size_of::<uInt16Number>()
+                        usize).wrapping_add((::std::mem::size_of::<uInt16Number>()
                                                          as
-                                                         libc::c_ulong).wrapping_mul(count
+                                                         usize).wrapping_mul(count
                                                                                          as
-                                                                                         libc::c_ulong)))
+                                                                                         usize)))
                 as *mut curveType;
         if curve.is_null() { return 0 as *mut curveType }
         (*curve).count = count;
@@ -817,7 +806,7 @@ unsafe extern "C" fn read_curveType(mut src: *mut mem_source,
             return 0 as *mut curveType
         }
         curve =
-            malloc(::std::mem::size_of::<curveType>() as libc::c_ulong) as
+            malloc(::std::mem::size_of::<curveType>() as usize) as
                 *mut curveType;
         if curve.is_null() { return 0 as *mut curveType }
         (*curve).count = count;
@@ -1031,15 +1020,15 @@ unsafe extern "C" fn read_tag_lutmABType(mut src: *mut mem_source,
     }
     lut =
         malloc((::std::mem::size_of::<lutmABType>() as
-                    libc::c_ulong).wrapping_add((clut_size as
-                                                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<f32>()
+                    usize).wrapping_add((clut_size as
+                                                     usize).wrapping_mul(::std::mem::size_of::<f32>()
                                                                                      as
-                                                                                     libc::c_ulong)))
+                                                                                     usize)))
             as *mut lutmABType;
     if lut.is_null() { return 0 as *mut lutmABType }
     // we'll fill in the rest below
     memset(lut as *mut libc::c_void, 0i32,
-           ::std::mem::size_of::<lutmABType>() as libc::c_ulong);
+           ::std::mem::size_of::<lutmABType>() as usize);
     (*lut).clut_table =
         &mut *(*lut).clut_table_data.as_mut_ptr().offset(0isize) as
             *mut f32;
@@ -1292,7 +1281,7 @@ unsafe extern "C" fn read_tag_lutType(mut src: *mut mem_source,
     }
     lut =
         malloc((::std::mem::size_of::<lutType>() as
-                    libc::c_ulong).wrapping_add((((num_input_table_entries as
+                    usize).wrapping_add((((num_input_table_entries as
                                                        i32 *
                                                        in_chan as i32)
                                                       as
@@ -1308,9 +1297,9 @@ unsafe extern "C" fn read_tag_lutType(mut src: *mut mem_source,
                                                                                                                                             as
                                                                                                                                             libc::c_uint)
                                                      as
-                                                     libc::c_ulong).wrapping_mul(::std::mem::size_of::<f32>()
+                                                     usize).wrapping_mul(::std::mem::size_of::<f32>()
                                                                                      as
-                                                                                     libc::c_ulong)))
+                                                                                     usize)))
             as *mut lutType;
     if lut.is_null() {
         invalid_source(src,
@@ -1506,8 +1495,8 @@ unsafe extern "C" fn read_rendering_intent(mut profile: *mut qcms_profile,
 }
 #[no_mangle]
 pub unsafe extern "C" fn qcms_profile_create() -> *mut qcms_profile {
-    return calloc(::std::mem::size_of::<qcms_profile>() as libc::c_ulong,
-                  1u64) as *mut qcms_profile;
+    return calloc(::std::mem::size_of::<qcms_profile>() as usize,
+                  1) as *mut qcms_profile;
 }
 /* build sRGB gamma table */
 /* based on cmsBuildParametricGamma() */
@@ -1522,7 +1511,7 @@ unsafe extern "C" fn build_sRGB_gamma_table(mut num_entries: i32)
     let mut d: f64 = 0.04045f64;
     let mut table: *mut uint16_t =
         malloc((::std::mem::size_of::<uint16_t>() as
-                    libc::c_ulong).wrapping_mul(num_entries as libc::c_ulong))
+                    usize).wrapping_mul(num_entries as usize))
             as *mut uint16_t;
     if table.is_null() { return 0 as *mut uint16_t }
     i = 0i32;
@@ -1561,11 +1550,11 @@ unsafe extern "C" fn curve_from_table(mut table: *mut uint16_t,
     let mut i: i32 = 0;
     curve =
         malloc((::std::mem::size_of::<curveType>() as
-                    libc::c_ulong).wrapping_add((::std::mem::size_of::<uInt16Number>()
+                    usize).wrapping_add((::std::mem::size_of::<uInt16Number>()
                                                      as
-                                                     libc::c_ulong).wrapping_mul(num_entries
+                                                     usize).wrapping_mul(num_entries
                                                                                      as
-                                                                                     libc::c_ulong)))
+                                                                                     usize)))
             as *mut curveType;
     if curve.is_null() { return 0 as *mut curveType }
     (*curve).type_0 = 0x63757276u32;
@@ -1592,11 +1581,11 @@ unsafe extern "C" fn curve_from_gamma(mut gamma: f32)
     let mut num_entries: i32 = 1i32;
     curve =
         malloc((::std::mem::size_of::<curveType>() as
-                    libc::c_ulong).wrapping_add((::std::mem::size_of::<uInt16Number>()
+                    usize).wrapping_add((::std::mem::size_of::<uInt16Number>()
                                                      as
-                                                     libc::c_ulong).wrapping_mul(num_entries
+                                                     usize).wrapping_mul(num_entries
                                                                                      as
-                                                                                     libc::c_ulong)))
+                                                                                     usize)))
             as *mut curveType;
     if curve.is_null() { return 0 as *mut curveType }
     (*curve).count = num_entries as uint32_t;
@@ -2016,7 +2005,7 @@ unsafe extern "C" fn qcms_data_from_file(mut file: *mut FILE,
         return
     }
     /* allocate room for the entire profile */
-    data = malloc(length as libc::c_ulong);
+    data = malloc(length as usize);
     if data.is_null() { return }
     /* copy in length to the front so that the buffer will contain the entire profile */
     *(data as *mut be32) = length_be;
@@ -2115,9 +2104,9 @@ pub unsafe extern "C" fn qcms_data_create_rgb_with_gamma(mut white_point:
         ((128i32 + 4i32) as
              libc::c_uint).wrapping_add((12u32).wrapping_mul(xyz_count.wrapping_add(trc_count))).wrapping_add(xyz_count.wrapping_mul(20u32)).wrapping_add(trc_count.wrapping_mul(16u32));
     // reserve the total memory.
-    data = malloc(length as libc::c_ulong);
+    data = malloc(length as usize);
     if data.is_null() { return }
-    memset(data, 0i32, length as libc::c_ulong);
+    memset(data, 0i32, length as usize);
     // Part1 : write rXYZ, gXYZ and bXYZ
     if !get_rgb_colorants(&mut colorants, white_point, primaries) {
         free(data);
