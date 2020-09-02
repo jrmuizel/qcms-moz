@@ -58,7 +58,7 @@ pub struct precache_output {
 }
 
 #[repr(C)]#[derive(Copy, Clone)]
-pub struct _qcms_profile {
+pub struct qcms_profile {
     pub class_type: uint32_t,
     pub color_space: uint32_t,
     pub pcs: uint32_t,
@@ -157,7 +157,6 @@ pub const QCMS_INTENT_SATURATION: qcms_intent = 2;
 pub const QCMS_INTENT_RELATIVE_COLORIMETRIC: qcms_intent = 1;
 pub const QCMS_INTENT_PERCEPTUAL: qcms_intent = 0;
 pub const QCMS_INTENT_MIN: qcms_intent = 0;
-pub type qcms_profile = _qcms_profile;
 
 #[repr(C)]#[derive(Copy, Clone)]
 pub struct qcms_CIE_xyY {
