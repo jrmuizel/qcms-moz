@@ -2958,5 +2958,5 @@ unsafe fn main_0() -> i32 {
     }
     return 0i32;
 }
-#[main]
+
 pub fn main() { unsafe { ::std::process::exit(main_0()) } }
