@@ -1,13 +1,8 @@
 use ::libc;
+use libc::{malloc, free};
 
 use crate::iccread::qcms_profile;
 
-extern "C" {
-    #[no_mangle]
-    fn malloc(_: libc::c_ulong) -> *mut libc::c_void;
-    #[no_mangle]
-    fn free(_: *mut libc::c_void);
-}
 pub type __darwin_size_t = libc::c_ulong;
 pub type size_t = __darwin_size_t;
 pub type int32_t = i32;
@@ -381,7 +376,7 @@ pub unsafe extern "C" fn build_input_gamma_table(mut TRC: *mut curveType)
      let mut gamma_table:  *mut f32 =
     
         malloc((::std::mem::size_of::<f32>() as
-                    libc::c_ulong).wrapping_mul(256u64)) as
+                    usize).wrapping_mul(256)) as
             *mut f32;
     if !gamma_table.is_null() {
         if (*TRC).type_0 == 0x70617261u32 {
@@ -563,7 +558,7 @@ unsafe extern "C" fn invert_lut(mut table: *mut uint16_t,
          * and attempting to lookup a value for each entry using lut_inverse_interp16 */
     let mut output: *mut uint16_t =
         malloc((::std::mem::size_of::<uint16_t>() as
-                    libc::c_ulong).wrapping_mul(out_length as libc::c_ulong))
+                    usize).wrapping_mul(out_length as usize))
             as *mut uint16_t;
     if output.is_null() { return 0 as *mut uint16_t }
      let mut i:  i32 =  0i32;
@@ -683,7 +678,7 @@ unsafe extern "C" fn build_linear_table(mut length: i32)
     
     let mut output: *mut uint16_t =
         malloc((::std::mem::size_of::<uint16_t>() as
-                    libc::c_ulong).wrapping_mul(length as libc::c_ulong)) as
+                    usize).wrapping_mul(length as usize)) as
             *mut uint16_t;
     if output.is_null() { return 0 as *mut uint16_t }
      let mut i:  i32 =  0i32;
@@ -703,7 +698,7 @@ unsafe extern "C" fn build_pow_table(mut gamma: f32,
     
     let mut output: *mut uint16_t =
         malloc((::std::mem::size_of::<uint16_t>() as
-                    libc::c_ulong).wrapping_mul(length as libc::c_ulong)) as
+                    usize).wrapping_mul(length as usize)) as
             *mut uint16_t;
     if output.is_null() { return 0 as *mut uint16_t }
      let mut i:  i32 =  0i32;
@@ -769,7 +764,7 @@ pub unsafe extern "C" fn build_output_lut(mut trc: *mut curveType,
         
         let mut output: *mut uint16_t =
             malloc((::std::mem::size_of::<uint16_t>() as
-                        libc::c_ulong).wrapping_mul(256u64)) as
+                        usize).wrapping_mul(256)) as
                 *mut uint16_t;
         if output.is_null() { *output_gamma_lut = 0 as *mut uint16_t; return }
         compute_curve_gamma_table_type_parametric(gamma_table.as_mut_ptr(),
