@@ -1,13 +1,43 @@
+/* vim: set ts=8 sw=8 noexpandtab: */
+//  qcms
+//  Copyright (C) 2009 Mozilla Foundation
+//  Copyright (C) 1998-2007 Marti Maria
+//
+// Permission is hereby granted, free of charge, to any person obtaining 
+// a copy of this software and associated documentation files (the "Software"), 
+// to deal in the Software without restriction, including without limitation 
+// the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+// and/or sell copies of the Software, and to permit persons to whom the Software 
+// is furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in 
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO 
+// THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND 
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE 
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION 
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 use ::libc::{self, malloc, free, calloc};
 use std::sync::atomic;
 use std::sync::atomic::Ordering;
 use crate::iccread::{qcms_profile, curveType};
 
+const PRECACHE_OUTPUT_SIZE: usize = 8192;
+const PRECACHE_OUTPUT_MAX: usize = PRECACHE_OUTPUT_SIZE - 1;
 
 #[repr(C)]
 pub struct precache_output {
     pub ref_count: std::sync::atomic::AtomicI32,
-    pub data: [uint8_t; 8192],
+    /* We previously used a count of 65536 here but that seems like more
+	 * precision than we actually need.  By reducing the size we can
+	 * improve startup performance and reduce memory usage. ColorSync on
+	 * 10.5 uses 4097 which is perhaps because they use a fixed point
+	 * representation where 1. is represented by 0x1000. */
+    pub data: [uint8_t; PRECACHE_OUTPUT_SIZE],
 }
 
 
@@ -57,28 +87,7 @@ extern "C" {
                                              src: *const libc::c_uchar,
                                              dest: *mut libc::c_uchar,
                                              length: size_t);
-    /* vim: set ts=8 sw=8 noexpandtab: */
-//  qcms
-//  Copyright (C) 2009 Mozilla Foundation
-//  Copyright (C) 1998-2007 Marti Maria
-//
-// Permission is hereby granted, free of charge, to any person obtaining 
-// a copy of this software and associated documentation files (the "Software"), 
-// to deal in the Software without restriction, including without limitation 
-// the rights to use, copy, modify, merge, publish, distribute, sublicense, 
-// and/or sell copies of the Software, and to permit persons to whom the Software 
-// is furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in 
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
-// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO 
-// THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND 
-// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE 
-// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION 
-// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
-// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
     // Generates and returns a 3D LUT with lutSize^3 samples using the provided src/dest.
     #[no_mangle]
     fn qcms_chain_transform(in_0: *mut qcms_profile, out: *mut qcms_profile,
@@ -113,15 +122,10 @@ pub type size_t = __darwin_size_t;
 pub type uint8_t = libc::c_uchar;
 pub type uint16_t = libc::c_ushort;
 pub type uint32_t = libc::c_uint;
-/* vim: set ts=8 sw=8 noexpandtab: */
 /* used as a lookup table for the output transformation.
  * we refcount them so we only need to have one around per output
  * profile, instead of duplicating them per transform */
-/* We previously used a count of 65536 here but that seems like more
-	 * precision than we actually need.  By reducing the size we can
-	 * improve startup performance and reduce memory usage. ColorSync on
-	 * 10.5 uses 4097 which is perhaps because they use a fixed point
-	 * representation where 1. is represented by 0x1000. */
+
 
 #[repr(C)]#[derive(Copy, Clone)]
 pub struct qcms_transform {
