@@ -580,17 +580,26 @@ pub unsafe extern "C" fn qcms_profile_is_bogus(mut profile: *mut qcms_profile)
         }
         i = i.wrapping_add(1)
     }
-    // Chromatic adaption to D50 can result in negative XYZ, but the white
+    if !cfg!(target_os = "macos") {
+        negative =
+        (rX < 0.) || (rY < 0.) || (rZ < 0.) ||
+        (gX < 0.) || (gY < 0.) || (gZ < 0.) ||
+        (bX < 0.) || (bY < 0.) || (bZ < 0.);
+    } else {
+       // Chromatic adaption to D50 can result in negative XYZ, but the white
        // point D50 tolerance test has passed. Accept negative values herein.
        // See https://bugzilla.mozilla.org/show_bug.cgi?id=498245#c18 onwards
        // for discussion about whether profile XYZ can or cannot be negative,
        // per the spec. Also the https://bugzil.la/450923 user report.
-    // FIXME: allow this relaxation on all ports?
-    negative = 0i32 != 0; // bogus
-    if negative { return 1i32 != 0 }
+    
+       // FIXME: allow this relaxation on all ports?
+        negative = false; // bogus
+    }
+    if negative { return true }
     // All Good
-    return 0i32 != 0;
+    return false;
 }
+
 unsafe extern "C" fn find_tag(mut index: tag_index, mut tag_id: uint32_t)
  -> *mut tag {
     let mut i: libc::c_uint = 0;
