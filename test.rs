@@ -1,7 +1,7 @@
 use ::libc;
+use crate::transform::qcms_transform;
+use crate::iccread::qcms_profile;
 extern "C" {
-    pub type _qcms_transform;
-    pub type _qcms_profile;
     #[no_mangle]
     fn abort() -> !;
     #[no_mangle]
@@ -31,8 +31,6 @@ pub type __darwin_size_t = libc::c_ulong;
 pub type size_t = __darwin_size_t;
 pub type uint8_t = libc::c_uchar;
 pub type uint32_t = libc::c_uint;
-pub type qcms_transform = _qcms_transform;
-pub type qcms_profile = _qcms_profile;
 pub type qcms_intent = libc::c_uint;
 pub const QCMS_INTENT_DEFAULT: qcms_intent = 0;
 pub const QCMS_INTENT_MAX: qcms_intent = 3;

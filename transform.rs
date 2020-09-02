@@ -114,7 +114,7 @@ pub type uint32_t = libc::c_uint;
 	 * representation where 1. is represented by 0x1000. */
 
 #[repr(C)]#[derive(Copy, Clone)]
-pub struct _qcms_transform {
+pub struct qcms_transform {
     pub matrix: [[f32; 4]; 3],
     pub input_gamma_table_r: *mut f32,
     pub input_gamma_table_g: *mut f32,
@@ -151,7 +151,7 @@ pub struct _qcms_transform {
 }
 pub type transform_fn_t
     =
-    Option<unsafe extern "C" fn(_: *const _qcms_transform,
+    Option<unsafe extern "C" fn(_: *const qcms_transform,
                                 _: *const libc::c_uchar,
                                 _: *mut libc::c_uchar, _: size_t) -> ()>;
 
@@ -160,7 +160,6 @@ pub struct precache_output {
     pub ref_count: std::sync::atomic::AtomicI32,
     pub data: [uint8_t; 8192],
 }
-pub type qcms_transform = _qcms_transform;
 // 16 is the upperbound, actual is 0..num_in_channels.
 // reversed elements (for mBA)
 /* should lut8Type and lut16Type be different types? */
