@@ -1,4 +1,6 @@
 use ::libc::{self, malloc, free, calloc};
+use std::sync::atomic;
+use std::sync::atomic::Ordering;
 extern "C" {
     #[no_mangle]
     fn qcms_transform_data_rgb_out_lut_avx(transform: *const qcms_transform,
@@ -153,9 +155,9 @@ pub type transform_fn_t
                                 _: *const libc::c_uchar,
                                 _: *mut libc::c_uchar, _: size_t) -> ()>;
 
-#[repr(C)]#[derive(Copy, Clone)]
+#[repr(C)]
 pub struct precache_output {
-    pub ref_count: i32,
+    pub ref_count: std::sync::atomic::AtomicI32,
     pub data: [uint8_t; 8192],
 }
 pub type qcms_transform = _qcms_transform;
@@ -1594,26 +1596,20 @@ pub unsafe extern "C" fn qcms_transform_data_bgra_out_lut(mut transform:
  */
 unsafe extern "C" fn precache_reference(mut p: *mut precache_output)
  -> *mut precache_output {
-    let fresh4 = &mut (*p).ref_count;
-    let fresh5 = 1i32;
-    (::std::intrinsics::atomic_xadd(fresh4, fresh5)) + fresh5;
+    (*p).ref_count.fetch_add(1, Ordering::SeqCst);
     return p;
 }
 unsafe extern "C" fn precache_create() -> *mut precache_output {
     let mut p: *mut precache_output =
         malloc(::std::mem::size_of::<precache_output>()) as
             *mut precache_output;
-    if !p.is_null() { (*p).ref_count = 1i32 }
+    if !p.is_null() { (*p).ref_count = atomic::AtomicI32::new(1) }
     return p;
 }
-/* produces the nearest float to 'a' with a maximum error
- * of 1/1024 which happens for large values like 0x40000040 */
+
 #[no_mangle]
 pub unsafe extern "C" fn precache_release(mut p: *mut precache_output) {
-    let fresh6 = &mut (*p).ref_count as *mut i32;
-    let fresh7 = 1i32;
-    if ::std::intrinsics::atomic_xsub(fresh6, fresh7) - fresh7 ==
-           0i32 {
+    if (*p).ref_count.fetch_sub(1, Ordering::SeqCst) == 0 {
         free(p as *mut libc::c_void);
     };
 }
