@@ -2,12 +2,6 @@ use ::libc;
 extern "C" {
     pub type __sFILEX;
     #[no_mangle]
-    fn pow(_: f64, _: f64) -> f64;
-    #[no_mangle]
-    fn floorf(_: f32) -> f32;
-    #[no_mangle]
-    fn floor(_: f64) -> f64;
-    #[no_mangle]
     fn __assert_rtn(_: *const libc::c_char, _: *const libc::c_char,
                     _: i32, _: *const libc::c_char) -> !;
     #[no_mangle]
@@ -1292,7 +1286,7 @@ unsafe extern "C" fn read_tag_lutType(mut src: *mut mem_source,
                 offset.wrapping_add(10u32) as
                     size_t);
     clut_size =
-        pow(grid_points as f64, in_chan as f64) as
+        (grid_points as f64).powf(in_chan as f64) as
             uint32_t;
     if clut_size > 500000u32 {
         invalid_source(src,
@@ -1561,7 +1555,7 @@ unsafe extern "C" fn build_sRGB_gamma_table(mut num_entries: i32)
         if x >= d {
             let mut e: f64 = a * x + b;
             if e > 0f64 {
-                y = pow(e, gamma)
+                y = e.powf(gamma)
             } else { y = 0f64 }
         } else { y = c * x }
         // Saturate -- this could likely move to a separate function
@@ -1572,7 +1566,7 @@ unsafe extern "C" fn build_sRGB_gamma_table(mut num_entries: i32)
         if output < 0f64 {
             output = 0f64
         }
-        *table.offset(i as isize) = floor(output) as uint16_t;
+        *table.offset(i as isize) = output.floor() as uint16_t;
         i += 1
     }
     return table;
@@ -1607,7 +1601,7 @@ unsafe extern "C" fn float_to_u8Fixed8Number(mut a: f32)
         return 0xffffu16
     } else if a < 0.0f32 {
         return 0u16
-    } else { return floorf(a * 256.0f32 + 0.5f32) as uint16_t };
+    } else { return (a * 256.0f32 + 0.5f32).floor() as uint16_t };
 }
 unsafe extern "C" fn curve_from_gamma(mut gamma: f32)
  -> *mut curveType {
