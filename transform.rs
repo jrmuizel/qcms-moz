@@ -25,6 +25,7 @@ use ::libc::{self, malloc, free, calloc};
 use std::sync::atomic;
 use std::sync::atomic::Ordering;
 use crate::iccread::{qcms_profile, curveType};
+use crate::matrix::matrix;
 
 const PRECACHE_OUTPUT_SIZE: usize = 8192;
 const PRECACHE_OUTPUT_MAX: usize = PRECACHE_OUTPUT_SIZE - 1;
@@ -173,12 +174,6 @@ pub type transform_fn_t
 // reversed elements (for mBA)
 /* should lut8Type and lut16Type be different types? */
 // used by lut8Type/lut16Type (mft2) only
-
-#[repr(C)]#[derive(Copy, Clone)]
-pub struct matrix {
-    pub m: [[f32; 3]; 3],
-    pub invalid: bool,
-}
 
 #[repr(C)]#[derive(Copy, Clone)]
 pub struct lutmABType {

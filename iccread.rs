@@ -2,6 +2,7 @@ use ::libc;
 use libc::{malloc, calloc, memset, memcpy, free, fopen, fread, fclose, FILE};
 
 use crate::transform::precache_output;
+use crate::matrix::matrix;
 
 extern "C" {
     /* produces the nearest float to 'a' with a maximum error
@@ -76,12 +77,6 @@ pub struct qcms_profile {
     pub output_table_r: *mut precache_output,
     pub output_table_g: *mut precache_output,
     pub output_table_b: *mut precache_output,
-}
-
-#[repr(C)]#[derive(Copy, Clone)]
-pub struct matrix {
-    pub m: [[f32; 3]; 3],
-    pub invalid: bool,
 }
 
 #[repr(C)]#[derive(Copy, Clone)]

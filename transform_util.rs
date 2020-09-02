@@ -2,6 +2,7 @@ use ::libc;
 use libc::{malloc, free};
 
 use crate::iccread::qcms_profile;
+use crate::matrix::matrix;
 
 pub type __darwin_size_t = libc::c_ulong;
 pub type size_t = __darwin_size_t;
@@ -9,13 +10,6 @@ pub type int32_t = i32;
 
 pub type uint8_t = libc::c_uchar;
 pub type uint16_t = libc::c_ushort;
-
-
-#[repr(C)]#[derive(Copy, Clone)]
-pub struct matrix {
-    pub m: [[f32; 3]; 3],
-    pub invalid: bool,
-}
 
 #[repr(C)]#[derive(Copy, Clone)]
 pub struct lutmABType {
