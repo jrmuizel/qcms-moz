@@ -4,9 +4,6 @@ use crate::iccread::qcms_profile;
 
 extern "C" {
     #[no_mangle]
-    fn __assert_rtn(_: *const libc::c_char, _: *const libc::c_char,
-                    _: i32, _: *const libc::c_char) -> !;
-    #[no_mangle]
     fn malloc(_: libc::c_ulong) -> *mut libc::c_void;
     #[no_mangle]
     fn free(_: *mut libc::c_void);
@@ -337,17 +334,7 @@ pub unsafe extern "C" fn compute_curve_gamma_table_type_parametric(mut gamma_tab
         f = *parameter.offset(6isize);
         interval = *parameter.offset(4isize)
     } else {
-        if !(0i32 != 0 &&
-                 !(b"invalid parametric function type.\x00" as *const u8 as
-                       *const libc::c_char).is_null()) as i32 as
-               libc::c_long != 0 {
-            __assert_rtn((*::std::mem::transmute::<&[u8; 42],
-                                                   &[libc::c_char; 42]>(b"compute_curve_gamma_table_type_parametric\x00")).as_ptr(),
-                         b"transform_util.c\x00" as *const u8 as
-                             *const libc::c_char, 158i32,
-                         b"0 && \"invalid parametric function type.\"\x00" as
-                             *const u8 as *const libc::c_char);
-        } else { };
+        debug_assert!(false, "invalid parametric function type.");
         a = 1f32;
         b = 0f32;
         c = 0f32;
@@ -527,14 +514,7 @@ pub unsafe extern "C" fn lut_inverse_interp16(mut Value: uint16_t,
     }
     // Not found, should we interpolate?
     // Get surrounding nodes
-    if !(x >= 1i32) as i32 as libc::c_long != 0 {
-        __assert_rtn((*::std::mem::transmute::<&[u8; 21],
-                                               &[libc::c_char; 21]>(b"lut_inverse_interp16\x00")).as_ptr(),
-                     b"transform_util.c\x00" as *const u8 as
-                         *const libc::c_char, 307i32,
-                     b"x >= 1\x00" as *const u8 as *const libc::c_char);
-    } else { };
-    
+    debug_assert!(x >= 1);
     
      let mut val2:  f64 =
     
