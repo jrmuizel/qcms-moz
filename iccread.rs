@@ -5,8 +5,7 @@ use crate::transform::precache_output;
 use crate::matrix::matrix;
 
 extern "C" {
-    /* produces the nearest float to 'a' with a maximum error
- * of 1/1024 which happens for large values like 0x40000040 */
+
     #[no_mangle]
     fn precache_release(p: *mut precache_output);
     #[no_mangle]
@@ -231,6 +230,9 @@ unsafe extern "C" fn uInt16Number_to_float(mut a: uInt16Number)
  -> f32 {
     return a as int32_t as f32 / 65535.0f32;
 }
+
+/* produces the nearest float to 'a' with a maximum error
+ * of 1/1024 which happens for large values like 0x40000040 */
 #[inline]
 unsafe extern "C" fn s15Fixed16Number_to_float(mut a: s15Fixed16Number)
  -> f32 {
