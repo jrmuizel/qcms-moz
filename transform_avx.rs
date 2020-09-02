@@ -1,5 +1,5 @@
 use ::libc;
-use crate::transform::{BGRA, Format, RGBA, RGB};
+use crate::transform::{BGRA, Format, RGBA, RGB, qcms_transform};
 #[cfg(target_arch = "x86")]
 pub use std::arch::x86::{__m128, __m128i, __m256, __m256i, _mm_add_ps,
                          _mm_mul_ps, _mm_min_ps, _mm_max_ps, _mm_loadu_ps,
@@ -26,55 +26,6 @@ pub type size_t = __darwin_size_t;
 pub type uint8_t = libc::c_uchar;
 pub type uint16_t = libc::c_ushort;
 pub type uint32_t = libc::c_uint;
-
-#[repr(C)]#[derive(Copy, Clone)]
-pub struct _qcms_transform {
-    pub matrix: [[f32; 4]; 3],
-    pub input_gamma_table_r: *mut f32,
-    pub input_gamma_table_g: *mut f32,
-    pub input_gamma_table_b: *mut f32,
-    pub input_clut_table_r: *mut f32,
-    pub input_clut_table_g: *mut f32,
-    pub input_clut_table_b: *mut f32,
-    pub input_clut_table_length: uint16_t,
-    pub r_clut: *mut f32,
-    pub g_clut: *mut f32,
-    pub b_clut: *mut f32,
-    pub grid_size: uint16_t,
-    pub output_clut_table_r: *mut f32,
-    pub output_clut_table_g: *mut f32,
-    pub output_clut_table_b: *mut f32,
-    pub output_clut_table_length: uint16_t,
-    pub input_gamma_table_gray: *mut f32,
-    pub out_gamma_r: f32,
-    pub out_gamma_g: f32,
-    pub out_gamma_b: f32,
-    pub out_gamma_gray: f32,
-    pub output_gamma_lut_r: *mut uint16_t,
-    pub output_gamma_lut_g: *mut uint16_t,
-    pub output_gamma_lut_b: *mut uint16_t,
-    pub output_gamma_lut_gray: *mut uint16_t,
-    pub output_gamma_lut_r_length: size_t,
-    pub output_gamma_lut_g_length: size_t,
-    pub output_gamma_lut_b_length: size_t,
-    pub output_gamma_lut_gray_length: size_t,
-    pub output_table_r: *mut precache_output,
-    pub output_table_g: *mut precache_output,
-    pub output_table_b: *mut precache_output,
-    pub transform_fn: transform_fn_t,
-}
-pub type transform_fn_t
-    =
-    Option<unsafe extern "C" fn(_: *const _qcms_transform,
-                                _: *const libc::c_uchar,
-                                _: *mut libc::c_uchar, _: size_t) -> ()>;
-
-#[repr(C)]#[derive(Copy, Clone)]
-pub struct precache_output {
-    pub ref_count: i32,
-    pub data: [uint8_t; 8192],
-}
-pub type qcms_transform = _qcms_transform;
 
 unsafe extern "C" fn qcms_transform_data_template_lut_avx<F: Format>(mut transform:
                                                               *const qcms_transform,
