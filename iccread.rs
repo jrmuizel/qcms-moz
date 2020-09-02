@@ -1,13 +1,10 @@
 use ::libc;
 use libc::{malloc, calloc, memset, memcpy, free, fopen, fread, fclose, FILE};
 
-use crate::transform::precache_output;
+use crate::transform::{precache_output, precache_release};
 use crate::matrix::matrix;
 
 extern "C" {
-
-    #[no_mangle]
-    fn precache_release(p: *mut precache_output);
     #[no_mangle]
     fn set_rgb_colorants(profile: *mut qcms_profile,
                          white_point: qcms_CIE_xyY,
