@@ -1,14 +1,6 @@
 use ::libc;
-use libc::{malloc, calloc, memset, memcpy, free};
+use libc::{malloc, calloc, memset, memcpy, free, fopen, fread, fclose, FILE};
 extern "C" {
-    pub type __sFILEX;
-    #[no_mangle]
-    fn fclose(_: *mut FILE) -> i32;
-    #[no_mangle]
-    fn fopen(_: *const libc::c_char, _: *const libc::c_char) -> *mut FILE;
-    #[no_mangle]
-    fn fread(_: *mut libc::c_void, _: libc::c_ulong, _: libc::c_ulong,
-             _: *mut FILE) -> libc::c_ulong;
     /* produces the nearest float to 'a' with a maximum error
  * of 1/1024 which happens for large values like 0x40000040 */
     #[no_mangle]
@@ -87,7 +79,7 @@ pub struct __sFILE {
                                             _: *const libc::c_char,
                                             _: i32) -> i32>,
     pub _ub: __sbuf,
-    pub _extra: *mut __sFILEX,
+    pub _extra: *mut FILE,
     pub _ur: i32,
     pub _ubuf: [libc::c_uchar; 3],
     pub _nbuf: [libc::c_uchar; 1],
@@ -95,7 +87,6 @@ pub struct __sFILE {
     pub _blksize: i32,
     pub _offset: fpos_t,
 }
-pub type FILE = __sFILE;
 
 #[repr(C)]#[derive(Copy, Clone)]
 pub struct precache_output {
@@ -1991,9 +1982,9 @@ unsafe extern "C" fn qcms_data_from_file(mut file: *mut FILE,
     *mem = 0 as *mut libc::c_void;
     *size = 0u64;
     if fread(&mut length_be as *mut be32 as *mut libc::c_void,
-             1u64,
-             ::std::mem::size_of::<be32>() as libc::c_ulong, file) !=
-           ::std::mem::size_of::<be32>() as libc::c_ulong {
+             1,
+             ::std::mem::size_of::<be32>() as usize, file) !=
+           ::std::mem::size_of::<be32>() as usize {
         return
     }
     length = be32_to_cpu(length_be);
@@ -2017,8 +2008,8 @@ unsafe extern "C" fn qcms_data_from_file(mut file: *mut FILE,
     read_length =
         fread((data as
                    *mut libc::c_uchar).offset(::std::mem::size_of::<be32>() as isize) as
-                  *mut libc::c_void, 1u64,
-              remaining_length as libc::c_ulong, file);
+                  *mut libc::c_void, 1,
+              remaining_length as usize, file) as u64;
     if read_length != remaining_length as libc::c_ulong { free(data); return }
     /* successfully get the profile.*/
     *mem = data;
