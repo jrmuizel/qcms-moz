@@ -2,9 +2,6 @@ use ::libc;
 extern "C" {
     pub type __sFILEX;
     #[no_mangle]
-    fn __assert_rtn(_: *const libc::c_char, _: *const libc::c_char,
-                    _: i32, _: *const libc::c_char) -> !;
-    #[no_mangle]
     fn malloc(_: libc::c_ulong) -> *mut libc::c_void;
     #[no_mangle]
     fn calloc(_: libc::c_ulong, _: libc::c_ulong) -> *mut libc::c_void;
@@ -1009,15 +1006,7 @@ unsafe extern "C" fn read_tag_lutmABType(mut src: *mut mem_source,
             (b_curve_offset).wrapping_add(offset)
     }
     if clut_offset != 0 {
-        if !(num_in_channels as i32 == 3i32) as
-               i32 as libc::c_long != 0 {
-            __assert_rtn((*::std::mem::transmute::<&[u8; 20],
-                                                   &[libc::c_char; 20]>(b"read_tag_lutmABType\x00")).as_ptr(),
-                         b"iccread.c\x00" as *const u8 as *const libc::c_char,
-                         595i32,
-                         b"num_in_channels == 3\x00" as *const u8 as
-                             *const libc::c_char);
-        } else { };
+        debug_assert!(num_in_channels as i32 == 3i32);
         // clut_size can not overflow since lg(256^num_in_channels) = 24 bits.
         i = 0u32;
         while i < num_in_channels as libc::c_uint {
@@ -1261,13 +1250,7 @@ unsafe extern "C" fn read_tag_lutType(mut src: *mut mem_source,
         entry_size = 2u64;
         input_offset = 52u32
     } else {
-        if (0i32 == 0) as i32 as libc::c_long != 0 {
-            __assert_rtn((*::std::mem::transmute::<&[u8; 17],
-                                                   &[libc::c_char; 17]>(b"read_tag_lutType\x00")).as_ptr(),
-                         b"iccread.c\x00" as *const u8 as *const libc::c_char,
-                         715i32,
-                         b"0\x00" as *const u8 as *const libc::c_char);
-        } else { };
+        debug_assert!(false);
         invalid_source(src,
                        b"Unexpected lut type\x00" as *const u8 as
                            *const libc::c_char);
@@ -1734,17 +1717,7 @@ unsafe extern "C" fn white_point_from_temp(mut temp_K: i32)
         white_point.x = -1.0f64;
         white_point.y = -1.0f64;
         white_point.Y = -1.0f64;
-        if !(0i32 != 0 &&
-                 !(b"invalid temp\x00" as *const u8 as
-                       *const libc::c_char).is_null()) as i32 as
-               libc::c_long != 0 {
-            __assert_rtn((*::std::mem::transmute::<&[u8; 22],
-                                                   &[libc::c_char; 22]>(b"white_point_from_temp\x00")).as_ptr(),
-                         b"iccread.c\x00" as *const u8 as *const libc::c_char,
-                         1006i32,
-                         b"0 && \"invalid temp\"\x00" as *const u8 as
-                             *const libc::c_char);
-        } else { };
+        debug_assert!(false, "invalid temp");
         return white_point
     }
     // Obtain y(x)
@@ -1962,19 +1935,7 @@ pub unsafe extern "C" fn qcms_profile_from_memory(mut mem:
                         current_block = 17808765469879209355;
                     } else { current_block = 3580086814630675314; }
                 } else {
-                    if !(0i32 != 0 &&
-                             !(b"read_color_space protects against entering here\x00"
-                                   as *const u8 as
-                                   *const libc::c_char).is_null()) as
-                           i32 as libc::c_long != 0 {
-                        __assert_rtn((*::std::mem::transmute::<&[u8; 25],
-                                                               &[libc::c_char; 25]>(b"qcms_profile_from_memory\x00")).as_ptr(),
-                                     b"iccread.c\x00" as *const u8 as
-                                         *const libc::c_char,
-                                     1155i32,
-                                     b"0 && \"read_color_space protects against entering here\"\x00"
-                                         as *const u8 as *const libc::c_char);
-                    } else { };
+                    debug_assert!(false, "read_color_space protects against entering here");
                     current_block = 17808765469879209355;
                 }
                 match current_block {
