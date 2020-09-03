@@ -25,7 +25,7 @@ use ::libc::{self, malloc, free, calloc};
 use std::sync::atomic;
 use std::sync::atomic::Ordering;
 use crate::iccread::{qcms_profile, curveType};
-use crate::matrix::matrix;
+use crate::matrix::*;
 
 const PRECACHE_OUTPUT_SIZE: usize = 8192;
 const PRECACHE_OUTPUT_MAX: usize = PRECACHE_OUTPUT_SIZE - 1;
@@ -78,14 +78,6 @@ extern "C" {
     fn qcms_chain_transform(in_0: *mut qcms_profile, out: *mut qcms_profile,
                             src: *mut f32, dest: *mut f32,
                             lutSize: size_t) -> *mut f32;
-    #[no_mangle]
-    fn matrix_eval(mat: matrix, v: vector) -> vector;
-    #[no_mangle]
-    fn matrix_multiply(a: matrix, b: matrix) -> matrix;
-    #[no_mangle]
-    fn matrix_invert(mat: matrix) -> matrix;
-    #[no_mangle]
-    fn matrix_invalid() -> matrix;
     #[no_mangle]
     fn lut_interp_linear(value: f64, table: *mut uint16_t,
                          length: i32) -> f32;
@@ -320,12 +312,6 @@ impl GrayFormat for GrayAlpha {
     const has_alpha: bool = false;
 }
 
-
-
-#[repr(C)]#[derive(Copy, Clone)]
-pub struct vector {
-    pub v: [f32; 3],
-}
 #[inline]
 unsafe extern "C" fn double_to_s15Fixed16Number(mut v: f64)
  -> s15Fixed16Number {
