@@ -25,7 +25,7 @@ use ::libc::{self, malloc, free, calloc};
 use std::sync::atomic;
 use std::sync::atomic::Ordering;
 use crate::iccread::{qcms_profile, curveType};
-use crate::matrix::*;
+use crate::{transform_util::{compute_precache, lut_interp_linear, build_output_lut, build_input_gamma_table, build_colorant_matrix}, matrix::*};
 
 const PRECACHE_OUTPUT_SIZE: usize = 8192;
 const PRECACHE_OUTPUT_MAX: usize = PRECACHE_OUTPUT_SIZE - 1;
@@ -78,19 +78,6 @@ extern "C" {
     fn qcms_chain_transform(in_0: *mut qcms_profile, out: *mut qcms_profile,
                             src: *mut f32, dest: *mut f32,
                             lutSize: size_t) -> *mut f32;
-    #[no_mangle]
-    fn lut_interp_linear(value: f64, table: *mut uint16_t,
-                         length: i32) -> f32;
-    #[no_mangle]
-    fn build_input_gamma_table(TRC: *mut curveType) -> *mut f32;
-    #[no_mangle]
-    fn build_colorant_matrix(p: *mut qcms_profile) -> matrix;
-    #[no_mangle]
-    fn build_output_lut(trc: *mut curveType,
-                        output_gamma_lut: *mut *mut uint16_t,
-                        output_gamma_lut_length: *mut size_t);
-    #[no_mangle]
-    fn compute_precache(trc: *mut curveType, output: *mut uint8_t) -> bool;
 }
 pub type __darwin_size_t = libc::c_ulong;
 pub type int32_t = i32;
