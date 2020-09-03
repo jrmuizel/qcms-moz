@@ -25,7 +25,7 @@ use ::libc::{self, malloc, free, calloc};
 use std::sync::atomic;
 use std::sync::atomic::Ordering;
 use crate::iccread::{qcms_profile, curveType, qcms_CIE_xyY, qcms_CIE_xyYTRIPLE};
-use crate::{transform_util::{compute_precache, lut_interp_linear, build_output_lut, build_input_gamma_table, build_colorant_matrix}, matrix::*, chain::qcms_chain_transform};
+use crate::{transform_util::{compute_precache, lut_interp_linear, build_output_lut, build_input_gamma_table, build_colorant_matrix}, matrix::*, chain::qcms_chain_transform, transform_avx::{qcms_transform_data_rgba_out_lut_avx, qcms_transform_data_rgb_out_lut_avx, qcms_transform_data_bgra_out_lut_avx}, transform_sse2::{qcms_transform_data_rgba_out_lut_sse2, qcms_transform_data_rgb_out_lut_sse2, qcms_transform_data_bgra_out_lut_sse2}};
 
 const PRECACHE_OUTPUT_SIZE: usize = 8192;
 const PRECACHE_OUTPUT_MAX: usize = PRECACHE_OUTPUT_SIZE - 1;
@@ -41,39 +41,7 @@ pub struct precache_output {
     pub data: [uint8_t; PRECACHE_OUTPUT_SIZE],
 }
 
-extern "C" {
-    #[no_mangle]
-    fn qcms_transform_data_rgb_out_lut_avx(transform: *const qcms_transform,
-                                           src: *const libc::c_uchar,
-                                           dest: *mut libc::c_uchar,
-                                           length: size_t);
-    #[no_mangle]
-    fn qcms_transform_data_rgba_out_lut_avx(transform: *const qcms_transform,
-                                            src: *const libc::c_uchar,
-                                            dest: *mut libc::c_uchar,
-                                            length: size_t);
-    #[no_mangle]
-    fn qcms_transform_data_bgra_out_lut_avx(transform: *const qcms_transform,
-                                            src: *const libc::c_uchar,
-                                            dest: *mut libc::c_uchar,
-                                            length: size_t);
-    #[no_mangle]
-    fn qcms_transform_data_rgb_out_lut_sse2(transform: *const qcms_transform,
-                                            src: *const libc::c_uchar,
-                                            dest: *mut libc::c_uchar,
-                                            length: size_t);
-    #[no_mangle]
-    fn qcms_transform_data_rgba_out_lut_sse2(transform: *const qcms_transform,
-                                             src: *const libc::c_uchar,
-                                             dest: *mut libc::c_uchar,
-                                             length: size_t);
-    #[no_mangle]
-    fn qcms_transform_data_bgra_out_lut_sse2(transform: *const qcms_transform,
-                                             src: *const libc::c_uchar,
-                                             dest: *mut libc::c_uchar,
-                                             length: size_t);
 
-}
 pub type __darwin_size_t = libc::c_ulong;
 pub type int32_t = i32;
 pub type uintptr_t = libc::c_ulong;
