@@ -195,21 +195,7 @@ pub unsafe extern "C" fn qcms_transform_data_rgba_out_lut_sse2(mut transform:
                                                                    size_t) {
     qcms_transform_data_template_lut_sse2::<RGBA>(transform, src, dest, length);
 }
-/* vim: set ts=8 sw=8 noexpandtab: */
-/* used as a lookup table for the output transformation.
- * we refcount them so we only need to have one around per output
- * profile, instead of duplicating them per transform */
-/* We previously used a count of 65536 here but that seems like more
-	 * precision than we actually need.  By reducing the size we can
-	 * improve startup performance and reduce memory usage. ColorSync on
-	 * 10.5 uses 4097 which is perhaps because they use a fixed point
-	 * representation where 1. is represented by 0x1000. */
-// 16 is the upperbound, actual is 0..num_in_channels.
-// reversed elements (for mBA)
-/* should lut8Type and lut16Type be different types? */
-// used by lut8Type/lut16Type (mft2) only
-/* produces the nearest float to 'a' with a maximum error
- * of 1/1024 which happens for large values like 0x40000040 */
+
 #[no_mangle]
 pub unsafe extern "C" fn qcms_transform_data_bgra_out_lut_sse2(mut transform:
                                                                    *const qcms_transform,
