@@ -1,12 +1,6 @@
-use ::libc;
+use ::libc::{self, calloc, free, malloc, memcpy, memset, };
 use crate::iccread::{lutType, qcms_profile, lutmABType, curveType};
 extern "C" {
-    #[no_mangle]
-    fn malloc(_: libc::c_ulong) -> *mut libc::c_void;
-    #[no_mangle]
-    fn calloc(_: libc::c_ulong, _: libc::c_ulong) -> *mut libc::c_void;
-    #[no_mangle]
-    fn free(_: *mut libc::c_void);
     #[no_mangle]
     fn pow(_: f64, _: f64) -> f64;
     #[no_mangle]
@@ -16,12 +10,6 @@ extern "C" {
     #[no_mangle]
     fn __assert_rtn(_: *const libc::c_char, _: *const libc::c_char,
                     _: i32, _: *const libc::c_char) -> !;
-    #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong)
-     -> *mut libc::c_void;
-    #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: i32, _: libc::c_ulong)
-     -> *mut libc::c_void;
     #[no_mangle]
     fn lut_interp_linear(value: f64, table: *mut uint16_t,
                          length: i32) -> f32;
@@ -190,7 +178,7 @@ unsafe extern "C" fn build_lut_matrix(mut lut: *mut lutType) -> matrix {
     } else {
         memset(&mut result as *mut matrix as *mut libc::c_void,
                0i32,
-               ::std::mem::size_of::<matrix>() as libc::c_ulong);
+               ::std::mem::size_of::<matrix>() as usize);
         result.invalid = 1i32 != 0
     }
     return result;
@@ -220,7 +208,7 @@ unsafe extern "C" fn build_mAB_matrix(mut lut: *mut lutmABType) -> matrix {
     } else {
         memset(&mut result as *mut matrix as *mut libc::c_void,
                0i32,
-               ::std::mem::size_of::<matrix>() as libc::c_ulong);
+               ::std::mem::size_of::<matrix>() as usize);
         result.invalid = 1i32 != 0
     }
     return result;
@@ -1058,9 +1046,9 @@ unsafe extern "C" fn qcms_transform_module_matrix(mut transform:
 }
 unsafe extern "C" fn qcms_modular_transform_alloc()
  -> *mut qcms_modular_transform {
-    return calloc(1u64,
+    return calloc(1,
                   ::std::mem::size_of::<qcms_modular_transform>() as
-                      libc::c_ulong) as *mut qcms_modular_transform;
+                      usize) as *mut qcms_modular_transform;
 }
 unsafe extern "C" fn qcms_modular_transform_release(mut transform:
                                                         *mut qcms_modular_transform) {
@@ -1181,7 +1169,7 @@ unsafe extern "C" fn qcms_modular_transform_create_mAB(mut lut:
     let mut transform: *mut qcms_modular_transform =
         0 as *mut qcms_modular_transform;
     if !(*lut).a_curves[0usize].is_null() {
-        let mut clut_length: size_t = 0;
+        let mut clut_length: usize = 0;
         let mut clut: *mut f32 = 0 as *mut f32;
         // If the A curve is present this also implies the 
 		// presence of a CLUT.
@@ -1226,12 +1214,12 @@ unsafe extern "C" fn qcms_modular_transform_create_mAB(mut lut:
                         append_transform(transform, &mut next_transform);
                         clut_length =
                             (::std::mem::size_of::<f32>() as
-                                 libc::c_ulong as f64 *
+                                 usize as f64 *
                                  pow((*lut).num_grid_points[0usize] as
                                          f64,
                                      3f64) *
                                  3f64) as
-                                size_t;
+                                usize;
                         clut = malloc(clut_length) as *mut f32;
                         if clut.is_null() {
                             current_block = 7590209878260659629;
@@ -1367,9 +1355,9 @@ unsafe extern "C" fn qcms_modular_transform_create_lut(mut lut: *mut lutType)
     let mut next_transform: *mut *mut qcms_modular_transform =
         &mut first_transform;
     
-    let mut in_curve_len: size_t = 0;
-    let mut clut_length: size_t = 0;
-    let mut out_curve_len: size_t = 0;
+    let mut in_curve_len: usize = 0;
+    let mut clut_length: usize = 0;
+    let mut out_curve_len: usize = 0;
     let mut in_curves: *mut f32 = 0 as *mut f32;
     let mut clut: *mut f32 = 0 as *mut f32;
     let mut out_curves: *mut f32 = 0 as *mut f32;
@@ -1391,9 +1379,9 @@ unsafe extern "C" fn qcms_modular_transform_create_lut(mut lut: *mut lutType)
                 append_transform(transform, &mut next_transform);
                 in_curve_len =
                     (::std::mem::size_of::<f32>() as
-                         libc::c_ulong).wrapping_mul((*lut).num_input_table_entries
+                         usize).wrapping_mul((*lut).num_input_table_entries
                                                          as
-                                                         libc::c_ulong).wrapping_mul(3u64);
+                                                         usize).wrapping_mul(3);
                 in_curves = malloc(in_curve_len) as *mut f32;
                 if !in_curves.is_null() {
                     memcpy(in_curves as *mut libc::c_void,
@@ -1416,11 +1404,11 @@ unsafe extern "C" fn qcms_modular_transform_create_lut(mut lut: *mut lutType)
                     // Prepare table
                     clut_length =
                         (::std::mem::size_of::<f32>() as
-                             libc::c_ulong as f64 *
+                             usize as f64 *
                              pow((*lut).num_clut_grid_points as
                                      f64,
                                  3f64) *
-                             3f64) as size_t;
+                             3f64) as usize;
                     clut = malloc(clut_length) as *mut f32;
                     if !clut.is_null() {
                         memcpy(clut as *mut libc::c_void,
@@ -1437,9 +1425,9 @@ unsafe extern "C" fn qcms_modular_transform_create_lut(mut lut: *mut lutType)
                         // Prepare output curves
                         out_curve_len =
                             (::std::mem::size_of::<f32>() as
-                                 libc::c_ulong).wrapping_mul((*lut).num_output_table_entries
+                                 usize).wrapping_mul((*lut).num_output_table_entries
                                                                  as
-                                                                 libc::c_ulong).wrapping_mul(3u64);
+                                                                 usize).wrapping_mul(3);
                         out_curves =
                             malloc(out_curve_len) as *mut f32;
                         if !out_curves.is_null() {
