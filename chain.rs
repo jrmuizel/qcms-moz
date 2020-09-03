@@ -1,13 +1,6 @@
 use ::libc::{self, calloc, free, malloc, memcpy, memset, };
 use crate::{transform_util::{lut_interp_linear, lut_interp_linear_float, build_input_gamma_table, build_colorant_matrix, build_output_lut}, iccread::{lutType, qcms_profile, lutmABType, curveType}, matrix::{matrix_invert, matrix}};
-extern "C" {
-    #[no_mangle]
-    fn pow(_: f64, _: f64) -> f64;
-    #[no_mangle]
-    fn ceilf(_: f32) -> f32;
-    #[no_mangle]
-    fn floorf(_: f32) -> f32;
-}
+
 pub type __darwin_size_t = libc::c_ulong;
 pub type int32_t = i32;
 pub type size_t = __darwin_size_t;
@@ -292,7 +285,7 @@ unsafe extern "C" fn qcms_transform_module_XYZ_to_LAB(mut transform:
                        (24.0f32 / 116.0f32) {
                 (841.0f64 / 108.0f64 * device_x as f64) +
                     16.0f64 / 116.0f64
-            } else { pow(device_x as f64, 1.0f64 / 3.0f64) } as
+            } else { (device_x as f64).powf(1.0f64 / 3.0f64) } as
                 f32;
         let mut fy: f32 =
             if device_y <=
@@ -300,7 +293,7 @@ unsafe extern "C" fn qcms_transform_module_XYZ_to_LAB(mut transform:
                        (24.0f32 / 116.0f32) {
                 (841.0f64 / 108.0f64 * device_y as f64) +
                     16.0f64 / 116.0f64
-            } else { pow(device_y as f64, 1.0f64 / 3.0f64) } as
+            } else { (device_y as f64).powf(1.0f64 / 3.0f64) } as
                 f32;
         let mut fz: f32 =
             if device_z <=
@@ -308,7 +301,7 @@ unsafe extern "C" fn qcms_transform_module_XYZ_to_LAB(mut transform:
                        (24.0f32 / 116.0f32) {
                 (841.0f64 / 108.0f64 * device_z as f64) +
                     16.0f64 / 116.0f64
-            } else { pow(device_z as f64, 1.0f64 / 3.0f64) } as
+            } else { (device_z as f64).powf(1.0f64 / 3.0f64) } as
                 f32;
         let mut L: f32 = 116.0f32 * fy - 16.0f32;
         let mut a: f32 = 500.0f32 * (fx - fy);
@@ -352,32 +345,32 @@ unsafe extern "C" fn qcms_transform_module_clut_only(mut transform:
         src = src.offset(1);
         let mut linear_b: f32 = *fresh14;
         let mut x: i32 =
-            floorf(linear_r *
+            (linear_r *
                        ((*transform).grid_size as i32 -
-                            1i32) as f32) as
+                            1i32) as f32).floor() as
                 i32;
         let mut y: i32 =
-            floorf(linear_g *
+            (linear_g *
                        ((*transform).grid_size as i32 -
-                            1i32) as f32) as
+                            1i32) as f32).floor() as
                 i32;
         let mut z: i32 =
-            floorf(linear_b *
+            (linear_b *
                        ((*transform).grid_size as i32 -
-                            1i32) as f32) as
+                            1i32) as f32).floor() as
                 i32;
         let mut x_n: i32 =
-            ceilf(linear_r *
+            (linear_r *
                       ((*transform).grid_size as i32 -
-                           1i32) as f32) as i32;
+                           1i32) as f32).ceil() as i32;
         let mut y_n: i32 =
-            ceilf(linear_g *
+            (linear_g *
                       ((*transform).grid_size as i32 -
-                           1i32) as f32) as i32;
+                           1i32) as f32).ceil() as i32;
         let mut z_n: i32 =
-            ceilf(linear_b *
+            (linear_b *
                       ((*transform).grid_size as i32 -
-                           1i32) as f32) as i32;
+                           1i32) as f32).ceil() as i32;
         let mut x_d: f32 =
             linear_r *
                 ((*transform).grid_size as i32 - 1i32) as
@@ -508,32 +501,32 @@ unsafe extern "C" fn qcms_transform_module_clut(mut transform:
                                     (*transform).input_clut_table_length as
                                         i32);
         let mut x: i32 =
-            floorf(linear_r *
+            (linear_r *
                        ((*transform).grid_size as i32 -
-                            1i32) as f32) as
+                            1i32) as f32).floor() as
                 i32;
         let mut y: i32 =
-            floorf(linear_g *
+            (linear_g *
                        ((*transform).grid_size as i32 -
-                            1i32) as f32) as
+                            1i32) as f32).floor() as
                 i32;
         let mut z: i32 =
-            floorf(linear_b *
+            (linear_b *
                        ((*transform).grid_size as i32 -
-                            1i32) as f32) as
+                            1i32) as f32).floor() as
                 i32;
         let mut x_n: i32 =
-            ceilf(linear_r *
+            (linear_r *
                       ((*transform).grid_size as i32 -
-                           1i32) as f32) as i32;
+                           1i32) as f32).floor() as i32;
         let mut y_n: i32 =
-            ceilf(linear_g *
+            (linear_g *
                       ((*transform).grid_size as i32 -
-                           1i32) as f32) as i32;
+                           1i32) as f32).floor() as i32;
         let mut z_n: i32 =
-            ceilf(linear_b *
+            (linear_b *
                       ((*transform).grid_size as i32 -
-                           1i32) as f32) as i32;
+                           1i32) as f32).ceil() as i32;
         let mut x_d: f32 =
             linear_r *
                 ((*transform).grid_size as i32 - 1i32) as
@@ -1173,8 +1166,8 @@ unsafe extern "C" fn qcms_modular_transform_create_mAB(mut lut:
                         clut_length =
                             (::std::mem::size_of::<f32>() as
                                  usize as f64 *
-                                 pow((*lut).num_grid_points[0usize] as
-                                         f64,
+                                 ((*lut).num_grid_points[0usize] as
+                                         f64).powf(
                                      3f64) *
                                  3f64) as
                                 usize;
@@ -1363,8 +1356,8 @@ unsafe extern "C" fn qcms_modular_transform_create_lut(mut lut: *mut lutType)
                     clut_length =
                         (::std::mem::size_of::<f32>() as
                              usize as f64 *
-                             pow((*lut).num_clut_grid_points as
-                                     f64,
+                             ((*lut).num_clut_grid_points as
+                                     f64).powf(
                                  3f64) *
                              3f64) as usize;
                     clut = malloc(clut_length) as *mut f32;
