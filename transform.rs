@@ -25,7 +25,7 @@ use ::libc::{self, malloc, free, calloc};
 use std::sync::atomic;
 use std::sync::atomic::Ordering;
 use crate::iccread::{qcms_profile, curveType};
-use crate::{transform_util::{compute_precache, lut_interp_linear, build_output_lut, build_input_gamma_table, build_colorant_matrix}, matrix::*};
+use crate::{transform_util::{compute_precache, lut_interp_linear, build_output_lut, build_input_gamma_table, build_colorant_matrix}, matrix::*, chain::qcms_chain_transform};
 
 const PRECACHE_OUTPUT_SIZE: usize = 8192;
 const PRECACHE_OUTPUT_MAX: usize = PRECACHE_OUTPUT_SIZE - 1;
@@ -73,11 +73,6 @@ extern "C" {
                                              dest: *mut libc::c_uchar,
                                              length: size_t);
 
-    // Generates and returns a 3D LUT with lutSize^3 samples using the provided src/dest.
-    #[no_mangle]
-    fn qcms_chain_transform(in_0: *mut qcms_profile, out: *mut qcms_profile,
-                            src: *mut f32, dest: *mut f32,
-                            lutSize: size_t) -> *mut f32;
 }
 pub type __darwin_size_t = libc::c_ulong;
 pub type int32_t = i32;

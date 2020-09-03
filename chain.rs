@@ -1,4 +1,5 @@
 use ::libc;
+use crate::iccread::{lutType, qcms_profile, lutmABType, curveType};
 extern "C" {
     #[no_mangle]
     fn malloc(_: libc::c_ulong) -> *mut libc::c_void;
@@ -53,90 +54,14 @@ pub struct precache_output {
 }
 
 #[repr(C)]#[derive(Copy, Clone)]
-pub struct _qcms_profile {
-    pub class_type: uint32_t,
-    pub color_space: uint32_t,
-    pub pcs: uint32_t,
-    pub rendering_intent: qcms_intent,
-    pub redColorant: XYZNumber,
-    pub blueColorant: XYZNumber,
-    pub greenColorant: XYZNumber,
-    pub redTRC: *mut curveType,
-    pub blueTRC: *mut curveType,
-    pub greenTRC: *mut curveType,
-    pub grayTRC: *mut curveType,
-    pub A2B0: *mut lutType,
-    pub B2A0: *mut lutType,
-    pub mAB: *mut lutmABType,
-    pub mBA: *mut lutmABType,
-    pub chromaticAdaption: matrix,
-    pub output_table_r: *mut precache_output,
-    pub output_table_g: *mut precache_output,
-    pub output_table_b: *mut precache_output,
-}
-
-#[repr(C)]#[derive(Copy, Clone)]
 pub struct matrix {
     pub m: [[f32; 3]; 3],
     pub invalid: bool,
 }
 
-#[repr(C)]#[derive(Copy, Clone)]
-pub struct lutmABType {
-    pub num_in_channels: uint8_t,
-    pub num_out_channels: uint8_t,
-    pub num_grid_points: [uint8_t; 16],
-    pub e00: s15Fixed16Number,
-    pub e01: s15Fixed16Number,
-    pub e02: s15Fixed16Number,
-    pub e03: s15Fixed16Number,
-    pub e10: s15Fixed16Number,
-    pub e11: s15Fixed16Number,
-    pub e12: s15Fixed16Number,
-    pub e13: s15Fixed16Number,
-    pub e20: s15Fixed16Number,
-    pub e21: s15Fixed16Number,
-    pub e22: s15Fixed16Number,
-    pub e23: s15Fixed16Number,
-    pub reversed: bool,
-    pub clut_table: *mut f32,
-    pub a_curves: [*mut curveType; 10],
-    pub b_curves: [*mut curveType; 10],
-    pub m_curves: [*mut curveType; 10],
-    pub clut_table_data: [f32; 0],
-}
-
-#[repr(C)]#[derive(Copy, Clone)]
-pub struct curveType {
-    pub type_0: uint32_t,
-    pub count: uint32_t,
-    pub parameter: [f32; 7],
-    pub data: [uInt16Number; 0],
-}
 pub type uInt16Number = uint16_t;
 pub type s15Fixed16Number = int32_t;
 
-#[repr(C)]#[derive(Copy, Clone)]
-pub struct lutType {
-    pub num_input_channels: uint8_t,
-    pub num_output_channels: uint8_t,
-    pub num_clut_grid_points: uint8_t,
-    pub e00: s15Fixed16Number,
-    pub e01: s15Fixed16Number,
-    pub e02: s15Fixed16Number,
-    pub e10: s15Fixed16Number,
-    pub e11: s15Fixed16Number,
-    pub e12: s15Fixed16Number,
-    pub e20: s15Fixed16Number,
-    pub e21: s15Fixed16Number,
-    pub e22: s15Fixed16Number,
-    pub num_input_table_entries: uint16_t,
-    pub num_output_table_entries: uint16_t,
-    pub input_table: *mut f32,
-    pub clut_table: *mut f32,
-    pub output_table: *mut f32,
-    pub table_data: [f32; 0],
-}
 
 #[repr(C)]#[derive(Copy, Clone)]
 pub struct XYZNumber {
@@ -152,7 +77,6 @@ pub const QCMS_INTENT_SATURATION: qcms_intent = 2;
 pub const QCMS_INTENT_RELATIVE_COLORIMETRIC: qcms_intent = 1;
 pub const QCMS_INTENT_PERCEPTUAL: qcms_intent = 0;
 pub const QCMS_INTENT_MIN: qcms_intent = 0;
-pub type qcms_profile = _qcms_profile;
 
 #[repr(C)]#[derive(Copy, Clone)]
 pub struct qcms_modular_transform {
