@@ -1,5 +1,5 @@
 use ::libc::{self, calloc, free, malloc, memcpy, memset, };
-use crate::iccread::{lutType, qcms_profile, lutmABType, curveType};
+use crate::{transform_util::{lut_interp_linear, lut_interp_linear_float, build_input_gamma_table, build_colorant_matrix, build_output_lut}, iccread::{lutType, qcms_profile, lutmABType, curveType}, matrix::{matrix_invert, matrix}};
 extern "C" {
     #[no_mangle]
     fn pow(_: f64, _: f64) -> f64;
@@ -7,23 +7,6 @@ extern "C" {
     fn ceilf(_: f32) -> f32;
     #[no_mangle]
     fn floorf(_: f32) -> f32;
-    #[no_mangle]
-    fn lut_interp_linear(value: f64, table: *mut uint16_t,
-                         length: i32) -> f32;
-    #[no_mangle]
-    fn lut_interp_linear_float(value: f32,
-                               table: *mut f32, length: i32)
-     -> f32;
-    #[no_mangle]
-    fn build_input_gamma_table(TRC: *mut curveType) -> *mut f32;
-    #[no_mangle]
-    fn build_colorant_matrix(p: *mut qcms_profile) -> matrix;
-    #[no_mangle]
-    fn build_output_lut(trc: *mut curveType,
-                        output_gamma_lut: *mut *mut uint16_t,
-                        output_gamma_lut_length: *mut size_t);
-    #[no_mangle]
-    fn matrix_invert(mat: matrix) -> matrix;
 }
 pub type __darwin_size_t = libc::c_ulong;
 pub type int32_t = i32;
@@ -36,12 +19,6 @@ pub type uint32_t = libc::c_uint;
 pub struct precache_output {
     pub ref_count: i32,
     pub data: [uint8_t; 8192],
-}
-
-#[repr(C)]#[derive(Copy, Clone)]
-pub struct matrix {
-    pub m: [[f32; 3]; 3],
-    pub invalid: bool,
 }
 
 pub type uInt16Number = uint16_t;
