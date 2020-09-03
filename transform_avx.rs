@@ -9,7 +9,7 @@ pub use std::arch::x86::{__m128, __m128i, __m256, __m256i, _mm_add_ps,
                          _mm256_store_si256, _mm256_broadcast_ps,
                          _mm_broadcast_ss, _mm256_cvtps_epi32, _mm256_mul_ps,
                          _mm256_min_ps, _mm256_max_ps, _mm256_add_ps,
-                         _mm_setzero_ps};
+                         _mm_setzero_ps, _mm256_insertf128_ps};
 #[cfg(target_arch = "x86_64")]
 pub use std::arch::x86_64::{__m128, __m128i, __m256, __m256i, _mm_add_ps,
                             _mm_mul_ps, _mm_min_ps, _mm_max_ps, _mm_loadu_ps,
@@ -20,12 +20,9 @@ pub use std::arch::x86_64::{__m128, __m128i, __m256, __m256i, _mm_add_ps,
                             _mm_broadcast_ss, _mm256_cvtps_epi32,
                             _mm256_mul_ps, _mm256_min_ps, _mm256_max_ps,
                             _mm256_add_ps, _mm_setzero_ps, _mm256_insertf128_ps};
-pub type __darwin_size_t = libc::c_ulong;
 pub type uintptr_t = libc::c_ulong;
-pub type size_t = __darwin_size_t;
-pub type uint8_t = libc::c_uchar;
-pub type uint16_t = libc::c_ushort;
-pub type uint32_t = libc::c_uint;
+pub type size_t = libc::c_ulong;
+
 
 unsafe extern "C" fn qcms_transform_data_template_lut_avx<F: Format>(mut transform:
                                                               *const qcms_transform,

@@ -10,12 +10,8 @@ pub use std::arch::x86_64::{__m128, __m128i, _mm_add_ps, _mm_mul_ps,
                             _mm_min_ps, _mm_max_ps, _mm_load_ss, _mm_load_ps,
                             _mm_store_si128, _mm_setzero_ps, _mm_cvtps_epi32,
                             _mm_shuffle_ps};
-pub type __darwin_size_t = libc::c_ulong;
 pub type uintptr_t = libc::c_ulong;
-pub type size_t = __darwin_size_t;
-pub type uint8_t = libc::c_uchar;
-pub type uint16_t = libc::c_ushort;
-pub type uint32_t = libc::c_uint;
+pub type size_t = libc::c_ulong;
 
 /* pre-shuffled: just load these into XMM reg instead of load-scalar/shufps sequence */
 static mut floatScaleX4: [f32; 4] =

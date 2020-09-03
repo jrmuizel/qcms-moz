@@ -8,14 +8,10 @@ extern "C" {
     #[no_mangle]
     static mut qcms_supports_iccv4: bool;
 }
-pub type __int64_t = libc::c_longlong;
-pub type __darwin_size_t = libc::c_ulong;
-pub type __darwin_off_t = __int64_t;
+
 pub type int32_t = i32;
-pub type size_t = __darwin_size_t;
-pub type uint8_t = libc::c_uchar;
-pub type uint16_t = libc::c_ushort;
-pub type uint32_t = libc::c_uint;
+pub type size_t = libc::c_ulong;
+
 pub type icColorSpaceSignature = libc::c_uint;
 pub const icMaxEnumData: icColorSpaceSignature = 4294967295;
 pub const icSig15colorData: icColorSpaceSignature = 1178815570;
