@@ -1794,7 +1794,7 @@ pub unsafe extern "C" fn qcms_transform_precacheLUT_float(mut transform:
                                                   _: *mut libc::c_uchar,
                                                   _: size_t) -> ())
             }
-            debug_assert!((*transform).transform_fn.is_some());
+             debug_assert!((*transform).transform_fn.is_some());
         }
     }
     //XXX: qcms_modular_transform_data may return either the src or dest buffer. If so it must not be free-ed
@@ -1867,7 +1867,7 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
                     QCMS_DATA_BGRA_8
     }
     if !match_0 {
-        debug_assert!(false, "input/output type");
+         debug_assert!(false, "input/output type");
         return 0 as *mut qcms_transform
     }
     let mut transform: *mut qcms_transform = transform_alloc();
@@ -1901,7 +1901,7 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
             qcms_transform_precacheLUT_float(transform, in_0, out,
                                              33i32, in_type);
         if result.is_null() {
-            debug_assert!(false, "precacheLUT failed");
+             debug_assert!(false, "precacheLUT failed");
             qcms_transform_release(transform);
             return 0 as *mut qcms_transform
         }
@@ -2224,11 +2224,11 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
             }
         }
     } else {
-        debug_assert!(false, "unexpected colorspace");
+         debug_assert!(false, "unexpected colorspace");
         qcms_transform_release(transform);
         return 0 as *mut qcms_transform
     }
-    debug_assert!((*transform).transform_fn.is_some());
+     debug_assert!((*transform).transform_fn.is_some());
     return transform;
 }
 #[no_mangle]

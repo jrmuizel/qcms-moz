@@ -316,7 +316,7 @@ pub unsafe extern "C" fn compute_curve_gamma_table_type_parametric(mut gamma_tab
         f = *parameter.offset(6isize);
         interval = *parameter.offset(4isize)
     } else {
-        debug_assert!(false, "invalid parametric function type.");
+         debug_assert!(false, "invalid parametric function type.");
         a = 1f32;
         b = 0f32;
         c = 0f32;
@@ -362,8 +362,7 @@ pub unsafe extern "C" fn build_input_gamma_table(mut TRC: *mut curveType)
     if TRC.is_null() { return 0 as *mut f32 }
      let mut gamma_table:  *mut f32 =
     
-        malloc((::std::mem::size_of::<f32>() as
-                    usize).wrapping_mul(256)) as
+        malloc((::std::mem::size_of::<f32>()).wrapping_mul(256)) as
             *mut f32;
     if !gamma_table.is_null() {
         if (*TRC).type_0 == 0x70617261u32 {
@@ -494,9 +493,11 @@ pub unsafe extern "C" fn lut_inverse_interp16(mut Value: uint16_t,
             r = x - 1i32
         } else { l = x + 1i32 }
     }
-    // Not found, should we interpolate?
-    // Get surrounding nodes
-    debug_assert!(x >= 1);
+     
+// Not found, should we interpolate?
+
+// Get surrounding nodes
+debug_assert!(x >= 1);
     
      let mut val2:  f64 =
     
@@ -544,8 +545,7 @@ unsafe extern "C" fn invert_lut(mut table: *mut uint16_t,
     /* for now we invert the lut by creating a lut of size out_length
          * and attempting to lookup a value for each entry using lut_inverse_interp16 */
     let mut output: *mut uint16_t =
-        malloc((::std::mem::size_of::<uint16_t>() as
-                    usize).wrapping_mul(out_length as usize))
+        malloc((::std::mem::size_of::<uint16_t>()).wrapping_mul(out_length as usize))
             as *mut uint16_t;
     if output.is_null() { return 0 as *mut uint16_t }
      let mut i:  i32 =  0i32;
@@ -664,8 +664,7 @@ unsafe extern "C" fn build_linear_table(mut length: i32)
  -> *mut uint16_t {
     
     let mut output: *mut uint16_t =
-        malloc((::std::mem::size_of::<uint16_t>() as
-                    usize).wrapping_mul(length as usize)) as
+        malloc((::std::mem::size_of::<uint16_t>()).wrapping_mul(length as usize)) as
             *mut uint16_t;
     if output.is_null() { return 0 as *mut uint16_t }
      let mut i:  i32 =  0i32;
@@ -684,8 +683,7 @@ unsafe extern "C" fn build_pow_table(mut gamma: f32,
  -> *mut uint16_t {
     
     let mut output: *mut uint16_t =
-        malloc((::std::mem::size_of::<uint16_t>() as
-                    usize).wrapping_mul(length as usize)) as
+        malloc((::std::mem::size_of::<uint16_t>()).wrapping_mul(length as usize)) as
             *mut uint16_t;
     if output.is_null() { return 0 as *mut uint16_t }
      let mut i:  i32 =  0i32;
@@ -750,8 +748,7 @@ pub unsafe extern "C" fn build_output_lut(mut trc: *mut curveType,
         let mut gamma_table: [f32; 256] = [0.; 256];
         
         let mut output: *mut uint16_t =
-            malloc((::std::mem::size_of::<uint16_t>() as
-                        usize).wrapping_mul(256)) as
+            malloc((::std::mem::size_of::<uint16_t>()).wrapping_mul(256)) as
                 *mut uint16_t;
         if output.is_null() { *output_gamma_lut = 0 as *mut uint16_t; return }
         compute_curve_gamma_table_type_parametric(gamma_table.as_mut_ptr(),

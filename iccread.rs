@@ -276,7 +276,8 @@ unsafe extern "C" fn read_u32(mut mem: *mut mem_source, mut offset: size_t)
         let mut k: be32 = 0;
         memcpy(&mut k as *mut be32 as *mut libc::c_void,
                (*mem).buf.offset(offset as isize) as *const libc::c_void,
-               ::std::mem::size_of::<be32>() as usize);
+               
+               ::std::mem::size_of::<be32>());
         return be32_to_cpu(k)
     };
 }
@@ -291,7 +292,8 @@ unsafe extern "C" fn read_u16(mut mem: *mut mem_source, mut offset: size_t)
         let mut k: be16 = 0;
         memcpy(&mut k as *mut be16 as *mut libc::c_void,
                (*mem).buf.offset(offset as isize) as *const libc::c_void,
-               ::std::mem::size_of::<be16>() as usize);
+               
+               ::std::mem::size_of::<be16>());
         return be16_to_cpu(k)
     };
 }
@@ -412,8 +414,7 @@ unsafe extern "C" fn read_tag_table(mut profile: *mut qcms_profile,
         return index
     }
     index.tags =
-        malloc((::std::mem::size_of::<tag>() as
-                    usize).wrapping_mul(index.count as usize))
+        malloc((::std::mem::size_of::<tag>()).wrapping_mul(index.count as usize))
             as *mut tag;
     if !index.tags.is_null() {
         i = 0u32;
@@ -723,10 +724,7 @@ unsafe extern "C" fn read_curveType(mut src: *mut mem_source,
             return 0 as *mut curveType
         }
         curve =
-            malloc((::std::mem::size_of::<curveType>() as
-                        usize).wrapping_add((::std::mem::size_of::<uInt16Number>()
-                                                         as
-                                                         usize).wrapping_mul(count
+            malloc((::std::mem::size_of::<curveType>()).wrapping_add((::std::mem::size_of::<uInt16Number>()).wrapping_mul(count
                                                                                          as
                                                                                          usize)))
                 as *mut curveType;
@@ -755,7 +753,7 @@ unsafe extern "C" fn read_curveType(mut src: *mut mem_source,
             return 0 as *mut curveType
         }
         curve =
-            malloc(::std::mem::size_of::<curveType>() as usize) as
+            malloc(::std::mem::size_of::<curveType>()) as
                 *mut curveType;
         if curve.is_null() { return 0 as *mut curveType }
         (*curve).count = count;
@@ -944,7 +942,7 @@ unsafe extern "C" fn read_tag_lutmABType(mut src: *mut mem_source,
             (b_curve_offset).wrapping_add(offset)
     }
     if clut_offset != 0 {
-        debug_assert!(num_in_channels as i32 == 3i32);
+         debug_assert!(num_in_channels as i32 == 3i32);
         // clut_size can not overflow since lg(256^num_in_channels) = 24 bits.
         i = 0u32;
         while i < num_in_channels as libc::c_uint {
@@ -968,16 +966,14 @@ unsafe extern "C" fn read_tag_lutmABType(mut src: *mut mem_source,
         return 0 as *mut lutmABType
     }
     lut =
-        malloc((::std::mem::size_of::<lutmABType>() as
-                    usize).wrapping_add((clut_size as
-                                                     usize).wrapping_mul(::std::mem::size_of::<f32>()
-                                                                                     as
-                                                                                     usize)))
+        malloc((::std::mem::size_of::<lutmABType>()).wrapping_add((clut_size as
+                                                     usize).wrapping_mul(::std::mem::size_of::<f32>())))
             as *mut lutmABType;
     if lut.is_null() { return 0 as *mut lutmABType }
     // we'll fill in the rest below
     memset(lut as *mut libc::c_void, 0i32,
-           ::std::mem::size_of::<lutmABType>() as usize);
+           
+           ::std::mem::size_of::<lutmABType>());
     (*lut).clut_table =
         &mut *(*lut).clut_table_data.as_mut_ptr().offset(0isize) as
             *mut f32;
@@ -1188,7 +1184,7 @@ unsafe extern "C" fn read_tag_lutType(mut src: *mut mem_source,
         entry_size = 2u64;
         input_offset = 52u32
     } else {
-        debug_assert!(false);
+         debug_assert!(false);
         invalid_source(src,
                        b"Unexpected lut type\x00" as *const u8 as
                            *const libc::c_char);
@@ -1229,8 +1225,7 @@ unsafe extern "C" fn read_tag_lutType(mut src: *mut mem_source,
         return 0 as *mut lutType
     }
     lut =
-        malloc((::std::mem::size_of::<lutType>() as
-                    usize).wrapping_add((((num_input_table_entries as
+        malloc((::std::mem::size_of::<lutType>()).wrapping_add((((num_input_table_entries as
                                                        i32 *
                                                        in_chan as i32)
                                                       as
@@ -1246,9 +1241,7 @@ unsafe extern "C" fn read_tag_lutType(mut src: *mut mem_source,
                                                                                                                                             as
                                                                                                                                             libc::c_uint)
                                                      as
-                                                     usize).wrapping_mul(::std::mem::size_of::<f32>()
-                                                                                     as
-                                                                                     usize)))
+                                                     usize).wrapping_mul(::std::mem::size_of::<f32>())))
             as *mut lutType;
     if lut.is_null() {
         invalid_source(src,
@@ -1444,7 +1437,7 @@ unsafe extern "C" fn read_rendering_intent(mut profile: *mut qcms_profile,
 }
 #[no_mangle]
 pub unsafe extern "C" fn qcms_profile_create() -> *mut qcms_profile {
-    return calloc(::std::mem::size_of::<qcms_profile>() as usize,
+    return calloc(::std::mem::size_of::<qcms_profile>(),
                   1) as *mut qcms_profile;
 }
 /* build sRGB gamma table */
@@ -1459,8 +1452,7 @@ unsafe extern "C" fn build_sRGB_gamma_table(mut num_entries: i32)
     let mut c: f64 = 1.0f64 / 12.92f64;
     let mut d: f64 = 0.04045f64;
     let mut table: *mut uint16_t =
-        malloc((::std::mem::size_of::<uint16_t>() as
-                    usize).wrapping_mul(num_entries as usize))
+        malloc((::std::mem::size_of::<uint16_t>()).wrapping_mul(num_entries as usize))
             as *mut uint16_t;
     if table.is_null() { return 0 as *mut uint16_t }
     i = 0i32;
@@ -1498,10 +1490,7 @@ unsafe extern "C" fn curve_from_table(mut table: *mut uint16_t,
     let mut curve: *mut curveType = 0 as *mut curveType;
     let mut i: i32 = 0;
     curve =
-        malloc((::std::mem::size_of::<curveType>() as
-                    usize).wrapping_add((::std::mem::size_of::<uInt16Number>()
-                                                     as
-                                                     usize).wrapping_mul(num_entries
+        malloc((::std::mem::size_of::<curveType>()).wrapping_add((::std::mem::size_of::<uInt16Number>()).wrapping_mul(num_entries
                                                                                      as
                                                                                      usize)))
             as *mut curveType;
@@ -1529,10 +1518,7 @@ unsafe extern "C" fn curve_from_gamma(mut gamma: f32)
     let mut curve: *mut curveType = 0 as *mut curveType;
     let mut num_entries: i32 = 1i32;
     curve =
-        malloc((::std::mem::size_of::<curveType>() as
-                    usize).wrapping_add((::std::mem::size_of::<uInt16Number>()
-                                                     as
-                                                     usize).wrapping_mul(num_entries
+        malloc((::std::mem::size_of::<curveType>()).wrapping_add((::std::mem::size_of::<uInt16Number>()).wrapping_mul(num_entries
                                                                                      as
                                                                                      usize)))
             as *mut curveType;
@@ -1655,7 +1641,7 @@ unsafe extern "C" fn white_point_from_temp(mut temp_K: i32)
         white_point.x = -1.0f64;
         white_point.y = -1.0f64;
         white_point.Y = -1.0f64;
-        debug_assert!(false, "invalid temp");
+         debug_assert!(false, "invalid temp");
         return white_point
     }
     // Obtain y(x)
@@ -1873,7 +1859,7 @@ pub unsafe extern "C" fn qcms_profile_from_memory(mut mem:
                         current_block = 17808765469879209355;
                     } else { current_block = 3580086814630675314; }
                 } else {
-                    debug_assert!(false, "read_color_space protects against entering here");
+                     debug_assert!(false, "read_color_space protects against entering here");
                     current_block = 17808765469879209355;
                 }
                 match current_block {
@@ -1941,8 +1927,10 @@ unsafe extern "C" fn qcms_data_from_file(mut file: *mut FILE,
     *size = 0u64;
     if fread(&mut length_be as *mut be32 as *mut libc::c_void,
              1,
-             ::std::mem::size_of::<be32>() as usize, file) !=
-           ::std::mem::size_of::<be32>() as usize {
+             
+             ::std::mem::size_of::<be32>(), file) !=
+           
+           ::std::mem::size_of::<be32>() {
         return
     }
     length = be32_to_cpu(length_be);
