@@ -11,10 +11,10 @@ pub type uint32_t = libc::c_uint;
 #[repr(C)]#[derive(Copy, Clone)]
 pub struct precache_output {
     pub ref_count: i32,
-    pub data: [uint8_t; 8192],
+    pub data: [u8; 8192],
 }
 
-pub type uInt16Number = uint16_t;
+pub type uInt16Number = u16;
 pub type s15Fixed16Number = int32_t;
 
 
@@ -42,18 +42,18 @@ pub struct qcms_modular_transform {
     pub input_clut_table_r: *mut f32,
     pub input_clut_table_g: *mut f32,
     pub input_clut_table_b: *mut f32,
-    pub input_clut_table_length: uint16_t,
+    pub input_clut_table_length: u16,
     pub r_clut: *mut f32,
     pub g_clut: *mut f32,
     pub b_clut: *mut f32,
-    pub grid_size: uint16_t,
+    pub grid_size: u16,
     pub output_clut_table_r: *mut f32,
     pub output_clut_table_g: *mut f32,
     pub output_clut_table_b: *mut f32,
-    pub output_clut_table_length: uint16_t,
-    pub output_gamma_lut_r: *mut uint16_t,
-    pub output_gamma_lut_g: *mut uint16_t,
-    pub output_gamma_lut_b: *mut uint16_t,
+    pub output_clut_table_length: u16,
+    pub output_gamma_lut_r: *mut u16,
+    pub output_gamma_lut_g: *mut u16,
+    pub output_gamma_lut_b: *mut u16,
     pub output_gamma_lut_r_length: size_t,
     pub output_gamma_lut_g_length: size_t,
     pub output_gamma_lut_b_length: size_t,
@@ -336,7 +336,7 @@ unsafe extern "C" fn qcms_transform_module_clut_only(mut transform:
     let mut b_table: *mut f32 = (*transform).b_clut;
      let mut i:  size_t =  0u64;
     while i < length {
-         debug_assert!((*transform).grid_size as i32 >= 1i32);
+            debug_assert!((*transform).grid_size as i32 >= 1i32);
         let fresh12 = src;
         src = src.offset(1);
         let mut linear_r: f32 = *fresh12;
@@ -480,7 +480,7 @@ unsafe extern "C" fn qcms_transform_module_clut(mut transform:
     let mut b_table: *mut f32 = (*transform).b_clut;
      let mut i:  size_t =  0u64;
     while i < length {
-         debug_assert!((*transform).grid_size as i32 >= 1i32);
+            debug_assert!((*transform).grid_size as i32 >= 1i32);
         let fresh18 = src;
         src = src.offset(1);
         let mut device_r: f32 = *fresh18;
@@ -1186,7 +1186,7 @@ unsafe extern "C" fn qcms_modular_transform_create_mAB(mut lut:
                             (*transform).b_clut =
                                 clut.offset(2isize);
                             (*transform).grid_size =
-                                (*lut).num_grid_points[0usize] as uint16_t;
+                                (*lut).num_grid_points[0usize] as u16;
                             (*transform).transform_module_fn =
                                 Some(qcms_transform_module_clut_only as
                                          unsafe extern "C" fn(_:
@@ -1371,7 +1371,7 @@ unsafe extern "C" fn qcms_modular_transform_create_lut(mut lut: *mut lutType)
                         (*transform).b_clut =
                             clut.offset(2isize);
                         (*transform).grid_size =
-                            (*lut).num_clut_grid_points as uint16_t;
+                            (*lut).num_clut_grid_points as u16;
                         // Prepare output curves
                         out_curve_len =
                             (::std::mem::size_of::<f32>()).wrapping_mul((*lut).num_output_table_entries
@@ -1644,7 +1644,7 @@ unsafe extern "C" fn qcms_modular_transform_create_output(mut out:
             }
         }
     } else {
-         debug_assert!(false, "Unsupported output profile workflow.");
+            debug_assert!(false, "Unsupported output profile workflow.");
         return 0 as *mut qcms_modular_transform
     }
     match current_block {
@@ -1796,7 +1796,7 @@ unsafe extern "C" fn qcms_modular_transform_create(mut in_0:
                                     return first_transform
                                 }
                             } else {
-                                 debug_assert!(false, "output color space not supported");
+                                    debug_assert!(false, "output color space not supported");
                             }
                         }
                     }
@@ -1804,7 +1804,7 @@ unsafe extern "C" fn qcms_modular_transform_create(mut in_0:
             }
         }
     } else {
-         debug_assert!(false, "input color space not supported");
+            debug_assert!(false, "input color space not supported");
     }
     qcms_modular_transform_release(first_transform);
     return 0 as *mut qcms_modular_transform;
@@ -1875,7 +1875,7 @@ unsafe extern "C" fn qcms_modular_transform_data(mut transform:
                                                  _: *mut f32,
                                                  _: *mut f32,
                                                  _: size_t) -> ()) {
-             debug_assert!(false, "Unsupported transform module");
+                debug_assert!(false, "Unsupported transform module");
             return 0 as *mut f32
         }
         if (*transform).grid_size as i32 <= 0i32 &&
@@ -1893,7 +1893,7 @@ unsafe extern "C" fn qcms_modular_transform_data(mut transform:
                                                       _: *mut f32,
                                                       _: *mut f32,
                                                       _: size_t) -> ())) {
-             debug_assert!(false, "Invalid transform");
+                debug_assert!(false, "Invalid transform");
             return 0 as *mut f32
         }
         (*transform).transform_module_fn.expect("non-null function pointer")(transform,

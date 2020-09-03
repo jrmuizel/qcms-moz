@@ -38,7 +38,7 @@ pub struct precache_output {
 	 * improve startup performance and reduce memory usage. ColorSync on
 	 * 10.5 uses 4097 which is perhaps because they use a fixed point
 	 * representation where 1. is represented by 0x1000. */
-    pub data: [uint8_t; PRECACHE_OUTPUT_SIZE],
+    pub data: [u8; PRECACHE_OUTPUT_SIZE],
 }
 
 
@@ -63,24 +63,24 @@ pub struct qcms_transform {
     pub input_clut_table_r: *mut f32,
     pub input_clut_table_g: *mut f32,
     pub input_clut_table_b: *mut f32,
-    pub input_clut_table_length: uint16_t,
+    pub input_clut_table_length: u16,
     pub r_clut: *mut f32,
     pub g_clut: *mut f32,
     pub b_clut: *mut f32,
-    pub grid_size: uint16_t,
+    pub grid_size: u16,
     pub output_clut_table_r: *mut f32,
     pub output_clut_table_g: *mut f32,
     pub output_clut_table_b: *mut f32,
-    pub output_clut_table_length: uint16_t,
+    pub output_clut_table_length: u16,
     pub input_gamma_table_gray: *mut f32,
     pub out_gamma_r: f32,
     pub out_gamma_g: f32,
     pub out_gamma_b: f32,
     pub out_gamma_gray: f32,
-    pub output_gamma_lut_r: *mut uint16_t,
-    pub output_gamma_lut_g: *mut uint16_t,
-    pub output_gamma_lut_b: *mut uint16_t,
-    pub output_gamma_lut_gray: *mut uint16_t,
+    pub output_gamma_lut_r: *mut u16,
+    pub output_gamma_lut_g: *mut u16,
+    pub output_gamma_lut_b: *mut u16,
+    pub output_gamma_lut_gray: *mut u16,
     pub output_gamma_lut_r_length: size_t,
     pub output_gamma_lut_g_length: size_t,
     pub output_gamma_lut_b_length: size_t,
@@ -104,9 +104,9 @@ pub type transform_fn_t
 
 #[repr(C)]#[derive(Copy, Clone)]
 pub struct lutmABType {
-    pub num_in_channels: uint8_t,
-    pub num_out_channels: uint8_t,
-    pub num_grid_points: [uint8_t; 16],
+    pub num_in_channels: u8,
+    pub num_out_channels: u8,
+    pub num_grid_points: [u8; 16],
     pub e00: s15Fixed16Number,
     pub e01: s15Fixed16Number,
     pub e02: s15Fixed16Number,
@@ -127,14 +127,14 @@ pub struct lutmABType {
     pub clut_table_data: [f32; 0],
 }
 
-pub type uInt16Number = uint16_t;
+pub type uInt16Number = u16;
 pub type s15Fixed16Number = int32_t;
 
 #[repr(C)]#[derive(Copy, Clone)]
 pub struct lutType {
-    pub num_input_channels: uint8_t,
-    pub num_output_channels: uint8_t,
-    pub num_clut_grid_points: uint8_t,
+    pub num_input_channels: u8,
+    pub num_output_channels: u8,
+    pub num_clut_grid_points: u8,
     pub e00: s15Fixed16Number,
     pub e01: s15Fixed16Number,
     pub e02: s15Fixed16Number,
@@ -144,8 +144,8 @@ pub struct lutType {
     pub e20: s15Fixed16Number,
     pub e21: s15Fixed16Number,
     pub e22: s15Fixed16Number,
-    pub num_input_table_entries: uint16_t,
-    pub num_output_table_entries: uint16_t,
+    pub num_input_table_entries: u16,
+    pub num_output_table_entries: u16,
     pub input_table: *mut f32,
     pub clut_table: *mut f32,
     pub output_table: *mut f32,
@@ -687,11 +687,11 @@ unsafe extern "C" fn qcms_transform_data_gray_template_precache<I: GrayFormat, F
         let mut linear: f32 =
             *(*transform).input_gamma_table_gray.offset(device as isize);
         /* we could round here... */
-         let mut gray:  uint16_t =
+         let mut gray:  u16 =
     
             (linear *
                  (8192i32 - 1i32) as f32) as
-                uint16_t;
+                u16;
         *dest.offset(F::kRIndex as isize) =
             (*(*transform).output_table_r).data[gray as usize];
         *dest.offset(F::kGIndex as isize) =
@@ -813,19 +813,19 @@ unsafe extern "C" fn qcms_transform_data_template_lut_precache<F: Format>(mut tr
         /* we could round here... */
         
         
-         let mut r:  uint16_t =
+         let mut r:  u16 =
     
             (out_linear_r *
                  (8192i32 - 1i32) as f32) as
-                uint16_t; let mut g:  uint16_t =
+                u16; let mut g:  u16 =
     
             (out_linear_g *
                  (8192i32 - 1i32) as f32) as
-                uint16_t; let mut b:  uint16_t =
+                u16; let mut b:  u16 =
     
             (out_linear_b *
                  (8192i32 - 1i32) as f32) as
-                uint16_t;
+                u16;
         *dest.offset(F::kRIndex as isize) =
             (*(*transform).output_table_r).data[r as usize];
         *dest.offset(F::kGIndex as isize) =
@@ -1683,12 +1683,12 @@ pub unsafe extern "C" fn qcms_transform_precacheLUT_float(mut transform:
                                                               qcms_data_type)
  -> *mut qcms_transform {
     /* The range between which 2 consecutive sample points can be used to interpolate */
-    let mut x: uint16_t = 0;
-    let mut y: uint16_t = 0;
-    let mut z: uint16_t = 0;
-    let mut l: uint32_t = 0;
-    let mut lutSize: uint32_t =
-        (3i32 * samples * samples * samples) as uint32_t;
+    let mut x: u16 = 0;
+    let mut y: u16 = 0;
+    let mut z: u16 = 0;
+    let mut l: u32 = 0;
+    let mut lutSize: u32 =
+        (3i32 * samples * samples * samples) as u32;
     
     
     let mut lut: *mut f32 = 0 as *mut f32;
@@ -1743,7 +1743,7 @@ pub unsafe extern "C" fn qcms_transform_precacheLUT_float(mut transform:
             (*transform).b_clut =
                 &mut *lut.offset(2isize) as
                     *mut f32;
-            (*transform).grid_size = samples as uint16_t;
+            (*transform).grid_size = samples as u16;
             if  in_type ==
                    
                    QCMS_DATA_RGBA_8 {
@@ -1772,7 +1772,7 @@ pub unsafe extern "C" fn qcms_transform_precacheLUT_float(mut transform:
                                                   _: *mut libc::c_uchar,
                                                   _: size_t) -> ())
             }
-             debug_assert!((*transform).transform_fn.is_some());
+                debug_assert!((*transform).transform_fn.is_some());
         }
     }
     //XXX: qcms_modular_transform_data may return either the src or dest buffer. If so it must not be free-ed
@@ -1845,7 +1845,7 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
                     QCMS_DATA_BGRA_8
     }
     if !match_0 {
-         debug_assert!(false, "input/output type");
+            debug_assert!(false, "input/output type");
         return 0 as *mut qcms_transform
     }
     let mut transform: *mut qcms_transform = transform_alloc();
@@ -1879,7 +1879,7 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
             qcms_transform_precacheLUT_float(transform, in_0, out,
                                              33i32, in_type);
         if result.is_null() {
-             debug_assert!(false, "precacheLUT failed");
+                debug_assert!(false, "precacheLUT failed");
             qcms_transform_release(transform);
             return 0 as *mut qcms_transform
         }
@@ -2202,11 +2202,11 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
             }
         }
     } else {
-         debug_assert!(false, "unexpected colorspace");
+            debug_assert!(false, "unexpected colorspace");
         qcms_transform_release(transform);
         return 0 as *mut qcms_transform
     }
-     debug_assert!((*transform).transform_fn.is_some());
+        debug_assert!((*transform).transform_fn.is_some());
     return transform;
 }
 #[no_mangle]

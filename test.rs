@@ -126,15 +126,15 @@ A million repetitions of "a"
 
 #[repr(C)]#[derive(Copy, Clone)]
 pub struct SHA1_CTX {
-    pub state: [uint32_t; 5],
-    pub count: [uint32_t; 2],
-    pub buffer: [uint8_t; 64],
+    pub state: [u32; 5],
+    pub count: [u32; 2],
+    pub buffer: [u8; 64],
 }
 
 #[repr(C)]#[derive(Copy, Clone)]
 pub union CHAR64LONG16 {
-    pub c: [uint8_t; 64],
-    pub l: [uint32_t; 16],
+    pub c: [u8; 64],
+    pub l: [u32; 16],
 }
 /* __SHA1_H */
 //#include "os_types.h"
@@ -167,7 +167,7 @@ unsafe extern "C" fn SHA1_Init(mut context: *mut SHA1_CTX) {
 }
 /* Run your data through this. */
 unsafe extern "C" fn SHA1_Update(mut context: *mut SHA1_CTX,
-                                 mut data: *const uint8_t, len: size_t) {
+                                 mut data: *const u8, len: size_t) {
     let mut i: size_t = 0;
     
      let mut j:  size_t = 
@@ -177,7 +177,7 @@ unsafe extern "C" fn SHA1_Update(mut context: *mut SHA1_CTX,
         
         ((*context).count[0usize] as
              libc::c_ulong).wrapping_add(len << 3i32)
-            as uint32_t;
+            as u32;
     if ((*context).count[0usize] as libc::c_ulong) <
            len << 3i32 {
         (*context).count[1usize] =
@@ -187,14 +187,14 @@ unsafe extern "C" fn SHA1_Update(mut context: *mut SHA1_CTX,
         
         ((*context).count[1usize] as
              libc::c_ulong).wrapping_add(len >> 29i32)
-            as uint32_t;
+            as u32;
     if j.wrapping_add(len) > 63u64 {
         i = (64u64).wrapping_sub(j);
         memcpy(&mut *(*context).buffer.as_mut_ptr().offset(j as isize) as
-                   *mut uint8_t as *mut libc::c_void,
+                   *mut u8 as *mut libc::c_void,
                data as *const libc::c_void, i);
         SHA1_Transform((*context).state.as_mut_ptr(),
-                       (*context).buffer.as_mut_ptr() as *const uint8_t);
+                       (*context).buffer.as_mut_ptr() as *const u8);
         while i.wrapping_add(63u64) < len {
             SHA1_Transform((*context).state.as_mut_ptr(),
                            data.offset(i as isize));
@@ -205,19 +205,19 @@ unsafe extern "C" fn SHA1_Update(mut context: *mut SHA1_CTX,
         j = 0u64
     } else { i = 0u64 }
     memcpy(&mut *(*context).buffer.as_mut_ptr().offset(j as isize) as
-               *mut uint8_t as *mut libc::c_void,
-           &*data.offset(i as isize) as *const uint8_t as *const libc::c_void,
+               *mut u8 as *mut libc::c_void,
+           &*data.offset(i as isize) as *const u8 as *const libc::c_void,
            len.wrapping_sub(i));
 }
-unsafe extern "C" fn SHA1_Transform(mut state: *mut uint32_t,
-                                    mut buffer: *const uint8_t) {
+unsafe extern "C" fn SHA1_Transform(mut state: *mut u32,
+                                    mut buffer: *const u8) {
     
     
     
     
     
     
-    static mut workspace: [uint8_t; 64] = [0; 64];
+    static mut workspace: [u8; 64] = [0; 64];
      let mut block:  *mut CHAR64LONG16 =
      workspace.as_mut_ptr() as *mut CHAR64LONG16;
     memcpy(block as *mut libc::c_void, buffer as *const libc::c_void,
@@ -226,7 +226,7 @@ unsafe extern "C" fn SHA1_Transform(mut state: *mut uint32_t,
     
     
     
-     let mut a:  uint32_t =  *state.offset(0isize); let mut b:  uint32_t =  *state.offset(1isize); let mut c:  uint32_t =  *state.offset(2isize); let mut d:  uint32_t =  *state.offset(3isize); let mut e:  uint32_t =  *state.offset(4isize);
+     let mut a:  u32 =  *state.offset(0isize); let mut b:  u32 =  *state.offset(1isize); let mut c:  u32 =  *state.offset(2isize); let mut d:  u32 =  *state.offset(3isize); let mut e:  u32 =  *state.offset(4isize);
     (*block).l[0usize] =
         ((*block).l[0usize] << 24i32 |
              (*block).l[0usize] >>
@@ -2803,10 +2803,10 @@ unsafe extern "C" fn SHA1_Transform(mut state: *mut uint32_t,
 }
 /* Add padding and return the message digest. */
 unsafe extern "C" fn SHA1_Final(mut context: *mut SHA1_CTX,
-                                mut digest: *mut uint8_t) {
+                                mut digest: *mut u8) {
     
-    let mut finalcount: [uint8_t; 8] = [0; 8];
-     let mut i:  uint32_t =  0u32;
+    let mut finalcount: [u8; 8] = [0; 8];
+     let mut i:  u32 =  0u32;
     while i < 8u32 {
         finalcount[i as usize] =
             ((*context).count[(if i >= 4u32 {
@@ -2821,14 +2821,14 @@ unsafe extern "C" fn SHA1_Final(mut context: *mut SHA1_CTX,
     SHA1_Update(context,
                 
                 b"\x80\x00" as *const  u8 as
-                    *mut uint8_t, 1u64);
+                    *mut u8, 1u64);
     while (*context).count[0usize] &
               504u32 !=
               448u32 {
         SHA1_Update(context,
                     
                     b"\x00\x00" as *const  u8 as
-                        *mut uint8_t, 1u64);
+                        *mut u8, 1u64);
     }
     SHA1_Update(context, finalcount.as_mut_ptr(), 8u64);
     i = 0u32;
@@ -2837,7 +2837,7 @@ unsafe extern "C" fn SHA1_Final(mut context: *mut SHA1_CTX,
             ((*context).state[(i >> 2i32) as usize] >>
                  (3u32).wrapping_sub(i &
                                                      3u32).wrapping_mul(8u32)
-                 & 255u32) as uint8_t;
+                 & 255u32) as u8;
         i = i.wrapping_add(1)
     }
     /* Wipe variables */
@@ -2852,16 +2852,16 @@ unsafe extern "C" fn SHA1_Final(mut context: *mut SHA1_CTX,
            8u64);
     /* make SHA1Transform overwrite its own static vars */
     SHA1_Transform((*context).state.as_mut_ptr(),
-                   (*context).buffer.as_mut_ptr() as *const uint8_t);
+                   (*context).buffer.as_mut_ptr() as *const u8);
 }
 #[inline]
 unsafe extern "C" fn sum(mut data: *mut libc::c_void, mut len: i32)
  -> libc::c_ulong {
     let mut sha: SHA1_CTX =
         SHA1_CTX{state: [0; 5], count: [0; 2], buffer: [0; 64],};
-    let mut digest: [uint8_t; 20] = [0; 20];
+    let mut digest: [u8; 20] = [0; 20];
     SHA1_Init(&mut sha);
-    SHA1_Update(&mut sha, data as *const uint8_t, len as size_t);
+    SHA1_Update(&mut sha, data as *const u8, len as size_t);
     SHA1_Final(&mut sha, digest.as_mut_ptr());
     return ((digest[0usize] as i32) <<
                 24i32 |

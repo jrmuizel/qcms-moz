@@ -54,21 +54,21 @@ unsafe extern "C" fn qcms_transform_data_template_lut_sse2<F: Format>(mut transf
              !(0xfi32) as libc::c_ulong) as *mut f32;
     /* share input and output locations to save having to keep the
      * locations in separate registers */
-    let mut output: *const uint32_t = input as *mut uint32_t;
+    let mut output: *const u32 = input as *mut u32;
     /* deref *transform now to avoid it in loop */
     let mut igtbl_r: *const f32 = (*transform).input_gamma_table_r;
     let mut igtbl_g: *const f32 = (*transform).input_gamma_table_g;
     let mut igtbl_b: *const f32 = (*transform).input_gamma_table_b;
     /* deref *transform now to avoid it in loop */
-    let mut otdata_r: *const uint8_t =
+    let mut otdata_r: *const u8 =
         &mut *(*(*transform).output_table_r).data.as_mut_ptr().offset(0isize)
-            as *mut uint8_t;
-    let mut otdata_g: *const uint8_t =
+            as *mut u8;
+    let mut otdata_g: *const u8 =
         &mut *(*(*transform).output_table_g).data.as_mut_ptr().offset(0isize)
-            as *mut uint8_t;
-    let mut otdata_b: *const uint8_t =
+            as *mut u8;
+    let mut otdata_b: *const u8 =
         &mut *(*(*transform).output_table_b).data.as_mut_ptr().offset(0isize)
-            as *mut uint8_t;
+            as *mut u8;
     /* input matrix values never change */
     let mat0: __m128 =
         _mm_load_ps((*mat.offset(0isize)).as_ptr());
