@@ -72,21 +72,6 @@ extern "C" {
                                              src: *const libc::c_uchar,
                                              dest: *mut libc::c_uchar,
                                              length: size_t);
-    #[no_mangle]
-    fn qcms_transform_data_rgb_out_lut_sse1(transform: *const qcms_transform,
-                                            src: *const libc::c_uchar,
-                                            dest: *mut libc::c_uchar,
-                                            length: size_t);
-    #[no_mangle]
-    fn qcms_transform_data_rgba_out_lut_sse1(transform: *const qcms_transform,
-                                             src: *const libc::c_uchar,
-                                             dest: *mut libc::c_uchar,
-                                             length: size_t);
-    #[no_mangle]
-    fn qcms_transform_data_bgra_out_lut_sse1(transform: *const qcms_transform,
-                                             src: *const libc::c_uchar,
-                                             dest: *mut libc::c_uchar,
-                                             length: size_t);
 
     // Generates and returns a 3D LUT with lutSize^3 samples using the provided src/dest.
     #[no_mangle]
@@ -2100,51 +2085,6 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
                                                       _: *mut libc::c_uchar,
                                                       _: size_t) -> ())
                 }
-                /* Microsoft Compiler for x64 doesn't support MMX.
-                     * SSE code uses MMX so that we disable on x64 */
-            } else if sse_version_available() >= 1i32 {
-                if  in_type ==
-                       
-                       QCMS_DATA_RGB_8 {
-                    (*transform).transform_fn =
-                        Some(qcms_transform_data_rgb_out_lut_sse1 as
-                                 unsafe extern "C" fn(_:
-                                                          *const qcms_transform,
-                                                      _: *const libc::c_uchar,
-                                                      _: *mut libc::c_uchar,
-                                                      _: size_t) -> ())
-                } else if  in_type ==
-                              
-                              QCMS_DATA_RGBA_8
-                 {
-                    (*transform).transform_fn =
-                        Some(qcms_transform_data_rgba_out_lut_sse1 as
-                                 unsafe extern "C" fn(_:
-                                                          *const qcms_transform,
-                                                      _: *const libc::c_uchar,
-                                                      _: *mut libc::c_uchar,
-                                                      _: size_t) -> ())
-                } else if  in_type ==
-                              
-                              QCMS_DATA_BGRA_8
-                 {
-                    (*transform).transform_fn =
-                        Some(qcms_transform_data_bgra_out_lut_sse1 as
-                                 unsafe extern "C" fn(_:
-                                                          *const qcms_transform,
-                                                      _: *const libc::c_uchar,
-                                                      _: *mut libc::c_uchar,
-                                                      _: size_t) -> ())
-                }
-            } else if  in_type ==
-                          
-                          QCMS_DATA_RGB_8 {
-                (*transform).transform_fn =
-                    Some(qcms_transform_data_rgb_out_lut_precache as
-                             unsafe extern "C" fn(_: *const qcms_transform,
-                                                  _: *const libc::c_uchar,
-                                                  _: *mut libc::c_uchar,
-                                                  _: size_t) -> ())
             } else if  in_type ==
                           
                           QCMS_DATA_RGBA_8 {
