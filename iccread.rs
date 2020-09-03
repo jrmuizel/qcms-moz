@@ -1,17 +1,10 @@
 use ::libc;
 use libc::{malloc, calloc, memset, memcpy, free, fopen, fread, fclose, FILE};
 
-use crate::transform::{precache_output, precache_release};
+use crate::transform::{precache_output, precache_release, set_rgb_colorants, get_rgb_colorants};
 use crate::matrix::matrix;
 
 extern "C" {
-    #[no_mangle]
-    fn set_rgb_colorants(profile: *mut qcms_profile,
-                         white_point: qcms_CIE_xyY,
-                         primaries: qcms_CIE_xyYTRIPLE) -> bool;
-    #[no_mangle]
-    fn get_rgb_colorants(colorants: *mut matrix, white_point: qcms_CIE_xyY,
-                         primaries: qcms_CIE_xyYTRIPLE) -> bool;
     #[no_mangle]
     static mut qcms_supports_iccv4: bool;
 }

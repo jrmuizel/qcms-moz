@@ -24,7 +24,7 @@
 use ::libc::{self, malloc, free, calloc};
 use std::sync::atomic;
 use std::sync::atomic::Ordering;
-use crate::iccread::{qcms_profile, curveType};
+use crate::iccread::{qcms_profile, curveType, qcms_CIE_xyY, qcms_CIE_xyYTRIPLE};
 use crate::{transform_util::{compute_precache, lut_interp_linear, build_output_lut, build_input_gamma_table, build_colorant_matrix}, matrix::*, chain::qcms_chain_transform};
 
 const PRECACHE_OUTPUT_SIZE: usize = 8192;
@@ -204,20 +204,6 @@ pub const QCMS_DATA_GRAY_8: qcms_data_type = 3;
 pub const QCMS_DATA_BGRA_8: qcms_data_type = 2;
 pub const QCMS_DATA_RGBA_8: qcms_data_type = 1;
 pub const QCMS_DATA_RGB_8: qcms_data_type = 0;
-
-#[repr(C)]#[derive(Copy, Clone)]
-pub struct qcms_CIE_xyY {
-    pub x: f64,
-    pub y: f64,
-    pub Y: f64,
-}
-
-#[repr(C)]#[derive(Copy, Clone)]
-pub struct qcms_CIE_xyYTRIPLE {
-    pub red: qcms_CIE_xyY,
-    pub green: qcms_CIE_xyY,
-    pub blue: qcms_CIE_xyY,
-}
 
 #[repr(C)]#[derive(Copy, Clone)]
 pub struct CIE_XYZ {
