@@ -25,7 +25,9 @@ use ::libc::{self, malloc, free, calloc};
 use std::sync::atomic;
 use std::sync::atomic::Ordering;
 use crate::iccread::{qcms_profile, curveType, qcms_CIE_xyY, qcms_CIE_xyYTRIPLE};
-use crate::{transform_util::{compute_precache, lut_interp_linear, build_output_lut, build_input_gamma_table, build_colorant_matrix}, matrix::*, chain::qcms_chain_transform, transform_avx::{qcms_transform_data_rgba_out_lut_avx, qcms_transform_data_rgb_out_lut_avx, qcms_transform_data_bgra_out_lut_avx}, transform_sse2::{qcms_transform_data_rgba_out_lut_sse2, qcms_transform_data_rgb_out_lut_sse2, qcms_transform_data_bgra_out_lut_sse2}};
+use crate::{transform_util::{compute_precache, lut_interp_linear, build_output_lut, build_input_gamma_table, build_colorant_matrix}, matrix::*, chain::qcms_chain_transform};
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+use crate::{transform_avx::{qcms_transform_data_rgba_out_lut_avx, qcms_transform_data_rgb_out_lut_avx, qcms_transform_data_bgra_out_lut_avx}, transform_sse2::{qcms_transform_data_rgba_out_lut_sse2, qcms_transform_data_rgb_out_lut_sse2, qcms_transform_data_bgra_out_lut_sse2}};
 
 const PRECACHE_OUTPUT_SIZE: usize = 8192;
 const PRECACHE_OUTPUT_MAX: usize = PRECACHE_OUTPUT_SIZE - 1;
@@ -1917,7 +1919,9 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
         
         
         if precache {
-            if qcms_supports_avx {
+            if cfg!(any(target_arch = "x86", target_arch = "x86_64")) && qcms_supports_avx {
+                #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+                {
                 if  in_type ==
                        
                        QCMS_DATA_RGB_8 {
@@ -1951,7 +1955,10 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
                                                       _: *mut libc::c_uchar,
                                                       _: size_t) -> ())
                 }
-            } else if sse_version_available() >= 2i32 {
+                }
+            } else if cfg!(any(target_arch = "x86", target_arch = "x86_64")) && sse_version_available() >= 2i32 {
+                #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+                {
                 if  in_type ==
                        
                        QCMS_DATA_RGB_8 {
@@ -1984,6 +1991,7 @@ pub unsafe extern "C" fn qcms_transform_create(mut in_0: *mut qcms_profile,
                                                       _: *const libc::c_uchar,
                                                       _: *mut libc::c_uchar,
                                                       _: size_t) -> ())
+                }
                 }
             } else if  in_type ==
                           

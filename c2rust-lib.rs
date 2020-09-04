@@ -19,7 +19,9 @@ pub mod iccread;
 pub mod matrix;
 pub mod test;
 pub mod transform;
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 pub mod transform_avx;
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 pub mod transform_sse2;
 pub mod transform_util;
 pub mod gtest;
