@@ -8,6 +8,8 @@
 #![allow(unused_imports)]
 #![allow(unused_variables)]
 #![feature(stdsimd)]
+// These are needed for the neon intrinsics implementation
+// and can be removed once the MSRV is high enough
 #![feature(platform_intrinsics)]
 #![feature(simd_ffi)]
 #![feature(link_llvm_intrinsics)]
