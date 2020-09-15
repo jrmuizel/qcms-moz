@@ -7,7 +7,7 @@
 #![allow(unused_mut)]
 #![allow(unused_imports)]
 #![allow(unused_variables)]
-
+#![feature(stdsimd)]
 
 
 extern crate libc;
@@ -23,5 +23,7 @@ pub mod transform;
 pub mod transform_avx;
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 pub mod transform_sse2;
+#[cfg(any(target_arch = "aarch64"))]
+pub mod transform_neon;
 pub mod transform_util;
 pub mod gtest;
