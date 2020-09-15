@@ -8,7 +8,10 @@
 #![allow(unused_imports)]
 #![allow(unused_variables)]
 #![feature(stdsimd)]
-
+#![feature(platform_intrinsics)]
+#![feature(simd_ffi)]
+#![feature(link_llvm_intrinsics)]
+#![feature(aarch64_target_feature)]
 
 extern crate libc;
 
