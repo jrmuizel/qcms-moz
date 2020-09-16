@@ -1996,6 +1996,39 @@ pub unsafe extern "C" fn qcms_data_from_path(mut path: *const libc::c_char,
         fclose(file);
     };
 }
+
+#[cfg(windows)]
+extern "C" {
+    #[no_mangle]
+    pub fn _wfopen(filename: *const libc::wchar_t, mode: *const libc::wchar_t) -> *mut FILE;
+}
+
+#[cfg(windows)]
+#[no_mangle]
+pub unsafe extern "C" fn qcms_profile_from_unicode_path(mut path: *const libc::wchar_t) {
+    let mut file: *mut FILE = 0 as *mut FILE;
+    file = _wfopen(path, ['r' as u16, 'b' as u16, '\0' as u16].as_ptr());
+    if !file.is_null() {
+        qcms_profile_from_file(file);
+        fclose(file);
+    };
+}
+
+#[cfg(windows)]
+#[no_mangle]
+pub unsafe extern "C" fn qcms_data_from_unicode_path(mut path: *const libc::wchar_t,
+                                             mut mem: *mut *mut libc::c_void,
+                                             mut size: *mut size_t) {
+    let mut file: *mut FILE = 0 as *mut FILE;
+    *mem = 0 as *mut libc::c_void;
+    *size = 0;
+    file = _wfopen(path, ['r' as u16, 'b' as u16, '\0' as u16].as_ptr());
+    if !file.is_null() {
+        qcms_data_from_file(file, mem, size);
+        fclose(file);
+    };
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn qcms_data_create_rgb_with_gamma(mut white_point:
                                                              qcms_CIE_xyY,
