@@ -590,6 +590,17 @@ pub unsafe extern "C" fn qcms_profile_is_bogus(mut profile: *mut qcms_profile)
     return false;
 }
 
+const TAG_bXYZ: u32 = 0x6258595a;
+const TAG_gXYZ: u32 = 0x6758595a;
+const TAG_rXYZ: u32 = 0x7258595a;
+const TAG_rTRC: u32 = 0x72545243;
+const TAG_bTRC: u32 = 0x62545243;
+const TAG_gTRC: u32 = 0x67545243;
+const TAG_kTRC: u32 = 0x6b545243;
+const TAG_A2B0: u32 = 0x41324230;
+const TAG_B2A0: u32 = 0x42324130;
+const TAG_CHAD: u32 = 0x63686164;
+
 unsafe extern "C" fn find_tag(mut index: tag_index, mut tag_id: u32)
  -> *mut tag {
     let mut i: libc::c_uint = 0;
@@ -1745,10 +1756,10 @@ pub unsafe extern "C" fn qcms_profile_from_memory(mut mem:
         index = read_tag_table(profile, src);
         if !(!(*src).valid || index.tags.is_null()) {
             if !find_tag(index,
-                         0x63686164u32).is_null() {
+                TAG_CHAD).is_null() {
                 (*profile).chromaticAdaption =
                     read_tag_s15Fixed16ArrayType(src, index,
-                                                 0x63686164u32)
+                        TAG_CHAD)
             } else {
                 (*profile).chromaticAdaption.invalid = 1i32 != 0
                 //Signal the data is not present
@@ -1764,82 +1775,82 @@ pub unsafe extern "C" fn qcms_profile_from_memory(mut mem:
                 if (*profile).color_space ==
                        0x52474220u32 {
                     if !find_tag(index,
-                                 0x41324230u32).is_null() {
+                        TAG_A2B0).is_null() {
                         if read_u32(src,
                                     (*find_tag(index,
-                                               0x41324230u32)).offset as
+                                        TAG_A2B0)).offset as
                                         size_t) ==
                                0x6d667431u32 ||
                                read_u32(src,
                                         (*find_tag(index,
-                                                   0x41324230u32)).offset as
+                                            TAG_A2B0)).offset as
                                             size_t) ==
                                    0x6d667432u32 {
                             (*profile).A2B0 =
                                 read_tag_lutType(src, index,
-                                                 0x41324230u32)
+                                    TAG_A2B0)
                         } else if read_u32(src,
                                            (*find_tag(index,
-                                                      0x41324230u32)).offset as
+                                            TAG_A2B0)).offset as
                                                size_t) ==
                                       0x6d414220u32 {
                             (*profile).mAB =
                                 read_tag_lutmABType(src, index,
-                                                    0x41324230u32)
+                                    TAG_A2B0)
                         }
                     }
                     if !find_tag(index,
-                                 0x42324130u32).is_null() {
+                        TAG_B2A0).is_null() {
                         if read_u32(src,
                                     (*find_tag(index,
-                                               0x42324130u32)).offset as
+                                        TAG_B2A0)).offset as
                                         size_t) ==
                                0x6d667431u32 ||
                                read_u32(src,
                                         (*find_tag(index,
-                                                   0x42324130u32)).offset as
+                                            TAG_B2A0)).offset as
                                             size_t) ==
                                    0x6d667432u32 {
                             (*profile).B2A0 =
                                 read_tag_lutType(src, index,
-                                                 0x42324130u32)
+                                    TAG_B2A0)
                         } else if read_u32(src,
                                            (*find_tag(index,
-                                                      0x42324130u32)).offset as
+                                            TAG_B2A0)).offset as
                                                size_t) ==
                                       0x6d424120u32 {
                             (*profile).mBA =
                                 read_tag_lutmABType(src, index,
-                                                    0x42324130u32)
+                                    TAG_B2A0)
                         }
                     }
                     if !find_tag(index,
-                                 0x7258595au32).is_null() ||
+                        TAG_rXYZ).is_null() ||
                            !qcms_supports_iccv4 {
                         (*profile).redColorant =
                             read_tag_XYZType(src, index,
-                                             0x7258595au32);
+                                TAG_rXYZ);
                         (*profile).greenColorant =
                             read_tag_XYZType(src, index,
-                                             0x6758595au32);
+                                TAG_gXYZ);
                         (*profile).blueColorant =
                             read_tag_XYZType(src, index,
-                                             0x6258595au32)
+                                TAG_bXYZ)
                     }
                     if !(*src).valid {
                         current_block = 17808765469879209355;
                     } else if !find_tag(index,
-                                        0x72545243u32).is_null() ||
+                        TAG_rTRC).is_null() ||
                                   !qcms_supports_iccv4 {
                         (*profile).redTRC =
                             read_tag_curveType(src, index,
-                                               0x72545243u32);
+                                TAG_rTRC);
                         (*profile).greenTRC =
                             read_tag_curveType(src, index,
-                                               0x67545243u32);
+                                TAG_gTRC);
                         (*profile).blueTRC =
                             read_tag_curveType(src, index,
-                                               0x62545243u32);
+                                TAG_bTRC);
                         if (*profile).redTRC.is_null() ||
                                (*profile).blueTRC.is_null() ||
                                (*profile).greenTRC.is_null() {
@@ -1850,7 +1861,7 @@ pub unsafe extern "C" fn qcms_profile_from_memory(mut mem:
                               0x47524159u32 {
                     (*profile).grayTRC =
                         read_tag_curveType(src, index,
-                                           0x6b545243u32);
+                            TAG_kTRC);
                     if (*profile).grayTRC.is_null() {
                         current_block = 17808765469879209355;
                     } else { current_block = 3580086814630675314; }
@@ -2049,13 +2060,13 @@ pub unsafe extern "C" fn qcms_data_create_rgb_with_gamma(mut white_point:
     let mut data: *mut libc::c_void = 0 as *mut libc::c_void;
     let mut colorants: matrix = matrix{m: [[0.; 3]; 3], invalid: false,};
     let mut TAG_XYZ: [u32; 3] =
-        [0x7258595au32,
-         0x6758595au32,
-         0x6258595au32];
+        [TAG_rXYZ,
+        TAG_gXYZ,
+         TAG_bXYZ];
     let mut TAG_TRC: [u32; 3] =
-        [0x72545243u32,
-         0x67545243u32,
-         0x62545243u32];
+        [TAG_rTRC,
+        TAG_gTRC,
+         TAG_bTRC];
     if mem.is_null() || size.is_null() { return }
     *mem = 0 as *mut libc::c_void;
     *size = 0;
