@@ -230,7 +230,7 @@ unsafe extern "C" fn qcms_transform_module_LAB_to_XYZ(
         let fresh5 = dest;
         dest = dest.offset(1);
         *fresh5 = (Z as f64 / (1.0f64 + 32767.0f64 / 32768.0f64)) as f32;
-        i = i.wrapping_add(1)
+        i = i + 1
     }
 }
 //Based on lcms cmsXYZ2Lab
@@ -288,7 +288,7 @@ unsafe extern "C" fn qcms_transform_module_XYZ_to_LAB(
         let fresh11 = dest;
         dest = dest.offset(1);
         *fresh11 = (b + 128.0f32) / 255.0f32;
-        i = i.wrapping_add(1)
+        i = i + 1
     }
 }
 unsafe extern "C" fn qcms_transform_module_clut_only(
@@ -402,7 +402,7 @@ unsafe extern "C" fn qcms_transform_module_clut_only(
         let fresh17 = dest;
         dest = dest.offset(1);
         *fresh17 = clamp_float(clut_b);
-        i = i.wrapping_add(1)
+        i = i + 1
     }
 }
 unsafe extern "C" fn qcms_transform_module_clut(
@@ -548,7 +548,7 @@ unsafe extern "C" fn qcms_transform_module_clut(
         let fresh23 = dest;
         dest = dest.offset(1);
         *fresh23 = clamp_float(pcs_b);
-        i = i.wrapping_add(1)
+        i = i + 1
     }
 }
 /* NOT USED
@@ -708,7 +708,7 @@ unsafe extern "C" fn qcms_transform_module_gamma_table(
         let fresh29 = dest;
         dest = dest.offset(1);
         *fresh29 = clamp_float(out_b);
-        i = i.wrapping_add(1)
+        i = i + 1
     }
 }
 unsafe extern "C" fn qcms_transform_module_gamma_lut(
@@ -755,7 +755,7 @@ unsafe extern "C" fn qcms_transform_module_gamma_lut(
         let fresh35 = dest;
         dest = dest.offset(1);
         *fresh35 = clamp_float(out_b);
-        i = i.wrapping_add(1)
+        i = i + 1
     }
 }
 unsafe extern "C" fn qcms_transform_module_matrix_translate(
@@ -811,7 +811,7 @@ unsafe extern "C" fn qcms_transform_module_matrix_translate(
         let fresh41 = dest;
         dest = dest.offset(1);
         *fresh41 = clamp_float(out_b);
-        i = i.wrapping_add(1)
+        i = i + 1
     }
 }
 unsafe extern "C" fn qcms_transform_module_matrix(
@@ -864,7 +864,7 @@ unsafe extern "C" fn qcms_transform_module_matrix(
         let fresh47 = dest;
         dest = dest.offset(1);
         *fresh47 = clamp_float(out_b);
-        i = i.wrapping_add(1)
+        i = i + 1
     }
 }
 unsafe extern "C" fn qcms_modular_transform_alloc() -> *mut qcms_modular_transform {
@@ -1184,9 +1184,8 @@ unsafe extern "C" fn qcms_modular_transform_create_lut(
             transform = qcms_modular_transform_alloc();
             if !transform.is_null() {
                 append_transform(transform, &mut next_transform);
-                in_curve_len = (::std::mem::size_of::<f32>())
-                    .wrapping_mul((*lut).num_input_table_entries as usize)
-                    .wrapping_mul(3);
+                in_curve_len =
+                    ::std::mem::size_of::<f32>() * (*lut).num_input_table_entries as usize * 3;
                 in_curves = malloc(in_curve_len) as *mut f32;
                 if !in_curves.is_null() {
                     memcpy(
@@ -1217,9 +1216,9 @@ unsafe extern "C" fn qcms_modular_transform_create_lut(
                         (*transform).b_clut = clut.offset(2isize);
                         (*transform).grid_size = (*lut).num_clut_grid_points as u16;
                         // Prepare output curves
-                        out_curve_len = (::std::mem::size_of::<f32>())
-                            .wrapping_mul((*lut).num_output_table_entries as usize)
-                            .wrapping_mul(3);
+                        out_curve_len = ::std::mem::size_of::<f32>()
+                            * (*lut).num_output_table_entries as usize
+                            * 3;
                         out_curves = malloc(out_curve_len) as *mut f32;
                         if !out_curves.is_null() {
                             memcpy(
@@ -1761,8 +1760,7 @@ pub unsafe extern "C" fn qcms_chain_transform(
 ) -> *mut f32 {
     let mut transform_list: *mut qcms_modular_transform = qcms_modular_transform_create(in_0, out);
     if !transform_list.is_null() {
-        let mut lut: *mut f32 =
-            qcms_modular_transform_data(transform_list, src, dest, lutSize.wrapping_div(3));
+        let mut lut: *mut f32 = qcms_modular_transform_data(transform_list, src, dest, lutSize / 3);
         qcms_modular_transform_release(transform_list);
         return lut;
     }

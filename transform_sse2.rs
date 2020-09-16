@@ -73,7 +73,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut_sse2<F: Format>(
         return;
     }
     /* one pixel is handled outside of the loop */
-    length = length.wrapping_sub(1);
+    length = length - 1;
     /* setup for transforming 1st pixel */
     vec_r = _mm_load_ss(&*igtbl_r.offset(*src.offset(F::kRIndex as isize) as isize));
     vec_g = _mm_load_ss(&*igtbl_g.offset(*src.offset(F::kGIndex as isize) as isize));
@@ -114,7 +114,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut_sse2<F: Format>(
         *dest.offset(F::kGIndex as isize) = *otdata_g.offset(*output.offset(1isize) as isize);
         *dest.offset(F::kBIndex as isize) = *otdata_b.offset(*output.offset(2isize) as isize);
         dest = dest.offset(components as isize);
-        i = i.wrapping_add(1)
+        i = i + 1
     }
     /* handle final (maybe only) pixel */
     vec_r = _mm_shuffle_ps(vec_r, vec_r, 0i32);

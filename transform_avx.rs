@@ -86,28 +86,31 @@ unsafe extern "C" fn qcms_transform_data_template_lut_avx<F: Format>(
         vec_r0 = _mm_broadcast_ss(&*igtbl_r.offset(*src.offset(F::kRIndex as isize) as isize));
         vec_g0 = _mm_broadcast_ss(&*igtbl_g.offset(*src.offset(F::kGIndex as isize) as isize));
         vec_b0 = _mm_broadcast_ss(&*igtbl_b.offset(*src.offset(F::kBIndex as isize) as isize));
-        vec_r1 = _mm_broadcast_ss(&*igtbl_r.offset(
-            *src.offset(F::kRIndex.wrapping_add(components as libc::c_ulong) as isize) as isize,
-        ));
-        vec_g1 = _mm_broadcast_ss(&*igtbl_g.offset(
-            *src.offset(F::kGIndex.wrapping_add(components as libc::c_ulong) as isize) as isize,
-        ));
-        vec_b1 = _mm_broadcast_ss(&*igtbl_b.offset(
-            *src.offset(F::kBIndex.wrapping_add(components as libc::c_ulong) as isize) as isize,
-        ));
+        vec_r1 = _mm_broadcast_ss(
+            &*igtbl_r
+                .offset(*src.offset((F::kRIndex + components as libc::c_ulong) as isize) as isize),
+        );
+        vec_g1 = _mm_broadcast_ss(
+            &*igtbl_g
+                .offset(*src.offset((F::kGIndex + components as libc::c_ulong) as isize) as isize),
+        );
+        vec_b1 = _mm_broadcast_ss(
+            &*igtbl_b
+                .offset(*src.offset((F::kBIndex + components as libc::c_ulong) as isize) as isize),
+        );
         vec_r = _mm256_insertf128_ps(_mm256_castps128_ps256(vec_r0), vec_r1, 1i32);
         vec_g = _mm256_insertf128_ps(_mm256_castps128_ps256(vec_g0), vec_g1, 1i32);
         vec_b = _mm256_insertf128_ps(_mm256_castps128_ps256(vec_b0), vec_b1, 1i32);
         if F::kAIndex != 0xff {
             alpha1 = *src.offset(F::kAIndex as isize);
-            alpha2 = *src.offset(F::kAIndex.wrapping_add(components as libc::c_ulong) as isize)
+            alpha2 = *src.offset((F::kAIndex + components as libc::c_ulong) as isize)
         }
     }
     /* If there are at least 4 pixels, then we can iterate and preload the
     next 2 while we store the result of the current 2. */
     while length > 3 {
         /* Ensure we are pointing at the next 2 pixels for the next load. */
-        src = src.offset((2u32).wrapping_mul(components) as isize);
+        src = src.offset((2u32 * components) as isize);
         /* gamma * matrix */
         vec_r = _mm256_mul_ps(vec_r, mat0);
         vec_g = _mm256_mul_ps(vec_g, mat1);
@@ -115,9 +118,9 @@ unsafe extern "C" fn qcms_transform_data_template_lut_avx<F: Format>(
         /* store alpha for these pixels; load alpha for next two */
         if F::kAIndex != 0xff {
             *dest.offset(F::kAIndex as isize) = alpha1;
-            *dest.offset(F::kAIndex.wrapping_add(components as libc::c_ulong) as isize) = alpha2;
+            *dest.offset((F::kAIndex + components as libc::c_ulong) as isize) = alpha2;
             alpha1 = *src.offset(F::kAIndex as isize);
-            alpha2 = *src.offset(F::kAIndex.wrapping_add(components as libc::c_ulong) as isize)
+            alpha2 = *src.offset((F::kAIndex + components as libc::c_ulong) as isize)
         }
         /* crunch, crunch, crunch */
         vec_r = _mm256_add_ps(vec_r, _mm256_add_ps(vec_g, vec_b));
@@ -130,15 +133,18 @@ unsafe extern "C" fn qcms_transform_data_template_lut_avx<F: Format>(
         vec_r0 = _mm_broadcast_ss(&*igtbl_r.offset(*src.offset(F::kRIndex as isize) as isize));
         vec_g0 = _mm_broadcast_ss(&*igtbl_g.offset(*src.offset(F::kGIndex as isize) as isize));
         vec_b0 = _mm_broadcast_ss(&*igtbl_b.offset(*src.offset(F::kBIndex as isize) as isize));
-        vec_r1 = _mm_broadcast_ss(&*igtbl_r.offset(
-            *src.offset(F::kRIndex.wrapping_add(components as libc::c_ulong) as isize) as isize,
-        ));
-        vec_g1 = _mm_broadcast_ss(&*igtbl_g.offset(
-            *src.offset(F::kGIndex.wrapping_add(components as libc::c_ulong) as isize) as isize,
-        ));
-        vec_b1 = _mm_broadcast_ss(&*igtbl_b.offset(
-            *src.offset(F::kBIndex.wrapping_add(components as libc::c_ulong) as isize) as isize,
-        ));
+        vec_r1 = _mm_broadcast_ss(
+            &*igtbl_r
+                .offset(*src.offset((F::kRIndex + components as libc::c_ulong) as isize) as isize),
+        );
+        vec_g1 = _mm_broadcast_ss(
+            &*igtbl_g
+                .offset(*src.offset((F::kGIndex + components as libc::c_ulong) as isize) as isize),
+        );
+        vec_b1 = _mm_broadcast_ss(
+            &*igtbl_b
+                .offset(*src.offset((F::kBIndex + components as libc::c_ulong) as isize) as isize),
+        );
         vec_r = _mm256_insertf128_ps(_mm256_castps128_ps256(vec_r0), vec_r1, 1i32);
         vec_g = _mm256_insertf128_ps(_mm256_castps128_ps256(vec_g0), vec_g1, 1i32);
         vec_b = _mm256_insertf128_ps(_mm256_castps128_ps256(vec_b0), vec_b1, 1i32);
@@ -146,14 +152,14 @@ unsafe extern "C" fn qcms_transform_data_template_lut_avx<F: Format>(
         *dest.offset(F::kRIndex as isize) = *otdata_r.offset(*output.offset(0isize) as isize);
         *dest.offset(F::kGIndex as isize) = *otdata_g.offset(*output.offset(1isize) as isize);
         *dest.offset(F::kBIndex as isize) = *otdata_b.offset(*output.offset(2isize) as isize);
-        *dest.offset(F::kRIndex.wrapping_add(components as libc::c_ulong) as isize) =
+        *dest.offset((F::kRIndex + components as libc::c_ulong) as isize) =
             *otdata_r.offset(*output.offset(4isize) as isize);
-        *dest.offset(F::kGIndex.wrapping_add(components as libc::c_ulong) as isize) =
+        *dest.offset((F::kGIndex + components as libc::c_ulong) as isize) =
             *otdata_g.offset(*output.offset(5isize) as isize);
-        *dest.offset(F::kBIndex.wrapping_add(components as libc::c_ulong) as isize) =
+        *dest.offset((F::kBIndex + components as libc::c_ulong) as isize) =
             *otdata_b.offset(*output.offset(6isize) as isize);
-        dest = dest.offset((2u32).wrapping_mul(components) as isize);
-        length = (length).wrapping_sub(2)
+        dest = dest.offset((2u32 * components) as isize);
+        length = length - 2
     }
     /* There are 0-3 pixels remaining. If there are 2-3 remaining, then we know
     we have already populated the necessary registers to start the transform. */
@@ -163,7 +169,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut_avx<F: Format>(
         vec_b = _mm256_mul_ps(vec_b, mat2);
         if F::kAIndex != 0xff {
             *dest.offset(F::kAIndex as isize) = alpha1;
-            *dest.offset(F::kAIndex.wrapping_add(components as libc::c_ulong) as isize) = alpha2
+            *dest.offset((F::kAIndex + components as libc::c_ulong) as isize) = alpha2
         }
         vec_r = _mm256_add_ps(vec_r, _mm256_add_ps(vec_g, vec_b));
         vec_r = _mm256_max_ps(min, vec_r);
@@ -173,15 +179,15 @@ unsafe extern "C" fn qcms_transform_data_template_lut_avx<F: Format>(
         *dest.offset(F::kRIndex as isize) = *otdata_r.offset(*output.offset(0isize) as isize);
         *dest.offset(F::kGIndex as isize) = *otdata_g.offset(*output.offset(1isize) as isize);
         *dest.offset(F::kBIndex as isize) = *otdata_b.offset(*output.offset(2isize) as isize);
-        *dest.offset(F::kRIndex.wrapping_add(components as libc::c_ulong) as isize) =
+        *dest.offset((F::kRIndex + components as libc::c_ulong) as isize) =
             *otdata_r.offset(*output.offset(4isize) as isize);
-        *dest.offset(F::kGIndex.wrapping_add(components as libc::c_ulong) as isize) =
+        *dest.offset((F::kGIndex + components as libc::c_ulong) as isize) =
             *otdata_g.offset(*output.offset(5isize) as isize);
-        *dest.offset(F::kBIndex.wrapping_add(components as libc::c_ulong) as isize) =
+        *dest.offset((F::kBIndex + components as libc::c_ulong) as isize) =
             *otdata_b.offset(*output.offset(6isize) as isize);
-        src = src.offset((2u32).wrapping_mul(components) as isize);
-        dest = dest.offset((2u32).wrapping_mul(components) as isize);
-        length = (length).wrapping_sub(2)
+        src = src.offset((2u32 * components) as isize);
+        dest = dest.offset((2u32 * components) as isize);
+        length = length - 2
     }
     /* There may be 0-1 pixels remaining. */
     if length == 1 {

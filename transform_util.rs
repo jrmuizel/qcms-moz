@@ -129,17 +129,13 @@ pub unsafe extern "C" fn lut_interp_linear16(
     /* Start scaling input_value to the length of the array: 65535*(length-1).
      * We'll divide out the 65535 next */
     let mut value: u32 = (input_value as i32 * (length - 1i32)) as u32; /* equivalent to ceil(value/65535) */
-    let mut upper: u32 = value.wrapping_add(65534u32).wrapping_div(65535u32); /* equivalent to floor(value/65535) */
-    let mut lower: u32 = value.wrapping_div(65535u32);
+    let mut upper: u32 = (value + 65534u32) / 65535u32; /* equivalent to floor(value/65535) */
+    let mut lower: u32 = value / 65535u32;
     /* interp is the distance from upper to value scaled to 0..65535 */
-    let mut interp: u32 = value.wrapping_rem(65535u32); // 0..65535*65535
-    value = (*table.offset(upper as isize) as libc::c_uint)
-        .wrapping_mul(interp)
-        .wrapping_add(
-            (*table.offset(lower as isize) as libc::c_uint)
-                .wrapping_mul((65535u32).wrapping_sub(interp)),
-        )
-        .wrapping_div(65535u32);
+    let mut interp: u32 = value % 65535u32; // 0..65535*65535
+    value = (*table.offset(upper as isize) as libc::c_uint * interp
+        + *table.offset(lower as isize) as libc::c_uint * (65535u32 - interp))
+        / 65535u32;
     return value as u16;
 }
 /* same as above but takes an input_value from 0..PRECACHE_OUTPUT_MAX
@@ -151,26 +147,21 @@ unsafe extern "C" fn lut_interp_linear_precache_output(
 ) -> u8 {
     /* Start scaling input_value to the length of the array: PRECACHE_OUTPUT_MAX*(length-1).
      * We'll divide out the PRECACHE_OUTPUT_MAX next */
-    let mut value: u32 = input_value.wrapping_mul((length - 1i32) as libc::c_uint);
+    let mut value: u32 = input_value * (length - 1i32) as libc::c_uint;
     /* equivalent to ceil(value/PRECACHE_OUTPUT_MAX) */
-    let mut upper: u32 = value
-        .wrapping_add((8192i32 - 1i32) as libc::c_uint)
-        .wrapping_sub(1u32)
-        .wrapping_div((8192i32 - 1i32) as libc::c_uint);
+    let mut upper: u32 =
+        (value + (8192i32 - 1i32) as libc::c_uint - 1u32) / (8192i32 - 1i32) as libc::c_uint;
     /* equivalent to floor(value/PRECACHE_OUTPUT_MAX) */
-    let mut lower: u32 = value.wrapping_div((8192i32 - 1i32) as libc::c_uint);
+    let mut lower: u32 = value / (8192i32 - 1i32) as libc::c_uint;
     /* interp is the distance from upper to value scaled to 0..PRECACHE_OUTPUT_MAX */
-    let mut interp: u32 = value.wrapping_rem((8192i32 - 1i32) as libc::c_uint);
+    let mut interp: u32 = value % (8192i32 - 1i32) as libc::c_uint;
     /* the table values range from 0..65535 */
-    value = (*table.offset(upper as isize) as libc::c_uint)
-        .wrapping_mul(interp)
-        .wrapping_add(
-            (*table.offset(lower as isize) as libc::c_uint)
-                .wrapping_mul(((8192i32 - 1i32) as libc::c_uint).wrapping_sub(interp)),
-        ); // 0..(65535*PRECACHE_OUTPUT_MAX)
-           /* round and scale */
-    value = (value).wrapping_add(((8192i32 - 1i32) * 65535i32 / 255i32 / 2i32) as libc::c_uint); // scale to 0..255
-    value = (value).wrapping_div(((8192i32 - 1i32) * 65535i32 / 255i32) as libc::c_uint);
+    value = *table.offset(upper as isize) as libc::c_uint * interp
+        + *table.offset(lower as isize) as libc::c_uint
+            * ((8192i32 - 1i32) as libc::c_uint - interp); // 0..(65535*PRECACHE_OUTPUT_MAX)
+                                                           /* round and scale */
+    value = value + ((8192i32 - 1i32) * 65535i32 / 255i32 / 2i32) as libc::c_uint; // scale to 0..255
+    value = value / ((8192i32 - 1i32) * 65535i32 / 255i32) as libc::c_uint;
     return value as u8;
 }
 /* value must be a value between 0 and 1 */
@@ -201,7 +192,7 @@ pub unsafe extern "C" fn compute_curve_gamma_table_type1(
     while i < 256u32 {
         // 0..1^(0..255 + 255/256) will always be between 0 and 1
         *gamma_table.offset(i as isize) = (i as f64 / 255.0f64).powf(gamma_float as f64) as f32;
-        i = i.wrapping_add(1)
+        i = i + 1
     }
 }
 #[no_mangle]
@@ -213,7 +204,7 @@ pub unsafe extern "C" fn compute_curve_gamma_table_type2(
     let mut i: libc::c_uint = 0u32;
     while i < 256u32 {
         *gamma_table.offset(i as isize) = lut_interp_linear(i as f64 / 255.0f64, table, length);
-        i = i.wrapping_add(1)
+        i = i + 1
     }
 }
 #[no_mangle]
@@ -287,7 +278,7 @@ pub unsafe extern "C" fn compute_curve_gamma_table_type_parametric(
             *gamma_table.offset(X as isize) =
                 clamp_float(((c * X as f32) as f64 / 255.0f64 + f as f64) as f32)
         }
-        X = X.wrapping_add(1)
+        X = X + 1
     }
 }
 #[no_mangle]
@@ -295,7 +286,7 @@ pub unsafe extern "C" fn compute_curve_gamma_table_type0(mut gamma_table: *mut f
     let mut i: libc::c_uint = 0u32;
     while i < 256u32 {
         *gamma_table.offset(i as isize) = (i as f64 / 255.0f64) as f32;
-        i = i.wrapping_add(1)
+        i = i + 1
     }
 }
 #[no_mangle]
@@ -303,8 +294,7 @@ pub unsafe extern "C" fn build_input_gamma_table(mut TRC: *mut curveType) -> *mu
     if TRC.is_null() {
         return 0 as *mut f32;
     }
-    let mut gamma_table: *mut f32 =
-        malloc((::std::mem::size_of::<f32>()).wrapping_mul(256)) as *mut f32;
+    let mut gamma_table: *mut f32 = malloc(::std::mem::size_of::<f32>() * 256) as *mut f32;
     if !gamma_table.is_null() {
         if (*TRC).type_0 == 0x70617261u32 {
             compute_curve_gamma_table_type_parametric(
@@ -464,7 +454,7 @@ unsafe extern "C" fn invert_lut(
     /* for now we invert the lut by creating a lut of size out_length
      * and attempting to lookup a value for each entry using lut_inverse_interp16 */
     let mut output: *mut u16 =
-        malloc((::std::mem::size_of::<u16>()).wrapping_mul(out_length as usize)) as *mut u16;
+        malloc(::std::mem::size_of::<u16>() * out_length as usize) as *mut u16;
     if output.is_null() {
         return 0 as *mut u16;
     }
@@ -483,7 +473,7 @@ unsafe extern "C" fn compute_precache_pow(mut output: *mut u8, mut gamma: f32) {
         //XXX: don't do integer/float conversion... and round?
         *output.offset(v as isize) =
             (255.0f64 * (v as f64 / (8192i32 - 1i32) as f64).powf(gamma as f64)) as u8;
-        v = v.wrapping_add(1)
+        v = v + 1
     }
 }
 #[no_mangle]
@@ -495,7 +485,7 @@ pub unsafe extern "C" fn compute_precache_lut(
     let mut v: u32 = 0u32;
     while v < 8192u32 {
         *output.offset(v as isize) = lut_interp_linear_precache_output(v, table, length);
-        v = v.wrapping_add(1)
+        v = v + 1
     }
 }
 #[no_mangle]
@@ -503,8 +493,8 @@ pub unsafe extern "C" fn compute_precache_linear(mut output: *mut u8) {
     let mut v: u32 = 0u32;
     while v < 8192u32 {
         //XXX: round?
-        *output.offset(v as isize) = v.wrapping_div((8192i32 / 256i32) as libc::c_uint) as u8;
-        v = v.wrapping_add(1)
+        *output.offset(v as isize) = (v / (8192i32 / 256i32) as libc::c_uint) as u8;
+        v = v + 1
     }
 }
 #[no_mangle]
@@ -522,7 +512,7 @@ pub unsafe extern "C" fn compute_precache(mut trc: *mut curveType, mut output: *
         let mut i: u16 = 0u16;
         while (i as i32) < 256i32 {
             gamma_table_uint[i as usize] = (gamma_table[i as usize] * 65535f32) as u16;
-            i = i.wrapping_add(1)
+            i = i + 1
         }
         //XXX: the choice of a minimum of 256 here is not backed by any theory,
         //     measurement or data, howeve r it is what lcms uses.
@@ -569,8 +559,7 @@ pub unsafe extern "C" fn compute_precache(mut trc: *mut curveType, mut output: *
     return 1i32 != 0;
 }
 unsafe extern "C" fn build_linear_table(mut length: i32) -> *mut u16 {
-    let mut output: *mut u16 =
-        malloc((::std::mem::size_of::<u16>()).wrapping_mul(length as usize)) as *mut u16;
+    let mut output: *mut u16 = malloc(::std::mem::size_of::<u16>() * length as usize) as *mut u16;
     if output.is_null() {
         return 0 as *mut u16;
     }
@@ -584,8 +573,7 @@ unsafe extern "C" fn build_linear_table(mut length: i32) -> *mut u16 {
     return output;
 }
 unsafe extern "C" fn build_pow_table(mut gamma: f32, mut length: i32) -> *mut u16 {
-    let mut output: *mut u16 =
-        malloc((::std::mem::size_of::<u16>()).wrapping_mul(length as usize)) as *mut u16;
+    let mut output: *mut u16 = malloc(::std::mem::size_of::<u16>() * length as usize) as *mut u16;
     if output.is_null() {
         return 0 as *mut u16;
     }
@@ -646,8 +634,7 @@ pub unsafe extern "C" fn build_output_lut(
     if (*trc).type_0 == 0x70617261u32 {
         let mut gamma_table: [f32; 256] = [0.; 256];
 
-        let mut output: *mut u16 =
-            malloc((::std::mem::size_of::<u16>()).wrapping_mul(256)) as *mut u16;
+        let mut output: *mut u16 = malloc(::std::mem::size_of::<u16>() * 256) as *mut u16;
         if output.is_null() {
             *output_gamma_lut = 0 as *mut u16;
             return;
@@ -661,7 +648,7 @@ pub unsafe extern "C" fn build_output_lut(
         let mut i: u16 = 0u16;
         while (i as i32) < 256i32 {
             *output.offset(i as isize) = (gamma_table[i as usize] * 65535f32) as u16;
-            i = i.wrapping_add(1)
+            i = i + 1
         }
         *output_gamma_lut = output
     } else if (*trc).count == 0u32 {

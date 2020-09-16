@@ -259,7 +259,7 @@ unsafe extern "C" fn read_u32(mut mem: *mut mem_source, mut offset: size_t) -> u
     /* Subtract from mem->size instead of the more intuitive adding to offset.
      * This avoids overflowing offset. The subtraction is safe because
      * mem->size is guaranteed to be > 4 */
-    if offset > (*mem).size.wrapping_sub(4) {
+    if offset > (*mem).size - 4 {
         invalid_source(
             mem,
             b"Invalid offset\x00" as *const u8 as *const libc::c_char,
@@ -276,7 +276,7 @@ unsafe extern "C" fn read_u32(mut mem: *mut mem_source, mut offset: size_t) -> u
     };
 }
 unsafe extern "C" fn read_u16(mut mem: *mut mem_source, mut offset: size_t) -> u16 {
-    if offset > (*mem).size.wrapping_sub(2) {
+    if offset > (*mem).size - 2 {
         invalid_source(
             mem,
             b"Invalid offset\x00" as *const u8 as *const libc::c_char,
@@ -293,7 +293,7 @@ unsafe extern "C" fn read_u16(mut mem: *mut mem_source, mut offset: size_t) -> u
     };
 }
 unsafe extern "C" fn read_u8(mut mem: *mut mem_source, mut offset: size_t) -> u8 {
-    if offset > (*mem).size.wrapping_sub(1) {
+    if offset > (*mem).size - 1 {
         invalid_source(
             mem,
             b"Invalid offset\x00" as *const u8 as *const libc::c_char,
@@ -412,30 +412,23 @@ unsafe extern "C" fn read_tag_table(
         );
         return index;
     }
-    index.tags =
-        malloc((::std::mem::size_of::<tag>()).wrapping_mul(index.count as usize)) as *mut tag;
+    index.tags = malloc(::std::mem::size_of::<tag>() * index.count as usize) as *mut tag;
     if !index.tags.is_null() {
         i = 0u32;
         while i < index.count {
             (*index.tags.offset(i as isize)).signature = read_u32(
                 mem,
-                ((128i32 + 4i32) as libc::c_uint)
-                    .wrapping_add((4u32).wrapping_mul(i).wrapping_mul(3u32))
-                    as size_t,
+                ((128i32 + 4i32) as libc::c_uint + 4u32 * i * 3u32) as size_t,
             );
             (*index.tags.offset(i as isize)).offset = read_u32(
                 mem,
-                ((128i32 + 4i32) as libc::c_uint)
-                    .wrapping_add((4u32).wrapping_mul(i).wrapping_mul(3u32))
-                    .wrapping_add(4u32) as size_t,
+                ((128i32 + 4i32) as libc::c_uint + 4u32 * i * 3u32 + 4u32) as size_t,
             );
             (*index.tags.offset(i as isize)).size = read_u32(
                 mem,
-                ((128i32 + 4i32) as libc::c_uint)
-                    .wrapping_add((4u32).wrapping_mul(i).wrapping_mul(3u32))
-                    .wrapping_add(8u32) as size_t,
+                ((128i32 + 4i32) as libc::c_uint + 4u32 * i * 3u32 + 8u32) as size_t,
             );
-            i = i.wrapping_add(1)
+            i = i + 1
         }
     }
     return index;
@@ -575,7 +568,7 @@ pub unsafe extern "C" fn qcms_profile_is_bogus(mut profile: *mut qcms_profile) -
         {
             return 1i32 != 0;
         }
-        i = i.wrapping_add(1)
+        i = i + 1
     }
     if !cfg!(target_os = "macos") {
         negative = (rX < 0.)
@@ -623,7 +616,7 @@ unsafe extern "C" fn find_tag(mut index: tag_index, mut tag_id: u32) -> *mut tag
         if (*index.tags.offset(i as isize)).signature == tag_id {
             return &mut *index.tags.offset(i as isize) as *mut tag;
         }
-        i = i.wrapping_add(1)
+        i = i + 1
     }
     return tag;
 }
@@ -654,12 +647,9 @@ unsafe extern "C" fn read_tag_s15Fixed16ArrayType(
             matrix.m[(i as i32 / 3i32) as usize][(i as i32 % 3i32) as usize] =
                 s15Fixed16Number_to_float(read_s15Fixed16Number(
                     src,
-                    offset
-                        .wrapping_add(8u32)
-                        .wrapping_add((i as i32 * 4i32) as libc::c_uint)
-                        as size_t,
+                    (offset + 8u32 + (i as i32 * 4i32) as libc::c_uint) as size_t,
                 ));
-            i = i.wrapping_add(1)
+            i = i + 1
         }
         matrix.invalid = 0i32 != 0
     } else {
@@ -694,9 +684,9 @@ unsafe extern "C" fn read_tag_XYZType(
                 b"unexpected type, expected XYZ\x00" as *const u8 as *const libc::c_char,
             );
         }
-        num.X = read_s15Fixed16Number(src, offset.wrapping_add(8u32) as size_t);
-        num.Y = read_s15Fixed16Number(src, offset.wrapping_add(12u32) as size_t);
-        num.Z = read_s15Fixed16Number(src, offset.wrapping_add(16u32) as size_t)
+        num.X = read_s15Fixed16Number(src, (offset + 8u32) as size_t);
+        num.Y = read_s15Fixed16Number(src, (offset + 12u32) as size_t);
+        num.Z = read_s15Fixed16Number(src, (offset + 16u32) as size_t)
     } else {
         invalid_source(
             src,
@@ -726,7 +716,7 @@ unsafe extern "C" fn read_curveType(
         return 0 as *mut curveType;
     }
     if type_0 == 0x63757276u32 {
-        count = read_u32(src, offset.wrapping_add(8u32) as size_t);
+        count = read_u32(src, (offset + 8u32) as size_t);
         //arbitrary
         if count > 40000u32 {
             invalid_source(
@@ -736,8 +726,8 @@ unsafe extern "C" fn read_curveType(
             return 0 as *mut curveType;
         }
         curve = malloc(
-            (::std::mem::size_of::<curveType>())
-                .wrapping_add((::std::mem::size_of::<uInt16Number>()).wrapping_mul(count as usize)),
+            ::std::mem::size_of::<curveType>()
+                + ::std::mem::size_of::<uInt16Number>() * count as usize,
         ) as *mut curveType;
         if curve.is_null() {
             return 0 as *mut curveType;
@@ -746,17 +736,13 @@ unsafe extern "C" fn read_curveType(
         (*curve).type_0 = 0x63757276u32;
         i = 0u32;
         while i < count {
-            *(*curve).data.as_mut_ptr().offset(i as isize) = read_u16(
-                src,
-                offset
-                    .wrapping_add(12u32)
-                    .wrapping_add(i.wrapping_mul(2u32)) as size_t,
-            );
-            i = i.wrapping_add(1)
+            *(*curve).data.as_mut_ptr().offset(i as isize) =
+                read_u16(src, (offset + 12u32 + i * 2u32) as size_t);
+            i = i + 1
         }
-        *len = (12u32).wrapping_add(count.wrapping_mul(2u32))
+        *len = 12u32 + count * 2u32
     } else {
-        count = read_u16(src, offset.wrapping_add(8u32) as size_t) as u32;
+        count = read_u16(src, (offset + 8u32) as size_t) as u32;
         if count > 4u32 {
             invalid_source(
                 src,
@@ -774,13 +760,11 @@ unsafe extern "C" fn read_curveType(
         while i < COUNT_TO_LENGTH[count as usize] {
             (*curve).parameter[i as usize] = s15Fixed16Number_to_float(read_s15Fixed16Number(
                 src,
-                offset
-                    .wrapping_add(12u32)
-                    .wrapping_add(i.wrapping_mul(4u32)) as size_t,
+                (offset + 12u32 + i * 4u32) as size_t,
             ));
-            i = i.wrapping_add(1)
+            i = i + 1
         }
-        *len = (12u32).wrapping_add(COUNT_TO_LENGTH[count as usize].wrapping_mul(4u32));
+        *len = 12u32 + COUNT_TO_LENGTH[count as usize] * 4u32;
         if count == 1u32 || count == 2u32 {
             /* we have a type 1 or type 2 function that has a division by 'a' */
             let mut a: f32 = (*curve).parameter[1usize];
@@ -826,7 +810,7 @@ unsafe extern "C" fn read_nested_curveType(
     while i < num_channels as i32 {
         let mut tag_len: u32 = 0;
         (*curveArray)[i as usize] =
-            read_curveType(src, curve_offset.wrapping_add(channel_offset), &mut tag_len);
+            read_curveType(src, curve_offset + channel_offset, &mut tag_len);
         if (*curveArray)[i as usize].is_null() {
             invalid_source(
                 src,
@@ -834,11 +818,10 @@ unsafe extern "C" fn read_nested_curveType(
             );
             break;
         } else {
-            channel_offset = (channel_offset).wrapping_add(tag_len);
+            channel_offset = channel_offset + tag_len;
             // 4 byte aligned
-            if tag_len.wrapping_rem(4u32) != 0u32 {
-                channel_offset =
-                    (channel_offset).wrapping_add((4u32).wrapping_sub(tag_len.wrapping_rem(4u32)))
+            if tag_len % 4u32 != 0u32 {
+                channel_offset = channel_offset + (4u32 - tag_len % 4u32)
             }
             i += 1
         }
@@ -849,13 +832,13 @@ unsafe extern "C" fn mAB_release(mut lut: *mut lutmABType) {
     i = 0u8;
     while (i as i32) < (*lut).num_in_channels as i32 {
         free((*lut).a_curves[i as usize] as *mut libc::c_void);
-        i = i.wrapping_add(1)
+        i = i + 1
     }
     i = 0u8;
     while (i as i32) < (*lut).num_out_channels as i32 {
         free((*lut).b_curves[i as usize] as *mut libc::c_void);
         free((*lut).m_curves[i as usize] as *mut libc::c_void);
-        i = i.wrapping_add(1)
+        i = i + 1
     }
     free(lut as *mut libc::c_void);
 }
@@ -882,8 +865,8 @@ unsafe extern "C" fn read_tag_lutmABType(
     if type_0 != 0x6d414220u32 && type_0 != 0x6d424120u32 {
         return 0 as *mut lutmABType;
     }
-    num_in_channels = read_u8(src, offset.wrapping_add(8u32) as size_t);
-    num_out_channels = read_u8(src, offset.wrapping_add(9u32) as size_t);
+    num_in_channels = read_u8(src, (offset + 8u32) as size_t);
+    num_out_channels = read_u8(src, (offset + 9u32) as size_t);
     if num_in_channels as i32 > 10i32 || num_out_channels as i32 > 10i32 {
         return 0 as *mut lutmABType;
     }
@@ -896,54 +879,52 @@ unsafe extern "C" fn read_tag_lutmABType(
     }
     // some of this data is optional and is denoted by a zero offset
     // we also use this to track their existance
-    a_curve_offset = read_u32(src, offset.wrapping_add(28u32) as size_t);
-    clut_offset = read_u32(src, offset.wrapping_add(24u32) as size_t);
-    m_curve_offset = read_u32(src, offset.wrapping_add(20u32) as size_t);
-    matrix_offset = read_u32(src, offset.wrapping_add(16u32) as size_t);
-    b_curve_offset = read_u32(src, offset.wrapping_add(12u32) as size_t);
+    a_curve_offset = read_u32(src, (offset + 28u32) as size_t);
+    clut_offset = read_u32(src, (offset + 24u32) as size_t);
+    m_curve_offset = read_u32(src, (offset + 20u32) as size_t);
+    matrix_offset = read_u32(src, (offset + 16u32) as size_t);
+    b_curve_offset = read_u32(src, (offset + 12u32) as size_t);
     // Convert offsets relative to the tag to relative to the profile
     // preserve zero for optional fields
     if a_curve_offset != 0 {
-        a_curve_offset = (a_curve_offset).wrapping_add(offset)
+        a_curve_offset = a_curve_offset + offset
     }
     if clut_offset != 0 {
-        clut_offset = (clut_offset).wrapping_add(offset)
+        clut_offset = clut_offset + offset
     }
     if m_curve_offset != 0 {
-        m_curve_offset = (m_curve_offset).wrapping_add(offset)
+        m_curve_offset = m_curve_offset + offset
     }
     if matrix_offset != 0 {
-        matrix_offset = (matrix_offset).wrapping_add(offset)
+        matrix_offset = matrix_offset + offset
     }
     if b_curve_offset != 0 {
-        b_curve_offset = (b_curve_offset).wrapping_add(offset)
+        b_curve_offset = b_curve_offset + offset
     }
     if clut_offset != 0 {
         debug_assert!(num_in_channels as i32 == 3i32);
         // clut_size can not overflow since lg(256^num_in_channels) = 24 bits.
         i = 0u32;
         while i < num_in_channels as libc::c_uint {
-            clut_size = (clut_size)
-                .wrapping_mul(read_u8(src, clut_offset.wrapping_add(i) as size_t) as libc::c_uint);
+            clut_size = clut_size * read_u8(src, (clut_offset + i) as size_t) as libc::c_uint;
             if clut_size == 0u32 {
                 invalid_source(
                     src,
                     b"bad clut_size\x00" as *const u8 as *const libc::c_char,
                 );
             }
-            i = i.wrapping_add(1)
+            i = i + 1
         }
     } else {
         clut_size = 0u32
     }
     // 24bits * 3 won't overflow either
-    clut_size = clut_size.wrapping_mul(num_out_channels as libc::c_uint);
+    clut_size = clut_size * num_out_channels as libc::c_uint;
     if clut_size > 500000u32 {
         return 0 as *mut lutmABType;
     }
     lut = malloc(
-        (::std::mem::size_of::<lutmABType>())
-            .wrapping_add((clut_size as usize).wrapping_mul(::std::mem::size_of::<f32>())),
+        ::std::mem::size_of::<lutmABType>() + clut_size as usize * ::std::mem::size_of::<f32>(),
     ) as *mut lutmABType;
     if lut.is_null() {
         return 0 as *mut lutmABType;
@@ -958,15 +939,14 @@ unsafe extern "C" fn read_tag_lutmABType(
     if clut_offset != 0 {
         i = 0u32;
         while i < num_in_channels as libc::c_uint {
-            (*lut).num_grid_points[i as usize] =
-                read_u8(src, clut_offset.wrapping_add(i) as size_t);
+            (*lut).num_grid_points[i as usize] = read_u8(src, (clut_offset + i) as size_t);
             if (*lut).num_grid_points[i as usize] as i32 == 0i32 {
                 invalid_source(
                     src,
                     b"bad grid_points\x00" as *const u8 as *const libc::c_char,
                 );
             }
-            i = i.wrapping_add(1)
+            i = i + 1
         }
     }
     // Reverse the processing of transformation elements for mBA type.
@@ -977,51 +957,51 @@ unsafe extern "C" fn read_tag_lutmABType(
         // read the matrix if we have it
         (*lut).e00 = read_s15Fixed16Number(
             src,
-            matrix_offset.wrapping_add((4i32 * 0i32) as libc::c_uint) as size_t,
+            (matrix_offset + (4i32 * 0i32) as libc::c_uint) as size_t,
         ); // the caller checks that this doesn't happen
         (*lut).e01 = read_s15Fixed16Number(
             src,
-            matrix_offset.wrapping_add((4i32 * 1i32) as libc::c_uint) as size_t,
+            (matrix_offset + (4i32 * 1i32) as libc::c_uint) as size_t,
         );
         (*lut).e02 = read_s15Fixed16Number(
             src,
-            matrix_offset.wrapping_add((4i32 * 2i32) as libc::c_uint) as size_t,
+            (matrix_offset + (4i32 * 2i32) as libc::c_uint) as size_t,
         );
         (*lut).e10 = read_s15Fixed16Number(
             src,
-            matrix_offset.wrapping_add((4i32 * 3i32) as libc::c_uint) as size_t,
+            (matrix_offset + (4i32 * 3i32) as libc::c_uint) as size_t,
         );
         (*lut).e11 = read_s15Fixed16Number(
             src,
-            matrix_offset.wrapping_add((4i32 * 4i32) as libc::c_uint) as size_t,
+            (matrix_offset + (4i32 * 4i32) as libc::c_uint) as size_t,
         );
         (*lut).e12 = read_s15Fixed16Number(
             src,
-            matrix_offset.wrapping_add((4i32 * 5i32) as libc::c_uint) as size_t,
+            (matrix_offset + (4i32 * 5i32) as libc::c_uint) as size_t,
         );
         (*lut).e20 = read_s15Fixed16Number(
             src,
-            matrix_offset.wrapping_add((4i32 * 6i32) as libc::c_uint) as size_t,
+            (matrix_offset + (4i32 * 6i32) as libc::c_uint) as size_t,
         );
         (*lut).e21 = read_s15Fixed16Number(
             src,
-            matrix_offset.wrapping_add((4i32 * 7i32) as libc::c_uint) as size_t,
+            (matrix_offset + (4i32 * 7i32) as libc::c_uint) as size_t,
         );
         (*lut).e22 = read_s15Fixed16Number(
             src,
-            matrix_offset.wrapping_add((4i32 * 8i32) as libc::c_uint) as size_t,
+            (matrix_offset + (4i32 * 8i32) as libc::c_uint) as size_t,
         );
         (*lut).e03 = read_s15Fixed16Number(
             src,
-            matrix_offset.wrapping_add((4i32 * 9i32) as libc::c_uint) as size_t,
+            (matrix_offset + (4i32 * 9i32) as libc::c_uint) as size_t,
         );
         (*lut).e13 = read_s15Fixed16Number(
             src,
-            matrix_offset.wrapping_add((4i32 * 10i32) as libc::c_uint) as size_t,
+            (matrix_offset + (4i32 * 10i32) as libc::c_uint) as size_t,
         );
         (*lut).e23 = read_s15Fixed16Number(
             src,
-            matrix_offset.wrapping_add((4i32 * 11i32) as libc::c_uint) as size_t,
+            (matrix_offset + (4i32 * 11i32) as libc::c_uint) as size_t,
         )
     }
     if a_curve_offset != 0 {
@@ -1039,28 +1019,24 @@ unsafe extern "C" fn read_tag_lutmABType(
         );
     }
     if clut_offset != 0 {
-        clut_precision = read_u8(src, clut_offset.wrapping_add(16u32) as size_t);
+        clut_precision = read_u8(src, (clut_offset + 16u32) as size_t);
         if clut_precision as i32 == 1i32 {
             i = 0u32;
             while i < clut_size {
                 *(*lut).clut_table.offset(i as isize) = uInt8Number_to_float(read_uInt8Number(
                     src,
-                    clut_offset
-                        .wrapping_add(20u32)
-                        .wrapping_add(i.wrapping_mul(1u32)) as size_t,
+                    (clut_offset + 20u32 + i * 1u32) as size_t,
                 ));
-                i = i.wrapping_add(1)
+                i = i + 1
             }
         } else if clut_precision as i32 == 2i32 {
             i = 0u32;
             while i < clut_size {
                 *(*lut).clut_table.offset(i as isize) = uInt16Number_to_float(read_uInt16Number(
                     src,
-                    clut_offset
-                        .wrapping_add(20u32)
-                        .wrapping_add(i.wrapping_mul(2u32)) as size_t,
+                    (clut_offset + 20u32 + i * 2u32) as size_t,
                 ));
-                i = i.wrapping_add(1)
+                i = i + 1
             }
         } else {
             invalid_source(
@@ -1101,8 +1077,8 @@ unsafe extern "C" fn read_tag_lutType(
         entry_size = 1;
         input_offset = 48u32
     } else if type_0 == 0x6d667432u32 {
-        num_input_table_entries = read_u16(src, offset.wrapping_add(48u32) as size_t);
-        num_output_table_entries = read_u16(src, offset.wrapping_add(50u32) as size_t);
+        num_input_table_entries = read_u16(src, (offset + 48u32) as size_t);
+        num_output_table_entries = read_u16(src, (offset + 50u32) as size_t);
         if num_input_table_entries as i32 == 0i32 || num_output_table_entries as i32 == 0i32 {
             invalid_source(
                 src,
@@ -1120,9 +1096,9 @@ unsafe extern "C" fn read_tag_lutType(
         );
         return 0 as *mut lutType;
     }
-    in_chan = read_u8(src, offset.wrapping_add(8u32) as size_t);
-    out_chan = read_u8(src, offset.wrapping_add(9u32) as size_t);
-    grid_points = read_u8(src, offset.wrapping_add(10u32) as size_t);
+    in_chan = read_u8(src, (offset + 8u32) as size_t);
+    out_chan = read_u8(src, (offset + 9u32) as size_t);
+    grid_points = read_u8(src, (offset + 10u32) as size_t);
     clut_size = (grid_points as f64).powf(in_chan as f64) as u32;
     if clut_size > 500000u32 {
         invalid_source(
@@ -1146,13 +1122,12 @@ unsafe extern "C" fn read_tag_lutType(
         return 0 as *mut lutType;
     }
     lut = malloc(
-        (::std::mem::size_of::<lutType>()).wrapping_add(
-            (((num_input_table_entries as i32 * in_chan as i32) as libc::c_uint)
-                .wrapping_add(clut_size.wrapping_mul(out_chan as libc::c_uint))
-                .wrapping_add((num_output_table_entries as i32 * out_chan as i32) as libc::c_uint)
-                as usize)
-                .wrapping_mul(::std::mem::size_of::<f32>()),
-        ),
+        ::std::mem::size_of::<lutType>()
+            + ((num_input_table_entries as i32 * in_chan as i32) as libc::c_uint
+                + clut_size * out_chan as libc::c_uint
+                + (num_output_table_entries as i32 * out_chan as i32) as libc::c_uint)
+                as usize
+                * ::std::mem::size_of::<f32>(),
     ) as *mut lutType;
     if lut.is_null() {
         invalid_source(
@@ -1169,113 +1144,94 @@ unsafe extern "C" fn read_tag_lutType(
         .offset((in_chan as i32 * num_input_table_entries as i32) as isize)
         as *mut f32;
     (*lut).output_table = &mut *(*lut).table_data.as_mut_ptr().offset(
-        ((in_chan as i32 * num_input_table_entries as i32) as libc::c_uint)
-            .wrapping_add(clut_size.wrapping_mul(out_chan as libc::c_uint)) as isize,
+        ((in_chan as i32 * num_input_table_entries as i32) as libc::c_uint
+            + clut_size * out_chan as libc::c_uint) as isize,
     ) as *mut f32;
     (*lut).num_input_table_entries = num_input_table_entries;
     (*lut).num_output_table_entries = num_output_table_entries;
     (*lut).num_input_channels = in_chan;
     (*lut).num_output_channels = out_chan;
     (*lut).num_clut_grid_points = grid_points;
-    (*lut).e00 = read_s15Fixed16Number(src, offset.wrapping_add(12u32) as size_t);
-    (*lut).e01 = read_s15Fixed16Number(src, offset.wrapping_add(16u32) as size_t);
-    (*lut).e02 = read_s15Fixed16Number(src, offset.wrapping_add(20u32) as size_t);
-    (*lut).e10 = read_s15Fixed16Number(src, offset.wrapping_add(24u32) as size_t);
-    (*lut).e11 = read_s15Fixed16Number(src, offset.wrapping_add(28u32) as size_t);
-    (*lut).e12 = read_s15Fixed16Number(src, offset.wrapping_add(32u32) as size_t);
-    (*lut).e20 = read_s15Fixed16Number(src, offset.wrapping_add(36u32) as size_t);
-    (*lut).e21 = read_s15Fixed16Number(src, offset.wrapping_add(40u32) as size_t);
-    (*lut).e22 = read_s15Fixed16Number(src, offset.wrapping_add(44u32) as size_t);
+    (*lut).e00 = read_s15Fixed16Number(src, (offset + 12u32) as size_t);
+    (*lut).e01 = read_s15Fixed16Number(src, (offset + 16u32) as size_t);
+    (*lut).e02 = read_s15Fixed16Number(src, (offset + 20u32) as size_t);
+    (*lut).e10 = read_s15Fixed16Number(src, (offset + 24u32) as size_t);
+    (*lut).e11 = read_s15Fixed16Number(src, (offset + 28u32) as size_t);
+    (*lut).e12 = read_s15Fixed16Number(src, (offset + 32u32) as size_t);
+    (*lut).e20 = read_s15Fixed16Number(src, (offset + 36u32) as size_t);
+    (*lut).e21 = read_s15Fixed16Number(src, (offset + 40u32) as size_t);
+    (*lut).e22 = read_s15Fixed16Number(src, (offset + 44u32) as size_t);
     i = 0u32;
     while i < ((*lut).num_input_table_entries as i32 * in_chan as i32) as u32 {
         if type_0 == 0x6d667431u32 {
             *(*lut).input_table.offset(i as isize) = uInt8Number_to_float(read_uInt8Number(
                 src,
-                (offset.wrapping_add(input_offset) as libc::c_ulong)
-                    .wrapping_add((i as libc::c_ulong).wrapping_mul(entry_size)),
+                (offset + input_offset) as libc::c_ulong + i as libc::c_ulong * entry_size,
             ))
         } else {
             *(*lut).input_table.offset(i as isize) = uInt16Number_to_float(read_uInt16Number(
                 src,
-                (offset.wrapping_add(input_offset) as libc::c_ulong)
-                    .wrapping_add((i as libc::c_ulong).wrapping_mul(entry_size)),
+                (offset + input_offset) as libc::c_ulong + i as libc::c_ulong * entry_size,
             ))
         }
-        i = i.wrapping_add(1)
+        i = i + 1
     }
-    clut_offset = (offset.wrapping_add(input_offset) as libc::c_ulong).wrapping_add(
-        (((*lut).num_input_table_entries as i32 * in_chan as i32) as libc::c_ulong)
-            .wrapping_mul(entry_size),
-    ) as u32;
+    clut_offset = ((offset + input_offset) as libc::c_ulong
+        + ((*lut).num_input_table_entries as i32 * in_chan as i32) as libc::c_ulong * entry_size)
+        as u32;
     i = 0u32;
-    while i < clut_size.wrapping_mul(out_chan as libc::c_uint) {
+    while i < clut_size * out_chan as libc::c_uint {
         if type_0 == 0x6d667431u32 {
-            *(*lut).clut_table.offset(i.wrapping_add(0u32) as isize) =
+            *(*lut).clut_table.offset((i + 0u32) as isize) =
                 uInt8Number_to_float(read_uInt8Number(
                     src,
-                    (clut_offset as libc::c_ulong)
-                        .wrapping_add((i as libc::c_ulong).wrapping_mul(entry_size))
-                        .wrapping_add(0),
+                    clut_offset as libc::c_ulong + i as libc::c_ulong * entry_size + 0,
                 ));
-            *(*lut).clut_table.offset(i.wrapping_add(1u32) as isize) =
+            *(*lut).clut_table.offset((i + 1u32) as isize) =
                 uInt8Number_to_float(read_uInt8Number(
                     src,
-                    (clut_offset as libc::c_ulong)
-                        .wrapping_add((i as libc::c_ulong).wrapping_mul(entry_size))
-                        .wrapping_add(1),
+                    clut_offset as libc::c_ulong + i as libc::c_ulong * entry_size + 1,
                 ));
-            *(*lut).clut_table.offset(i.wrapping_add(2u32) as isize) =
-                uInt8Number_to_float(read_uInt8Number(
-                    src,
-                    (clut_offset as libc::c_ulong)
-                        .wrapping_add((i as libc::c_ulong).wrapping_mul(entry_size))
-                        .wrapping_add(2),
-                ))
+            *(*lut).clut_table.offset((i + 2u32) as isize) = uInt8Number_to_float(read_uInt8Number(
+                src,
+                clut_offset as libc::c_ulong + i as libc::c_ulong * entry_size + 2,
+            ))
         } else {
-            *(*lut).clut_table.offset(i.wrapping_add(0u32) as isize) =
+            *(*lut).clut_table.offset((i + 0u32) as isize) =
                 uInt16Number_to_float(read_uInt16Number(
                     src,
-                    (clut_offset as libc::c_ulong)
-                        .wrapping_add((i as libc::c_ulong).wrapping_mul(entry_size))
-                        .wrapping_add(0),
+                    clut_offset as libc::c_ulong + i as libc::c_ulong * entry_size + 0,
                 ));
-            *(*lut).clut_table.offset(i.wrapping_add(1u32) as isize) =
+            *(*lut).clut_table.offset((i + 1u32) as isize) =
                 uInt16Number_to_float(read_uInt16Number(
                     src,
-                    (clut_offset as libc::c_ulong)
-                        .wrapping_add((i as libc::c_ulong).wrapping_mul(entry_size))
-                        .wrapping_add(2),
+                    clut_offset as libc::c_ulong + i as libc::c_ulong * entry_size + 2,
                 ));
-            *(*lut).clut_table.offset(i.wrapping_add(2u32) as isize) =
+            *(*lut).clut_table.offset((i + 2u32) as isize) =
                 uInt16Number_to_float(read_uInt16Number(
                     src,
-                    (clut_offset as libc::c_ulong)
-                        .wrapping_add((i as libc::c_ulong).wrapping_mul(entry_size))
-                        .wrapping_add(4),
+                    clut_offset as libc::c_ulong + i as libc::c_ulong * entry_size + 4,
                 ))
         }
-        i = (i).wrapping_add(3u32)
+        i = i + 3u32
     }
-    output_offset = (clut_offset as libc::c_ulong).wrapping_add(
-        (clut_size.wrapping_mul(out_chan as libc::c_uint) as libc::c_ulong)
-            .wrapping_mul(entry_size),
-    ) as u32;
+    output_offset = (clut_offset as libc::c_ulong
+        + (clut_size * out_chan as libc::c_uint) as libc::c_ulong * entry_size)
+        as u32;
     i = 0u32;
     while i < ((*lut).num_output_table_entries as i32 * out_chan as i32) as u32 {
         if type_0 == 0x6d667431u32 {
             *(*lut).output_table.offset(i as isize) = uInt8Number_to_float(read_uInt8Number(
                 src,
-                (output_offset as libc::c_ulong)
-                    .wrapping_add((i as libc::c_ulong).wrapping_mul(entry_size)),
+                output_offset as libc::c_ulong + i as libc::c_ulong * entry_size,
             ))
         } else {
             *(*lut).output_table.offset(i as isize) = uInt16Number_to_float(read_uInt16Number(
                 src,
-                (output_offset as libc::c_ulong)
-                    .wrapping_add((i as libc::c_ulong).wrapping_mul(entry_size)),
+                output_offset as libc::c_ulong + i as libc::c_ulong * entry_size,
             ))
         }
-        i = i.wrapping_add(1)
+        i = i + 1
     }
     return lut;
 }
@@ -1309,7 +1265,7 @@ unsafe extern "C" fn build_sRGB_gamma_table(mut num_entries: i32) -> *mut u16 {
     let mut c: f64 = 1.0f64 / 12.92f64;
     let mut d: f64 = 0.04045f64;
     let mut table: *mut u16 =
-        malloc((::std::mem::size_of::<u16>()).wrapping_mul(num_entries as usize)) as *mut u16;
+        malloc(::std::mem::size_of::<u16>() * num_entries as usize) as *mut u16;
     if table.is_null() {
         return 0 as *mut u16;
     }
@@ -1347,10 +1303,10 @@ unsafe extern "C" fn build_sRGB_gamma_table(mut num_entries: i32) -> *mut u16 {
 unsafe extern "C" fn curve_from_table(mut table: *mut u16, mut num_entries: i32) -> *mut curveType {
     let mut curve: *mut curveType = 0 as *mut curveType;
     let mut i: i32 = 0;
-    curve =
-        malloc((::std::mem::size_of::<curveType>()).wrapping_add(
-            (::std::mem::size_of::<uInt16Number>()).wrapping_mul(num_entries as usize),
-        )) as *mut curveType;
+    curve = malloc(
+        ::std::mem::size_of::<curveType>()
+            + ::std::mem::size_of::<uInt16Number>() * num_entries as usize,
+    ) as *mut curveType;
     if curve.is_null() {
         return 0 as *mut curveType;
     }
@@ -1375,10 +1331,10 @@ unsafe extern "C" fn float_to_u8Fixed8Number(mut a: f32) -> u16 {
 unsafe extern "C" fn curve_from_gamma(mut gamma: f32) -> *mut curveType {
     let mut curve: *mut curveType = 0 as *mut curveType;
     let mut num_entries: i32 = 1i32;
-    curve =
-        malloc((::std::mem::size_of::<curveType>()).wrapping_add(
-            (::std::mem::size_of::<uInt16Number>()).wrapping_mul(num_entries as usize),
-        )) as *mut curveType;
+    curve = malloc(
+        ::std::mem::size_of::<curveType>()
+            + ::std::mem::size_of::<uInt16Number>() * num_entries as usize,
+    ) as *mut curveType;
     if curve.is_null() {
         return 0 as *mut curveType;
     }
@@ -1779,8 +1735,8 @@ unsafe extern "C" fn qcms_data_from_file(
     }
     /* copy in length to the front so that the buffer will contain the entire profile */
     *(data as *mut be32) = length_be;
-    remaining_length = (length as libc::c_ulong)
-        .wrapping_sub(::std::mem::size_of::<be32>() as libc::c_ulong) as u32;
+    remaining_length =
+        (length as libc::c_ulong - ::std::mem::size_of::<be32>() as libc::c_ulong) as u32;
     /* read the rest profile */
     read_length = fread(
         (data as *mut libc::c_uchar).offset(::std::mem::size_of::<be32>() as isize)
@@ -1905,10 +1861,10 @@ pub unsafe extern "C" fn qcms_data_create_rgb_with_gamma(
     	*/
     xyz_count = 3u32; // rXYZ, gXYZ, bXYZ
     trc_count = 3u32; // rTRC, gTRC, bTRC
-    length = ((128i32 + 4i32) as libc::c_uint)
-        .wrapping_add((12u32).wrapping_mul(xyz_count.wrapping_add(trc_count)))
-        .wrapping_add(xyz_count.wrapping_mul(20u32))
-        .wrapping_add(trc_count.wrapping_mul(16u32));
+    length = (128i32 + 4i32) as libc::c_uint
+        + 12u32 * (xyz_count + trc_count)
+        + xyz_count * 20u32
+        + trc_count * 16u32;
     // reserve the total memory.
     data = malloc(length as usize);
     if data.is_null() {
@@ -1922,64 +1878,50 @@ pub unsafe extern "C" fn qcms_data_create_rgb_with_gamma(
     }
     // the position of first tag's signature in tag table
     tag_table_offset = (128i32 + 4i32) as size_t; // the start of tag data elements.
-    tag_data_offset = ((128i32 + 4i32) as libc::c_uint)
-        .wrapping_add((12u32).wrapping_mul(xyz_count.wrapping_add(trc_count)))
-        as size_t;
+    tag_data_offset = ((128i32 + 4i32) as libc::c_uint + 12u32 * (xyz_count + trc_count)) as size_t;
     index = 0u32;
     while index < xyz_count {
         // tag table
         write_u32(data, tag_table_offset, TAG_XYZ[index as usize]); // 20 bytes per TAG_(r/g/b)XYZ tag element
-        write_u32(
-            data,
-            tag_table_offset.wrapping_add(4),
-            tag_data_offset as u32,
-        );
-        write_u32(data, tag_table_offset.wrapping_add(8), 20u32);
+        write_u32(data, tag_table_offset + 4, tag_data_offset as u32);
+        write_u32(data, tag_table_offset + 8, 20u32);
         // tag data element
         write_u32(data, tag_data_offset, 0x58595a20u32);
         // reserved 4 bytes.
         write_u32(
             data,
-            tag_data_offset.wrapping_add(8),
+            tag_data_offset + 8,
             double_to_s15Fixed16Number(colorants.m[0usize][index as usize] as f64) as u32,
         );
         write_u32(
             data,
-            tag_data_offset.wrapping_add(12),
+            tag_data_offset + 12,
             double_to_s15Fixed16Number(colorants.m[1usize][index as usize] as f64) as u32,
         );
         write_u32(
             data,
-            tag_data_offset.wrapping_add(16),
+            tag_data_offset + 16,
             double_to_s15Fixed16Number(colorants.m[2usize][index as usize] as f64) as u32,
         );
-        tag_table_offset = (tag_table_offset).wrapping_add(12);
-        tag_data_offset = (tag_data_offset).wrapping_add(20);
-        index = index.wrapping_add(1)
+        tag_table_offset = tag_table_offset + 12;
+        tag_data_offset = tag_data_offset + 20;
+        index = index + 1
     }
     // Part2 : write rTRC, gTRC and bTRC
     index = 0u32;
     while index < trc_count {
         // tag table
         write_u32(data, tag_table_offset, TAG_TRC[index as usize]); // 14 bytes per TAG_(r/g/b)TRC element
-        write_u32(
-            data,
-            tag_table_offset.wrapping_add(4),
-            tag_data_offset as u32,
-        );
-        write_u32(data, tag_table_offset.wrapping_add(8), 14u32);
+        write_u32(data, tag_table_offset + 4, tag_data_offset as u32);
+        write_u32(data, tag_table_offset + 8, 14u32);
         // tag data element
         write_u32(data, tag_data_offset, 0x63757276u32);
         // reserved 4 bytes.
-        write_u32(data, tag_data_offset.wrapping_add(8), 1u32); // count
-        write_u16(
-            data,
-            tag_data_offset.wrapping_add(12),
-            float_to_u8Fixed8Number(gamma),
-        );
-        tag_table_offset = (tag_table_offset).wrapping_add(12);
-        tag_data_offset = (tag_data_offset).wrapping_add(16);
-        index = index.wrapping_add(1)
+        write_u32(data, tag_data_offset + 8, 1u32); // count
+        write_u16(data, tag_data_offset + 12, float_to_u8Fixed8Number(gamma));
+        tag_table_offset = tag_table_offset + 12;
+        tag_data_offset = tag_data_offset + 16;
+        index = index + 1
     }
     /* Part3 : write profile header
      *

@@ -574,7 +574,7 @@ unsafe extern "C" fn qcms_transform_data_gray_template_lut<I: GrayFormat, F: For
             *dest.offset(F::kAIndex as isize) = alpha
         }
         dest = dest.offset(components as isize);
-        i = i.wrapping_add(1)
+        i = i + 1
     }
 }
 unsafe extern "C" fn qcms_transform_data_gray_out_lut(
@@ -647,7 +647,7 @@ unsafe extern "C" fn qcms_transform_data_gray_template_precache<I: GrayFormat, F
             *dest.offset(F::kAIndex as isize) = alpha
         }
         dest = dest.offset(components as isize);
-        i = i.wrapping_add(1)
+        i = i + 1
     }
 }
 unsafe extern "C" fn qcms_transform_data_gray_out_precache(
@@ -738,7 +738,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut_precache<F: Format>(
             *dest.offset(F::kAIndex as isize) = alpha
         }
         dest = dest.offset(components as isize);
-        i = i.wrapping_add(1)
+        i = i + 1
     }
 }
 #[no_mangle]
@@ -1008,7 +1008,7 @@ unsafe extern "C" fn qcms_transform_data_tetra_clut_template<F: Format>(
             *dest.offset(F::kAIndex as isize) = in_a
         }
         dest = dest.offset(components as isize);
-        i = i.wrapping_add(1)
+        i = i + 1
     }
 }
 unsafe extern "C" fn qcms_transform_data_tetra_clut_rgb(
@@ -1093,7 +1093,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut<F: Format>(
             *dest.offset(F::kAIndex as isize) = alpha
         }
         dest = dest.offset(components as isize);
-        i = i.wrapping_add(1)
+        i = i + 1
     }
 }
 #[no_mangle]
@@ -1153,9 +1153,7 @@ pub unsafe extern "C" fn precache_release(mut p: *mut precache_output) {
 unsafe extern "C" fn transform_alloc() -> *mut qcms_transform {
     /* transform needs to be aligned on a 16byte boundrary */
     let mut original_block: *mut libc::c_char = calloc(
-        (::std::mem::size_of::<qcms_transform>())
-            .wrapping_add(::std::mem::size_of::<*mut libc::c_void>())
-            .wrapping_add(16),
+        ::std::mem::size_of::<qcms_transform>() + ::std::mem::size_of::<*mut libc::c_void>() + 16,
         1,
     ) as *mut libc::c_char;
     /* make room for a pointer to the block returned by calloc */
@@ -1164,8 +1162,7 @@ unsafe extern "C" fn transform_alloc() -> *mut qcms_transform {
         as *mut libc::c_void;
     /* align transform_start */
     let mut transform_aligned: *mut qcms_transform =
-        ((transform_start as uintptr_t).wrapping_add(15) & !(0xfi32) as libc::c_ulong)
-            as *mut qcms_transform;
+        (transform_start as uintptr_t + 15 & !(0xfi32) as libc::c_ulong) as *mut qcms_transform;
     /* store a pointer to the block returned by calloc so that we can free it later */
     let mut original_block_ptr: *mut *mut libc::c_void =
         transform_aligned as *mut *mut libc::c_void;
@@ -1357,10 +1354,8 @@ pub unsafe extern "C" fn qcms_transform_precacheLUT_float(
 
     let mut lut: *mut f32 = 0 as *mut f32;
 
-    let mut src: *mut f32 =
-        malloc((lutSize as usize).wrapping_mul(::std::mem::size_of::<f32>())) as *mut f32;
-    let mut dest: *mut f32 =
-        malloc((lutSize as usize).wrapping_mul(::std::mem::size_of::<f32>())) as *mut f32;
+    let mut src: *mut f32 = malloc(lutSize as usize * ::std::mem::size_of::<f32>()) as *mut f32;
+    let mut dest: *mut f32 = malloc(lutSize as usize * ::std::mem::size_of::<f32>()) as *mut f32;
     if !src.is_null() && !dest.is_null() {
         /* Prepare a list of points we want to sample */
         l = 0u32;
@@ -1371,19 +1366,19 @@ pub unsafe extern "C" fn qcms_transform_precacheLUT_float(
                 z = 0u16;
                 while (z as i32) < samples {
                     let fresh8 = l;
-                    l = l.wrapping_add(1);
+                    l = l + 1;
                     *src.offset(fresh8 as isize) = x as i32 as f32 / (samples - 1i32) as f32;
                     let fresh9 = l;
-                    l = l.wrapping_add(1);
+                    l = l + 1;
                     *src.offset(fresh9 as isize) = y as i32 as f32 / (samples - 1i32) as f32;
                     let fresh10 = l;
-                    l = l.wrapping_add(1);
+                    l = l + 1;
                     *src.offset(fresh10 as isize) = z as i32 as f32 / (samples - 1i32) as f32;
-                    z = z.wrapping_add(1)
+                    z = z + 1
                 }
-                y = y.wrapping_add(1)
+                y = y + 1
             }
-            x = x.wrapping_add(1)
+            x = x + 1
         }
         lut = qcms_chain_transform(in_0, out, src, dest, lutSize as size_t);
         if !lut.is_null() {
@@ -1688,9 +1683,9 @@ pub unsafe extern "C" fn qcms_transform_create(
                     qcms_transform_release(transform);
                     return 0 as *mut qcms_transform;
                 }
-                j = j.wrapping_add(1)
+                j = j + 1
             }
-            i = i.wrapping_add(1)
+            i = i + 1
         }
         /* store the results in column major mode
          * this makes doing the multiplication with sse easier */
