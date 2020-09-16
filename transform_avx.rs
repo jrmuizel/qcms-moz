@@ -77,7 +77,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut_avx<F: Format>(mut transfo
     let min: __m256 = _mm256_setzero_ps();
     let scale: __m256 = _mm256_set1_ps(8192f32);
     let components: libc::c_uint =
-        if F::kAIndex == 0xffu64 {
+        if F::kAIndex == 0xff {
             3i32
         } else { 4i32 } as libc::c_uint;
     /* working variables */
@@ -97,7 +97,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut_avx<F: Format>(mut transfo
     if length == 0 { return }
     /* If there are at least 2 pixels, then we can load their components into
        a single 256-bit register for processing. */
-    if length > 1u64 {
+    if length > 1 {
         vec_r0 =
             _mm_broadcast_ss(&*igtbl_r.offset(*src.offset(F::kRIndex as isize) as
                                                   isize));
@@ -134,7 +134,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut_avx<F: Format>(mut transfo
         vec_b =
             _mm256_insertf128_ps(_mm256_castps128_ps256(vec_b0), vec_b1,
                                  1i32);
-        if F::kAIndex != 0xffu64 {
+        if F::kAIndex != 0xff {
             alpha1 = *src.offset(F::kAIndex as isize);
             alpha2 =
                 *src.offset(F::kAIndex.wrapping_add(components as libc::c_ulong)
@@ -143,7 +143,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut_avx<F: Format>(mut transfo
     }
     /* If there are at least 4 pixels, then we can iterate and preload the
        next 2 while we store the result of the current 2. */
-    while length > 3u64 {
+    while length > 3 {
         /* Ensure we are pointing at the next 2 pixels for the next load. */
         src =
             src.offset((2u32).wrapping_mul(components) as isize);
@@ -152,7 +152,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut_avx<F: Format>(mut transfo
         vec_g = _mm256_mul_ps(vec_g, mat1);
         vec_b = _mm256_mul_ps(vec_b, mat2);
         /* store alpha for these pixels; load alpha for next two */
-        if F::kAIndex != 0xffu64 {
+        if F::kAIndex != 0xff {
             *dest.offset(F::kAIndex as isize) = alpha1;
             *dest.offset(F::kAIndex.wrapping_add(components as libc::c_ulong) as
                              isize) = alpha2;
@@ -232,15 +232,15 @@ unsafe extern "C" fn qcms_transform_data_template_lut_avx<F: Format>(mut transfo
             dest.offset((2u32).wrapping_mul(components) as isize);
         length =
             
-            (length).wrapping_sub(2u64)
+            (length).wrapping_sub(2)
     }
     /* There are 0-3 pixels remaining. If there are 2-3 remaining, then we know
        we have already populated the necessary registers to start the transform. */
-    if length > 1u64 {
+    if length > 1 {
         vec_r = _mm256_mul_ps(vec_r, mat0);
         vec_g = _mm256_mul_ps(vec_g, mat1);
         vec_b = _mm256_mul_ps(vec_b, mat2);
-        if F::kAIndex != 0xffu64 {
+        if F::kAIndex != 0xff {
             *dest.offset(F::kAIndex as isize) = alpha1;
             *dest.offset(F::kAIndex.wrapping_add(components as libc::c_ulong) as
                              isize) = alpha2
@@ -278,10 +278,10 @@ unsafe extern "C" fn qcms_transform_data_template_lut_avx<F: Format>(mut transfo
             dest.offset((2u32).wrapping_mul(components) as isize);
         length =
             
-            (length).wrapping_sub(2u64)
+            (length).wrapping_sub(2)
     }
     /* There may be 0-1 pixels remaining. */
-    if length == 1u64 {
+    if length == 1 {
         vec_r0 =
             _mm_broadcast_ss(&*igtbl_r.offset(*src.offset(F::kRIndex as isize) as
                                                   isize));
@@ -294,7 +294,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut_avx<F: Format>(mut transfo
         vec_r0 = _mm_mul_ps(vec_r0, _mm256_castps256_ps128(mat0));
         vec_g0 = _mm_mul_ps(vec_g0, _mm256_castps256_ps128(mat1));
         vec_b0 = _mm_mul_ps(vec_b0, _mm256_castps256_ps128(mat2));
-        if F::kAIndex != 0xffu64 {
+        if F::kAIndex != 0xff {
             *dest.offset(F::kAIndex as isize) = *src.offset(F::kAIndex as isize)
         }
         vec_r0 = _mm_add_ps(vec_r0, _mm_add_ps(vec_g0, vec_b0));

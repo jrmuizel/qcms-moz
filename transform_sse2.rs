@@ -77,7 +77,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut_sse2<F: Format>(mut transf
     let min: __m128 = _mm_setzero_ps();
     let scale: __m128 = _mm_load_ps(floatScaleX4.as_ptr());
     let components: libc::c_uint =
-        if F::kAIndex == 0xffu64 {
+        if F::kAIndex == 0xff {
             3i32
         } else { 4i32 } as libc::c_uint;
     /* working variables */
@@ -97,7 +97,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut_sse2<F: Format>(mut transf
         _mm_load_ss(&*igtbl_g.offset(*src.offset(F::kGIndex as isize) as isize));
     vec_b =
         _mm_load_ss(&*igtbl_b.offset(*src.offset(F::kBIndex as isize) as isize));
-    if F::kAIndex != 0xffu64 {
+    if F::kAIndex != 0xff {
         alpha = *src.offset(F::kAIndex as isize)
     }
     src = src.offset(components as isize);
@@ -112,7 +112,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut_sse2<F: Format>(mut transf
         vec_g = _mm_mul_ps(vec_g, mat1);
         vec_b = _mm_mul_ps(vec_b, mat2);
         /* store alpha for this pixel; load alpha for next */
-        if F::kAIndex != 0xffu64 {
+        if F::kAIndex != 0xff {
             *dest.offset(F::kAIndex as isize) = alpha;
             alpha = *src.offset(F::kAIndex as isize)
         }
@@ -154,7 +154,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut_sse2<F: Format>(mut transf
     vec_r = _mm_mul_ps(vec_r, mat0);
     vec_g = _mm_mul_ps(vec_g, mat1);
     vec_b = _mm_mul_ps(vec_b, mat2);
-    if F::kAIndex != 0xffu64 {
+    if F::kAIndex != 0xff {
         *dest.offset(F::kAIndex as isize) = alpha
     }
     vec_r = _mm_add_ps(vec_r, _mm_add_ps(vec_g, vec_b));

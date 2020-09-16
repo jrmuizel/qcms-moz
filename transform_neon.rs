@@ -193,6 +193,7 @@ pub unsafe extern "C" fn qcms_transform_data_bgra_out_lut_neon(mut transform:
 use std::mem::transmute;
 
 #[inline]
+#[target_feature(enable = "neon")]
 #[cfg(target_arch = "aarch64")]
 pub unsafe fn vld1q_f32(addr: *const f32) -> float32x4_t {
     transmute([
@@ -246,6 +247,7 @@ pub unsafe fn vgetq_lane_s32(v: int32x4_t, imm5: i32) -> i32 {
 
 /// Multiply
 #[inline]
+#[target_feature(enable = "neon")]
 #[cfg_attr(target_arch = "arm", target_feature(enable = "v7"))]
 pub unsafe fn vmulq_f32(a: float32x4_t, b: float32x4_t) -> float32x4_t {
     simd_mul(a, b)
@@ -253,6 +255,7 @@ pub unsafe fn vmulq_f32(a: float32x4_t, b: float32x4_t) -> float32x4_t {
 
 /// Floating-point minimum (vector).
 #[inline]
+#[target_feature(enable = "neon")]
 #[cfg_attr(target_arch = "arm", target_feature(enable = "v7"))]
 pub unsafe fn vminq_f32(a: float32x4_t, b: float32x4_t) -> float32x4_t {
     vminq_f32_(a, b)
@@ -268,6 +271,7 @@ pub unsafe fn vmaxq_f32(a: float32x4_t, b: float32x4_t) -> float32x4_t {
 
 #[inline]
 #[cfg(target_arch = "aarch64")]
+#[target_feature(enable = "neon")]
 pub unsafe fn vcvtq_s32_f32(a: float32x4_t) -> int32x4_t {
     vcvtq_s32_f32_(a)
 }
