@@ -263,7 +263,7 @@ unsafe extern "C" fn read_u32(mut mem: *mut mem_source, mut offset: size_t)
     /* Subtract from mem->size instead of the more intuitive adding to offset.
 	 * This avoids overflowing offset. The subtraction is safe because
 	 * mem->size is guaranteed to be > 4 */
-    if offset > (*mem).size.wrapping_sub(4u64) {
+    if offset > (*mem).size.wrapping_sub(4) {
         invalid_source(mem,
                        b"Invalid offset\x00" as *const u8 as
                            *const libc::c_char);
@@ -279,7 +279,7 @@ unsafe extern "C" fn read_u32(mut mem: *mut mem_source, mut offset: size_t)
 }
 unsafe extern "C" fn read_u16(mut mem: *mut mem_source, mut offset: size_t)
  -> u16 {
-    if offset > (*mem).size.wrapping_sub(2u64) {
+    if offset > (*mem).size.wrapping_sub(2) {
         invalid_source(mem,
                        b"Invalid offset\x00" as *const u8 as
                            *const libc::c_char);
@@ -295,7 +295,7 @@ unsafe extern "C" fn read_u16(mut mem: *mut mem_source, mut offset: size_t)
 }
 unsafe extern "C" fn read_u8(mut mem: *mut mem_source, mut offset: size_t)
  -> u8 {
-    if offset > (*mem).size.wrapping_sub(1u64) {
+    if offset > (*mem).size.wrapping_sub(1) {
         invalid_source(mem,
                        b"Invalid offset\x00" as *const u8 as
                            *const libc::c_char);
@@ -358,7 +358,7 @@ unsafe extern "C" fn check_profile_version(mut src: *mut mem_source) {
 // 'nmcl'
 unsafe extern "C" fn read_class_signature(mut profile: *mut qcms_profile,
                                           mut mem: *mut mem_source) {
-    (*profile).class_type = read_u32(mem, 12u64);
+    (*profile).class_type = read_u32(mem, 12);
     match (*profile).class_type {
         1835955314 | 1935896178 | 1886549106 | 1936744803 => { }
         _ => {
@@ -370,7 +370,7 @@ unsafe extern "C" fn read_class_signature(mut profile: *mut qcms_profile,
 }
 unsafe extern "C" fn read_color_space(mut profile: *mut qcms_profile,
                                       mut mem: *mut mem_source) {
-    (*profile).color_space = read_u32(mem, 16u64);
+    (*profile).color_space = read_u32(mem, 16);
     match (*profile).color_space {
         1380401696 | 1196573017 => { }
         _ => {
@@ -382,7 +382,7 @@ unsafe extern "C" fn read_color_space(mut profile: *mut qcms_profile,
 }
 unsafe extern "C" fn read_pcs(mut profile: *mut qcms_profile,
                               mut mem: *mut mem_source) {
-    (*profile).pcs = read_u32(mem, 20u64);
+    (*profile).pcs = read_u32(mem, 20);
     match (*profile).pcs {
         1482250784 | 1281450528 => { }
         _ => {
@@ -402,7 +402,7 @@ unsafe extern "C" fn read_tag_table(mut profile: *mut qcms_profile,
             init
         };
     let mut i: libc::c_uint = 0;
-    index.count = read_u32(mem, 128u64);
+    index.count = read_u32(mem, 128);
     if index.count > 1024u32 {
         invalid_source(mem,
                        b"max number of tags exceeded\x00" as *const u8 as
@@ -1159,7 +1159,7 @@ unsafe extern "C" fn read_tag_lutType(mut src: *mut mem_source,
     if type_0 == 0x6d667431u32 {
         num_input_table_entries = 256u16;
         num_output_table_entries = 256u16;
-        entry_size = 1u64;
+        entry_size = 1;
         input_offset = 48u32
     } else if type_0 == 0x6d667432u32 {
         num_input_table_entries =
@@ -1177,7 +1177,7 @@ unsafe extern "C" fn read_tag_lutType(mut src: *mut mem_source,
                                *const libc::c_char);
             return 0 as *mut lutType
         }
-        entry_size = 2u64;
+        entry_size = 2;
         input_offset = 52u32
     } else {
             debug_assert!(false);
@@ -1345,21 +1345,21 @@ unsafe extern "C" fn read_tag_lutType(mut src: *mut mem_source,
                                                       (clut_offset as
                                                            libc::c_ulong).wrapping_add((i
                                                                                             as
-                                                                                            libc::c_ulong).wrapping_mul(entry_size)).wrapping_add(0u64)));
+                                                                                            libc::c_ulong).wrapping_mul(entry_size)).wrapping_add(0)));
             *(*lut).clut_table.offset(i.wrapping_add(1u32) as
                                           isize) =
                 uInt8Number_to_float(read_uInt8Number(src,
                                                       (clut_offset as
                                                            libc::c_ulong).wrapping_add((i
                                                                                             as
-                                                                                            libc::c_ulong).wrapping_mul(entry_size)).wrapping_add(1u64)));
+                                                                                            libc::c_ulong).wrapping_mul(entry_size)).wrapping_add(1)));
             *(*lut).clut_table.offset(i.wrapping_add(2u32) as
                                           isize) =
                 uInt8Number_to_float(read_uInt8Number(src,
                                                       (clut_offset as
                                                            libc::c_ulong).wrapping_add((i
                                                                                             as
-                                                                                            libc::c_ulong).wrapping_mul(entry_size)).wrapping_add(2u64)))
+                                                                                            libc::c_ulong).wrapping_mul(entry_size)).wrapping_add(2)))
         } else {
             *(*lut).clut_table.offset(i.wrapping_add(0u32) as
                                           isize) =
@@ -1367,21 +1367,21 @@ unsafe extern "C" fn read_tag_lutType(mut src: *mut mem_source,
                                                         (clut_offset as
                                                              libc::c_ulong).wrapping_add((i
                                                                                               as
-                                                                                              libc::c_ulong).wrapping_mul(entry_size)).wrapping_add(0u64)));
+                                                                                              libc::c_ulong).wrapping_mul(entry_size)).wrapping_add(0)));
             *(*lut).clut_table.offset(i.wrapping_add(1u32) as
                                           isize) =
                 uInt16Number_to_float(read_uInt16Number(src,
                                                         (clut_offset as
                                                              libc::c_ulong).wrapping_add((i
                                                                                               as
-                                                                                              libc::c_ulong).wrapping_mul(entry_size)).wrapping_add(2u64)));
+                                                                                              libc::c_ulong).wrapping_mul(entry_size)).wrapping_add(2)));
             *(*lut).clut_table.offset(i.wrapping_add(2u32) as
                                           isize) =
                 uInt16Number_to_float(read_uInt16Number(src,
                                                         (clut_offset as
                                                              libc::c_ulong).wrapping_add((i
                                                                                               as
-                                                                                              libc::c_ulong).wrapping_mul(entry_size)).wrapping_add(4u64)))
+                                                                                              libc::c_ulong).wrapping_mul(entry_size)).wrapping_add(4)))
         }
         i =
             
@@ -1421,7 +1421,7 @@ unsafe extern "C" fn read_rendering_intent(mut profile: *mut qcms_profile,
                                            mut src: *mut mem_source) {
     (*profile).rendering_intent =
         
-        read_u32(src, 64u64);
+        read_u32(src, 64);
     match  (*profile).rendering_intent {
         0 | 2 | 1 | 3 => { }
         _ => {
@@ -1717,16 +1717,16 @@ pub unsafe extern "C" fn qcms_profile_from_memory(mut mem:
     source.buf = mem as *const libc::c_uchar;
     source.size = size;
     source.valid = 1i32 != 0;
-    if size < 4u64 {
+    if size < 4 {
         return 0 as *mut qcms_profile
     }
-    length = read_u32(src, 0u64);
+    length = read_u32(src, 0);
     if length as libc::c_ulong <= size {
         // shrink the area that we can read if appropriate
         source.size = length as size_t
     } else { return 0 as *mut qcms_profile }
     /* ensure that the profile size is sane so it's easier to reason about */
-    if source.size <= 64u64 ||
+    if source.size <= 64 ||
            source.size >=
                (1024i32 * 1024i32 * 4i32)
                    as libc::c_ulong {
@@ -1920,7 +1920,7 @@ unsafe extern "C" fn qcms_data_from_file(mut file: *mut FILE,
     let mut length_be: be32 = 0;
     let mut data: *mut libc::c_void = 0 as *mut libc::c_void;
     *mem = 0 as *mut libc::c_void;
-    *size = 0u64;
+    *size = 0;
     if fread(&mut length_be as *mut be32 as *mut libc::c_void,
              1,
              
@@ -1951,7 +1951,7 @@ unsafe extern "C" fn qcms_data_from_file(mut file: *mut FILE,
         fread((data as
                    *mut libc::c_uchar).offset(::std::mem::size_of::<be32>() as isize) as
                   *mut libc::c_void, 1,
-              remaining_length as usize, file) as u64;
+              remaining_length as usize, file) as size_t;
     if read_length != remaining_length as libc::c_ulong { free(data); return }
     /* successfully get the profile.*/
     *mem = data;
@@ -1964,7 +1964,7 @@ pub unsafe extern "C" fn qcms_profile_from_file(mut file: *mut FILE)
     let mut profile: *mut qcms_profile = 0 as *mut qcms_profile;
     let mut data: *mut libc::c_void = 0 as *mut libc::c_void;
     qcms_data_from_file(file, &mut data, &mut length);
-    if data.is_null() || length == 0u64 {
+    if data.is_null() || length == 0 {
         return 0 as *mut qcms_profile
     }
     profile = qcms_profile_from_memory(data, length);
@@ -1989,7 +1989,7 @@ pub unsafe extern "C" fn qcms_data_from_path(mut path: *const libc::c_char,
                                              mut size: *mut size_t) {
     let mut file: *mut FILE = 0 as *mut FILE;
     *mem = 0 as *mut libc::c_void;
-    *size = 0u64;
+    *size = 0;
     file = fopen(path, b"rb\x00" as *const u8 as *const libc::c_char);
     if !file.is_null() {
         qcms_data_from_file(file, mem, size);
@@ -2025,7 +2025,7 @@ pub unsafe extern "C" fn qcms_data_create_rgb_with_gamma(mut white_point:
          0x62545243u32];
     if mem.is_null() || size.is_null() { return }
     *mem = 0 as *mut libc::c_void;
-    *size = 0u64;
+    *size = 0;
     /* 
 	* total length = icc profile header(128) + tag count(4) + 
 	* (tag table item (12) * total tag (6 = 3 rTRC + 3 rXYZ)) + rTRC elements data (3 * 20)
@@ -2060,39 +2060,39 @@ pub unsafe extern "C" fn qcms_data_create_rgb_with_gamma(mut white_point:
                   TAG_XYZ[index as
                               usize]); // 20 bytes per TAG_(r/g/b)XYZ tag element
         write_u32(data,
-                  tag_table_offset.wrapping_add(4u64),
+                  tag_table_offset.wrapping_add(4),
                   tag_data_offset as u32);
         write_u32(data,
-                  tag_table_offset.wrapping_add(8u64),
+                  tag_table_offset.wrapping_add(8),
                   20u32);
         // tag data element
         write_u32(data, tag_data_offset,
                   0x58595a20u32);
         // reserved 4 bytes.
         write_u32(data,
-                  tag_data_offset.wrapping_add(8u64),
+                  tag_data_offset.wrapping_add(8),
                   double_to_s15Fixed16Number(colorants.m[0usize][index as
                                                                         usize]
                                                  as f64) as
                       u32);
         write_u32(data,
-                  tag_data_offset.wrapping_add(12u64),
+                  tag_data_offset.wrapping_add(12),
                   double_to_s15Fixed16Number(colorants.m[1usize][index as
                                                                         usize]
                                                  as f64) as
                       u32);
         write_u32(data,
-                  tag_data_offset.wrapping_add(16u64),
+                  tag_data_offset.wrapping_add(16),
                   double_to_s15Fixed16Number(colorants.m[2usize][index as
                                                                         usize]
                                                  as f64) as
                       u32);
         tag_table_offset =
             
-            (tag_table_offset).wrapping_add(12u64);
+            (tag_table_offset).wrapping_add(12);
         tag_data_offset =
             
-            (tag_data_offset).wrapping_add(20u64);
+            (tag_data_offset).wrapping_add(20);
         index = index.wrapping_add(1)
     }
     // Part2 : write rTRC, gTRC and bTRC
@@ -2103,27 +2103,27 @@ pub unsafe extern "C" fn qcms_data_create_rgb_with_gamma(mut white_point:
                   TAG_TRC[index as
                               usize]); // 14 bytes per TAG_(r/g/b)TRC element
         write_u32(data,
-                  tag_table_offset.wrapping_add(4u64),
+                  tag_table_offset.wrapping_add(4),
                   tag_data_offset as u32);
         write_u32(data,
-                  tag_table_offset.wrapping_add(8u64),
+                  tag_table_offset.wrapping_add(8),
                   14u32);
         // tag data element
         write_u32(data, tag_data_offset,
                   0x63757276u32);
         // reserved 4 bytes.
         write_u32(data,
-                  tag_data_offset.wrapping_add(8u64),
+                  tag_data_offset.wrapping_add(8),
                   1u32); // count
         write_u16(data,
-                  tag_data_offset.wrapping_add(12u64),
+                  tag_data_offset.wrapping_add(12),
                   float_to_u8Fixed8Number(gamma));
         tag_table_offset =
             
-            (tag_table_offset).wrapping_add(12u64);
+            (tag_table_offset).wrapping_add(12);
         tag_data_offset =
             
-            (tag_data_offset).wrapping_add(16u64);
+            (tag_data_offset).wrapping_add(16);
         index = index.wrapping_add(1)
     }
     /* Part3 : write profile header
@@ -2132,18 +2132,18 @@ pub unsafe extern "C" fn qcms_data_create_rgb_with_gamma(mut white_point:
 	 * We should be generating: Profile version (04300000h), Profile signature (acsp), 
 	 * PCS illumiant field. Likewise mandatory profile tags are omitted.
 	 */
-    write_u32(data, 0u64,
+    write_u32(data, 0,
               length); // the total length of this memory
-    write_u32(data, 12u64,
+    write_u32(data, 12,
               0x6d6e7472u32); // profile->class_type
-    write_u32(data, 16u64,
+    write_u32(data, 16,
               0x52474220u32); // profile->color_space
-    write_u32(data, 20u64,
+    write_u32(data, 20,
               0x58595a20u32); // profile->pcs
-    write_u32(data, 64u64,
+    write_u32(data, 64,
               
               QCMS_INTENT_PERCEPTUAL); // profile->rendering_intent
-    write_u32(data, 128u64,
+    write_u32(data, 128,
               6u32); // total tag count
     // prepare the result
     *mem = data;

@@ -324,8 +324,8 @@ pub unsafe extern "C" fn compute_curve_gamma_table_type_parametric(mut gamma_tab
         f = 0f32;
         interval = -1f32
     }
-     let mut X:  size_t =  0u64;
-    while X < 256u64 {
+     let mut X:  size_t =  0;
+    while X < 256 {
         if X as f32 >= interval {
             // XXX The equations are not exactly as defined in the spec but are
                         //     algebraically equivalent.
@@ -758,7 +758,7 @@ pub unsafe extern "C" fn build_output_lut(mut trc: *mut curveType,
                                                   (*trc).parameter.as_mut_ptr(),
                                                   (*trc).count as
                                                       i32);
-        *output_gamma_lut_length = 256u64;
+        *output_gamma_lut_length = 256;
          let mut i:  u16 =  0u16;
         while (i as i32) < 256i32 {
             *output.offset(i as isize) =
@@ -769,20 +769,20 @@ pub unsafe extern "C" fn build_output_lut(mut trc: *mut curveType,
         *output_gamma_lut = output
     } else if (*trc).count == 0u32 {
         *output_gamma_lut = build_linear_table(4096i32);
-        *output_gamma_lut_length = 4096u64
+        *output_gamma_lut_length = 4096
     } else if (*trc).count == 1u32 {
         let mut gamma: f32 =
             (1.0f64 /
                  u8Fixed8Number_to_float(*(*trc).data.as_mut_ptr().offset(0isize))
                      as f64) as f32;
         *output_gamma_lut = build_pow_table(gamma, 4096i32);
-        *output_gamma_lut_length = 4096u64
+        *output_gamma_lut_length = 4096
     } else {
         //XXX: the choice of a minimum of 256 here is not backed by any theory, 
                         //     measurement or data, however it is what lcms uses.
         *output_gamma_lut_length = (*trc).count as size_t;
-        if *output_gamma_lut_length < 256u64 {
-            *output_gamma_lut_length = 256u64
+        if *output_gamma_lut_length < 256 {
+            *output_gamma_lut_length = 256
         }
         *output_gamma_lut =
             invert_lut((*trc).data.as_mut_ptr(), (*trc).count as i32,

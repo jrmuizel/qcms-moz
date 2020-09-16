@@ -1,7 +1,9 @@
 use ::libc;
 use std::mem::zeroed;
 use crate::transform::{BGRA, Format, RGBA, RGB, qcms_transform};
-//use std::arch::aarch64::{float32x4_t};
+#[cfg(target_arch = "arm")]
+use core::arch::arm::{uint32x4_t, int32x4_t, float32x4_t, vaddq_f32};
+#[cfg(target_arch = "aarch64")]
 use core::arch::aarch64::{uint32x4_t, int32x4_t, float32x4_t, vaddq_f32};
 pub type uintptr_t = libc::c_ulong;
 pub type size_t = libc::c_ulong;
@@ -70,7 +72,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut_neon<F: Format>(mut transf
     let min: float32x4_t = zeroed();
     let scale: float32x4_t = vld1q_dup_f32(floatScaleX4.as_ptr());
     let components: libc::c_uint =
-        if F::kAIndex == 0xffu64 {
+        if F::kAIndex == 0xff {
             3i32
         } else { 4i32 } as libc::c_uint;
     /* working variables */
@@ -90,7 +92,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut_neon<F: Format>(mut transf
         vld1q_dup_f32(&*igtbl_g.offset(*src.offset(F::kGIndex as isize) as isize));
     vec_b =
         vld1q_dup_f32(&*igtbl_b.offset(*src.offset(F::kBIndex as isize) as isize));
-    if F::kAIndex != 0xffu64 {
+    if F::kAIndex != 0xff {
         alpha = *src.offset(F::kAIndex as isize)
     }
     src = src.offset(components as isize);
@@ -101,7 +103,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut_neon<F: Format>(mut transf
         vec_g = vmulq_f32(vec_g, mat1);
         vec_b = vmulq_f32(vec_b, mat2);
         /* store alpha for this pixel; load alpha for next */
-        if F::kAIndex != 0xffu64 {
+        if F::kAIndex != 0xff {
             *dest.offset(F::kAIndex as isize) = alpha;
             alpha = *src.offset(F::kAIndex as isize)
         }
@@ -138,7 +140,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut_neon<F: Format>(mut transf
     vec_r = vmulq_f32(vec_r, mat0);
     vec_g = vmulq_f32(vec_g, mat1);
     vec_b = vmulq_f32(vec_b, mat2);
-    if F::kAIndex != 0xffu64 {
+    if F::kAIndex != 0xff {
         *dest.offset(F::kAIndex as isize) = alpha
     }
     vec_r  = vaddq_f32(vec_r, vaddq_f32(vec_g, vec_b));
@@ -269,6 +271,14 @@ pub unsafe fn vmaxq_f32(a: float32x4_t, b: float32x4_t) -> float32x4_t {
 pub unsafe fn vcvtq_s32_f32(a: float32x4_t) -> int32x4_t {
     vcvtq_s32_f32_(a)
 }
+/// Floating-point Convert to Signed fixed-point, rounding toward Zero (vector)
+#[inline]
+#[cfg(target_arch = "arm")]
+#[target_feature(enable = "neon")]
+#[target_feature(enable = "v7")]
+pub unsafe fn vcvtq_s32_f32(a: float32x4_t) -> int32x4_t {
+    simd_cast::<_, int32x4_t>(a)
+}
 
 /// Load one single-element structure and Replicate to all lanes (of one register).
 #[inline]
@@ -282,4 +292,5 @@ pub unsafe fn vld1q_dup_f32(addr: *const f32) -> float32x4_t {
 extern "platform-intrinsic" {
         pub fn simd_mul<T>(x: T, y: T) -> T;
         pub fn simd_extract<T, U>(x: T, idx: u32) -> U;
+        pub fn simd_cast<T, U>(x: T) -> U;
 }

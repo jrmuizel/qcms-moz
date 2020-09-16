@@ -561,7 +561,7 @@ unsafe extern "C" fn qcms_transform_data_gray_template_lut<I: GrayFormat, F: For
                                                            mut length:
                                                                size_t) {
     let components: libc::c_uint =
-        if F::kAIndex == 0xffu64 {
+        if F::kAIndex == 0xff {
             3i32
         } else { 4i32 } as libc::c_uint;
     
@@ -605,7 +605,7 @@ unsafe extern "C" fn qcms_transform_data_gray_template_lut<I: GrayFormat, F: For
             clamp_u8(out_device_g * 255f32);
         *dest.offset(F::kBIndex as isize) =
             clamp_u8(out_device_b * 255f32);
-        if F::kAIndex != 0xffu64 {
+        if F::kAIndex != 0xff {
             *dest.offset(F::kAIndex as isize) = alpha
         }
         dest = dest.offset(components as isize);
@@ -670,7 +670,7 @@ unsafe extern "C" fn qcms_transform_data_gray_template_precache<I: GrayFormat, F
                                                                 mut length:
                                                                     size_t) {
     let components: libc::c_uint =
-        if F::kAIndex == 0xffu64 {
+        if F::kAIndex == 0xff {
             3i32
         } else { 4i32 } as libc::c_uint;
     
@@ -700,7 +700,7 @@ unsafe extern "C" fn qcms_transform_data_gray_template_precache<I: GrayFormat, F
             (*(*transform).output_table_g).data[gray as usize];
         *dest.offset(F::kBIndex as isize) =
             (*(*transform).output_table_b).data[gray as usize];
-        if F::kAIndex != 0xffu64 {
+        if F::kAIndex != 0xff {
             *dest.offset(F::kAIndex as isize) = alpha
         }
         dest = dest.offset(components as isize);
@@ -767,7 +767,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut_precache<F: Format>(mut tr
                                                                mut length:
                                                                    size_t) {
     let components: libc::c_uint =
-        if F::kAIndex == 0xffu64 {
+        if F::kAIndex == 0xff {
             3i32
         } else { 4i32 } as libc::c_uint;
     
@@ -778,7 +778,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut_precache<F: Format>(mut tr
         let mut device_g: libc::c_uchar = *src.offset(F::kGIndex as isize);
         let mut device_b: libc::c_uchar = *src.offset(F::kBIndex as isize);
         let mut alpha: libc::c_uchar = 0;
-        if F::kAIndex != 0xffu64 {
+        if F::kAIndex != 0xff {
             alpha = *src.offset(F::kAIndex as isize)
         }
         src = src.offset(components as isize);
@@ -834,7 +834,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut_precache<F: Format>(mut tr
             (*(*transform).output_table_g).data[g as usize];
         *dest.offset(F::kBIndex as isize) =
             (*(*transform).output_table_b).data[b as usize];
-        if F::kAIndex != 0xffu64 {
+        if F::kAIndex != 0xff {
             *dest.offset(F::kAIndex as isize) = alpha
         }
         dest = dest.offset(components as isize);
@@ -945,7 +945,7 @@ unsafe extern "C" fn qcms_transform_data_tetra_clut_template<F: Format>(mut tran
                                                              mut length:
                                                                  size_t) {
     let components: libc::c_uint =
-        if F::kAIndex == 0xffu64 {
+        if F::kAIndex == 0xff {
             3i32
         } else { 4i32 } as libc::c_uint;
     
@@ -976,7 +976,7 @@ unsafe extern "C" fn qcms_transform_data_tetra_clut_template<F: Format>(mut tran
         let mut in_g: libc::c_uchar = *src.offset(F::kGIndex as isize);
         let mut in_b: libc::c_uchar = *src.offset(F::kBIndex as isize);
         let mut in_a: libc::c_uchar = 0;
-        if F::kAIndex != 0xffu64 {
+        if F::kAIndex != 0xff {
             in_a = *src.offset(F::kAIndex as isize)
         }
         src = src.offset(components as isize);
@@ -1295,7 +1295,7 @@ unsafe extern "C" fn qcms_transform_data_tetra_clut_template<F: Format>(mut tran
         *dest.offset(F::kRIndex as isize) = clamp_u8(clut_r * 255.0f32);
         *dest.offset(F::kGIndex as isize) = clamp_u8(clut_g * 255.0f32);
         *dest.offset(F::kBIndex as isize) = clamp_u8(clut_b * 255.0f32);
-        if F::kAIndex != 0xffu64 {
+        if F::kAIndex != 0xff {
             *dest.offset(F::kAIndex as isize) = in_a
         }
         dest = dest.offset(components as isize);
@@ -1337,7 +1337,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut<F: Format>(mut transform:
                                                           *mut libc::c_uchar,
                                                       mut length: size_t) {
     let components: libc::c_uint =
-        if F::kAIndex == 0xffu64 {
+        if F::kAIndex == 0xff {
             3i32
         } else { 4i32 } as libc::c_uint;
     
@@ -1348,7 +1348,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut<F: Format>(mut transform:
         let mut device_g: libc::c_uchar = *src.offset(F::kGIndex as isize);
         let mut device_b: libc::c_uchar = *src.offset(F::kBIndex as isize);
         let mut alpha: libc::c_uchar = 0;
-        if F::kAIndex != 0xffu64 {
+        if F::kAIndex != 0xff {
             alpha = *src.offset(F::kAIndex as isize)
         }
         src = src.offset(components as isize);
@@ -1406,7 +1406,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut<F: Format>(mut transform:
             clamp_u8(out_device_g * 255f32);
         *dest.offset(F::kBIndex as isize) =
             clamp_u8(out_device_b * 255f32);
-        if F::kAIndex != 0xffu64 {
+        if F::kAIndex != 0xff {
             *dest.offset(F::kAIndex as isize) = alpha
         }
         dest = dest.offset(components as isize);
@@ -1484,7 +1484,7 @@ unsafe extern "C" fn transform_alloc() -> *mut qcms_transform {
     /* align transform_start */
     let mut transform_aligned: *mut qcms_transform =
         ((transform_start as
-              uintptr_t).wrapping_add(15u64) &
+              uintptr_t).wrapping_add(15) &
              !(0xfi32) as libc::c_ulong) as *mut qcms_transform;
     /* store a pointer to the block returned by calloc so that we can free it later */
     let mut original_block_ptr: *mut *mut libc::c_void =

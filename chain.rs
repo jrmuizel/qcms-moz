@@ -195,7 +195,7 @@ unsafe extern "C" fn qcms_transform_module_LAB_to_XYZ(mut transform:
     let mut WhitePointX: f32 = 0.9642f32;
     let mut WhitePointY: f32 = 1.0f32;
     let mut WhitePointZ: f32 = 0.8249f32;
-     let mut i:  size_t =  0u64;
+     let mut i:  size_t =  0;
     while i < length {
         let fresh0 = src;
         src = src.offset(1);
@@ -264,7 +264,7 @@ unsafe extern "C" fn qcms_transform_module_XYZ_to_LAB(mut transform:
     let mut WhitePointX: f32 = 0.9642f32;
     let mut WhitePointY: f32 = 1.0f32;
     let mut WhitePointZ: f32 = 0.8249f32;
-     let mut i:  size_t =  0u64;
+     let mut i:  size_t =  0;
     while i < length {
         let fresh6 = src;
         src = src.offset(1);
@@ -334,7 +334,7 @@ unsafe extern "C" fn qcms_transform_module_clut_only(mut transform:
     let mut r_table: *mut f32 = (*transform).r_clut;
     let mut g_table: *mut f32 = (*transform).g_clut;
     let mut b_table: *mut f32 = (*transform).b_clut;
-     let mut i:  size_t =  0u64;
+     let mut i:  size_t =  0;
     while i < length {
             debug_assert!((*transform).grid_size as i32 >= 1i32);
         let fresh12 = src;
@@ -478,7 +478,7 @@ unsafe extern "C" fn qcms_transform_module_clut(mut transform:
     let mut r_table: *mut f32 = (*transform).r_clut;
     let mut g_table: *mut f32 = (*transform).g_clut;
     let mut b_table: *mut f32 = (*transform).b_clut;
-     let mut i:  size_t =  0u64;
+     let mut i:  size_t =  0;
     while i < length {
             debug_assert!((*transform).grid_size as i32 >= 1i32);
         let fresh18 = src;
@@ -770,7 +770,7 @@ unsafe extern "C" fn qcms_transform_module_gamma_table(mut transform:
     let mut out_r: f32 = 0.;
     let mut out_g: f32 = 0.;
     let mut out_b: f32 = 0.;
-     let mut i:  size_t =  0u64;
+     let mut i:  size_t =  0;
     while i < length {
         let fresh24 = src;
         src = src.offset(1);
@@ -813,7 +813,7 @@ unsafe extern "C" fn qcms_transform_module_gamma_lut(mut transform:
     let mut out_r: f32 = 0.;
     let mut out_g: f32 = 0.;
     let mut out_b: f32 = 0.;
-     let mut i:  size_t =  0u64;
+     let mut i:  size_t = 0;
     while i < length {
         let fresh30 = src;
         src = src.offset(1);
@@ -881,7 +881,7 @@ unsafe extern "C" fn qcms_transform_module_matrix_translate(mut transform:
         (*transform).matrix.m[2usize][1usize];
     mat.m[2usize][2usize] =
         (*transform).matrix.m[2usize][2usize];
-     let mut i:  size_t =  0u64;
+     let mut i:  size_t =  0;
     while i < length {
         let fresh36 = src;
         src = src.offset(1);
@@ -953,7 +953,7 @@ unsafe extern "C" fn qcms_transform_module_matrix(mut transform:
         (*transform).matrix.m[2usize][1usize];
     mat.m[2usize][2usize] =
         (*transform).matrix.m[2usize][2usize];
-     let mut i:  size_t =  0u64;
+     let mut i:  size_t =  0;
     while i < length {
         let fresh42 = src;
         src = src.offset(1);
@@ -1919,7 +1919,7 @@ pub unsafe extern "C" fn qcms_chain_transform(mut in_0: *mut qcms_profile,
     if !transform_list.is_null() {
         let mut lut: *mut f32 =
             qcms_modular_transform_data(transform_list, src, dest,
-                                        lutSize.wrapping_div(3u64));
+                                        lutSize.wrapping_div(3));
         qcms_modular_transform_release(transform_list);
         return lut
     }
