@@ -31,6 +31,8 @@ use crate::{transform_avx::{qcms_transform_data_rgba_out_lut_avx, qcms_transform
 
 const PRECACHE_OUTPUT_SIZE: usize = 8192;
 const PRECACHE_OUTPUT_MAX: usize = PRECACHE_OUTPUT_SIZE - 1;
+pub const FLOATSCALE: f32 = PRECACHE_OUTPUT_SIZE as f32;
+pub const CLAMPMAXVAL: f32 = ((PRECACHE_OUTPUT_SIZE - 1) as f32) / PRECACHE_OUTPUT_SIZE as f32;
 
 #[repr(C)]
 pub struct precache_output {

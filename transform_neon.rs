@@ -1,6 +1,6 @@
 use ::libc;
 use std::mem::zeroed;
-use crate::transform::{BGRA, Format, RGBA, RGB, qcms_transform};
+use crate::transform::{BGRA, Format, RGBA, RGB, qcms_transform, FLOATSCALE, CLAMPMAXVAL};
 #[cfg(target_arch = "arm")]
 use core::arch::arm::{uint32x4_t, int32x4_t, float32x4_t, vaddq_f32};
 #[cfg(target_arch = "aarch64")]
@@ -9,20 +9,9 @@ pub type uintptr_t = libc::c_ulong;
 pub type size_t = libc::c_ulong;
 
 /* pre-shuffled: just load these into XMM reg instead of load-scalar/shufps sequence */
-static mut floatScaleX4: [f32; 4] =
-    [8192f32,
-     8192f32,
-     8192f32,
-     8192f32];
-static mut clampMaxValueX4: [f32; 4] =
-    [(8192i32 - 1i32) as f32 /
-         8192f32,
-     (8192i32 - 1i32) as f32 /
-         8192f32,
-     (8192i32 - 1i32) as f32 /
-         8192f32,
-     (8192i32 - 1i32) as f32 /
-         8192f32];
+static mut floatScale: f32 = FLOATSCALE;
+static mut clampMaxValue: f32 = CLAMPMAXVAL;
+
 //template <size_t kRIndex, size_t kGIndex, size_t kBIndex, size_t kAIndex = NO_A_INDEX>
 unsafe extern "C" fn qcms_transform_data_template_lut_neon<F: Format>(mut transform:
                                                                *const qcms_transform,
@@ -68,9 +57,9 @@ unsafe extern "C" fn qcms_transform_data_template_lut_neon<F: Format>(mut transf
     let mat2: float32x4_t =
         vld1q_f32((*mat.offset(2isize)).as_ptr());
     /* these values don't change, either */
-    let max: float32x4_t = vld1q_dup_f32(clampMaxValueX4.as_ptr());
+    let max: float32x4_t = vld1q_dup_f32(&clampMaxValue);
     let min: float32x4_t = zeroed();
-    let scale: float32x4_t = vld1q_dup_f32(floatScaleX4.as_ptr());
+    let scale: float32x4_t = vld1q_dup_f32(&floatScale);
     let components: libc::c_uint =
         if F::kAIndex == 0xff {
             3i32

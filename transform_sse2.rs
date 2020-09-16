@@ -1,5 +1,5 @@
 use ::libc;
-use crate::transform::{BGRA, Format, RGBA, RGB, qcms_transform};
+use crate::transform::{BGRA, Format, RGBA, RGB, qcms_transform, FLOATSCALE, CLAMPMAXVAL};
 #[cfg(target_arch = "x86")]
 pub use std::arch::x86::{__m128, __m128i, _mm_add_ps, _mm_mul_ps, _mm_min_ps,
                          _mm_max_ps, _mm_load_ss, _mm_load_ps,
@@ -10,24 +10,21 @@ pub use std::arch::x86_64::{__m128, __m128i, _mm_add_ps, _mm_mul_ps,
                             _mm_min_ps, _mm_max_ps, _mm_load_ss, _mm_load_ps,
                             _mm_store_si128, _mm_setzero_ps, _mm_cvtps_epi32,
                             _mm_shuffle_ps};
+
 pub type uintptr_t = libc::c_ulong;
 pub type size_t = libc::c_ulong;
 
 /* pre-shuffled: just load these into XMM reg instead of load-scalar/shufps sequence */
 static mut floatScaleX4: [f32; 4] =
-    [8192f32,
-     8192f32,
-     8192f32,
-     8192f32];
+    [FLOATSCALE,
+     FLOATSCALE,
+     FLOATSCALE,
+     FLOATSCALE];
 static mut clampMaxValueX4: [f32; 4] =
-    [(8192i32 - 1i32) as f32 /
-         8192f32,
-     (8192i32 - 1i32) as f32 /
-         8192f32,
-     (8192i32 - 1i32) as f32 /
-         8192f32,
-     (8192i32 - 1i32) as f32 /
-         8192f32];
+    [CLAMPMAXVAL,
+     CLAMPMAXVAL,
+     CLAMPMAXVAL,
+     CLAMPMAXVAL];
 //template <size_t kRIndex, size_t kGIndex, size_t kBIndex, size_t kAIndex = NO_A_INDEX>
 unsafe extern "C" fn qcms_transform_data_template_lut_sse2<F: Format>(mut transform:
                                                                *const qcms_transform,

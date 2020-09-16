@@ -1,5 +1,5 @@
 use ::libc;
-use crate::transform::{BGRA, Format, RGBA, RGB, qcms_transform};
+use crate::transform::{BGRA, Format, RGBA, RGB, qcms_transform, CLAMPMAXVAL, FLOATSCALE};
 #[cfg(target_arch = "x86")]
 pub use std::arch::x86::{__m128, __m128i, __m256, __m256i, _mm_add_ps,
                          _mm_mul_ps, _mm_min_ps, _mm_max_ps, _mm_loadu_ps,
@@ -71,11 +71,9 @@ unsafe extern "C" fn qcms_transform_data_template_lut_avx<F: Format>(mut transfo
                                 as *const __m128));
     /* these values don't change, either */
     let max: __m256 =
-        _mm256_set1_ps((8192i32 - 1i32) as
-                           f32 /
-                           8192f32);
+        _mm256_set1_ps(CLAMPMAXVAL);
     let min: __m256 = _mm256_setzero_ps();
-    let scale: __m256 = _mm256_set1_ps(8192f32);
+    let scale: __m256 = _mm256_set1_ps(FLOATSCALE);
     let components: libc::c_uint =
         if F::kAIndex == 0xff {
             3i32
