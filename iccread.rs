@@ -63,6 +63,11 @@ pub const icSigLuvData: icColorSpaceSignature = 1282766368;
 pub const icSigLabData: icColorSpaceSignature = 1281450528;
 pub const icSigXYZData: icColorSpaceSignature = 1482250784;
 
+const RGB_SIGNATURE: u32 = 0x52474220;
+const GRAY_SIGNATURE: u32 = 0x47524159;
+const XYZ_SIGNATURE: u32 = 0x58595A20;
+const LAB_SIGNATURE: u32 = 0x4C616220;
+
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct qcms_profile {
@@ -503,7 +508,7 @@ pub unsafe extern "C" fn qcms_profile_is_bogus(mut profile: *mut qcms_profile) -
     let mut negative: bool = false;
     let mut i: libc::c_uint = 0;
     // We currently only check the bogosity of RGB profiles
-    if (*profile).color_space != 0x52474220u32 {
+    if (*profile).color_space != RGB_SIGNATURE {
         return 0i32 != 0;
     }
     if !(*profile).A2B0.is_null()
@@ -1356,7 +1361,7 @@ pub unsafe extern "C" fn qcms_profile_create_rgb_with_gamma_set(
     }
     (*profile).class_type = 0x6d6e7472u32;
     (*profile).rendering_intent = QCMS_INTENT_PERCEPTUAL;
-    (*profile).color_space = 0x52474220u32;
+    (*profile).color_space = RGB_SIGNATURE;
     (*profile).pcs = XYZ_TYPE;
     return profile;
 }
@@ -1394,7 +1399,7 @@ pub unsafe extern "C" fn qcms_profile_create_rgb_with_table(
     }
     (*profile).class_type = 0x6d6e7472u32;
     (*profile).rendering_intent = QCMS_INTENT_PERCEPTUAL;
-    (*profile).color_space = 0x52474220u32;
+    (*profile).color_space = RGB_SIGNATURE;
     (*profile).pcs = XYZ_TYPE;
     return profile;
 }
@@ -1560,7 +1565,7 @@ pub unsafe extern "C" fn qcms_profile_from_memory(
                 || (*profile).class_type == 0x70727472u32
                 || (*profile).class_type == 0x73706163u32
             {
-                if (*profile).color_space == 0x52474220u32 {
+                if (*profile).color_space == RGB_SIGNATURE {
                     if !find_tag(&index, TAG_A2B0).is_null() {
                         if read_u32(src, (*find_tag(&index, TAG_A2B0)).offset as size_t)
                             == LUT8_TYPE
@@ -1609,7 +1614,7 @@ pub unsafe extern "C" fn qcms_profile_from_memory(
                     } else {
                         current_block = 3580086814630675314;
                     }
-                } else if (*profile).color_space == 0x47524159u32 {
+                } else if (*profile).color_space == GRAY_SIGNATURE {
                     (*profile).grayTRC = read_tag_curveType(src, &index, TAG_kTRC);
                     if (*profile).grayTRC.is_null() {
                         current_block = 17808765469879209355;
@@ -1908,7 +1913,7 @@ pub unsafe extern "C" fn qcms_data_create_rgb_with_gamma(
      */
     write_u32(data, 0, length); // the total length of this memory
     write_u32(data, 12, 0x6d6e7472u32); // profile->class_type
-    write_u32(data, 16, 0x52474220u32); // profile->color_space
+    write_u32(data, 16, RGB_SIGNATURE); // profile->color_space
     write_u32(data, 20, XYZ_TYPE); // profile->pcs
     write_u32(data, 64, QCMS_INTENT_PERCEPTUAL); // profile->rendering_intent
     write_u32(data, 128, 6u32); // total tag count
