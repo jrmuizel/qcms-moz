@@ -826,12 +826,9 @@ unsafe extern "C" fn qcms_transform_data_tetra_clut_template<F: Format>(
         let mut x: i32 = in_r as i32 * ((*transform).grid_size as i32 - 1) / 255;
         let mut y: i32 = in_g as i32 * ((*transform).grid_size as i32 - 1) / 255;
         let mut z: i32 = in_b as i32 * ((*transform).grid_size as i32 - 1) / 255;
-        let mut x_n: i32 =
-            int_div_ceil(in_r as i32 * ((*transform).grid_size as i32 - 1), 255);
-        let mut y_n: i32 =
-            int_div_ceil(in_g as i32 * ((*transform).grid_size as i32 - 1), 255);
-        let mut z_n: i32 =
-            int_div_ceil(in_b as i32 * ((*transform).grid_size as i32 - 1), 255);
+        let mut x_n: i32 = int_div_ceil(in_r as i32 * ((*transform).grid_size as i32 - 1), 255);
+        let mut y_n: i32 = int_div_ceil(in_g as i32 * ((*transform).grid_size as i32 - 1), 255);
+        let mut z_n: i32 = int_div_ceil(in_b as i32 * ((*transform).grid_size as i32 - 1), 255);
         let mut rx: f32 = linear_r * ((*transform).grid_size as i32 - 1) as f32 - x as f32;
         let mut ry: f32 = linear_g * ((*transform).grid_size as i32 - 1) as f32 - y as f32;
         let mut rz: f32 = linear_b * ((*transform).grid_size as i32 - 1) as f32 - z as f32;
@@ -841,40 +838,34 @@ unsafe extern "C" fn qcms_transform_data_tetra_clut_template<F: Format>(
         if rx >= ry {
             if ry >= rz {
                 //rx >= ry && ry >= rz
-                c1_r =
-                    *r_table.offset(((x_n * len + y * x_len + z * xy_len) * 3) as isize) - c0_r; //rz > rx && rx >= ry
+                c1_r = *r_table.offset(((x_n * len + y * x_len + z * xy_len) * 3) as isize) - c0_r; //rz > rx && rx >= ry
                 c2_r = *r_table.offset(((x_n * len + y_n * x_len + z * xy_len) * 3) as isize)
                     - *r_table.offset(((x_n * len + y * x_len + z * xy_len) * 3) as isize);
                 c3_r = *r_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3) as isize)
                     - *r_table.offset(((x_n * len + y_n * x_len + z * xy_len) * 3) as isize);
-                c1_g =
-                    *g_table.offset(((x_n * len + y * x_len + z * xy_len) * 3) as isize) - c0_g;
+                c1_g = *g_table.offset(((x_n * len + y * x_len + z * xy_len) * 3) as isize) - c0_g;
                 c2_g = *g_table.offset(((x_n * len + y_n * x_len + z * xy_len) * 3) as isize)
                     - *g_table.offset(((x_n * len + y * x_len + z * xy_len) * 3) as isize);
                 c3_g = *g_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3) as isize)
                     - *g_table.offset(((x_n * len + y_n * x_len + z * xy_len) * 3) as isize);
-                c1_b =
-                    *b_table.offset(((x_n * len + y * x_len + z * xy_len) * 3) as isize) - c0_b;
+                c1_b = *b_table.offset(((x_n * len + y * x_len + z * xy_len) * 3) as isize) - c0_b;
                 c2_b = *b_table.offset(((x_n * len + y_n * x_len + z * xy_len) * 3) as isize)
                     - *b_table.offset(((x_n * len + y * x_len + z * xy_len) * 3) as isize);
                 c3_b = *b_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3) as isize)
                     - *b_table.offset(((x_n * len + y_n * x_len + z * xy_len) * 3) as isize)
             } else if rx >= rz {
                 //rx >= rz && rz >= ry
-                c1_r =
-                    *r_table.offset(((x_n * len + y * x_len + z * xy_len) * 3) as isize) - c0_r;
+                c1_r = *r_table.offset(((x_n * len + y * x_len + z * xy_len) * 3) as isize) - c0_r;
                 c2_r = *r_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3) as isize)
                     - *r_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3) as isize);
                 c3_r = *r_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3) as isize)
                     - *r_table.offset(((x_n * len + y * x_len + z * xy_len) * 3) as isize);
-                c1_g =
-                    *g_table.offset(((x_n * len + y * x_len + z * xy_len) * 3) as isize) - c0_g;
+                c1_g = *g_table.offset(((x_n * len + y * x_len + z * xy_len) * 3) as isize) - c0_g;
                 c2_g = *g_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3) as isize)
                     - *g_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3) as isize);
                 c3_g = *g_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3) as isize)
                     - *g_table.offset(((x_n * len + y * x_len + z * xy_len) * 3) as isize);
-                c1_b =
-                    *b_table.offset(((x_n * len + y * x_len + z * xy_len) * 3) as isize) - c0_b;
+                c1_b = *b_table.offset(((x_n * len + y * x_len + z * xy_len) * 3) as isize) - c0_b;
                 c2_b = *b_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3) as isize)
                     - *b_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3) as isize);
                 c3_b = *b_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3) as isize)
@@ -884,20 +875,17 @@ unsafe extern "C" fn qcms_transform_data_tetra_clut_template<F: Format>(
                     - *r_table.offset(((x * len + y * x_len + z_n * xy_len) * 3) as isize);
                 c2_r = *r_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3) as isize)
                     - *r_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3) as isize);
-                c3_r =
-                    *r_table.offset(((x * len + y * x_len + z_n * xy_len) * 3) as isize) - c0_r;
+                c3_r = *r_table.offset(((x * len + y * x_len + z_n * xy_len) * 3) as isize) - c0_r;
                 c1_g = *g_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3) as isize)
                     - *g_table.offset(((x * len + y * x_len + z_n * xy_len) * 3) as isize);
                 c2_g = *g_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3) as isize)
                     - *g_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3) as isize);
-                c3_g =
-                    *g_table.offset(((x * len + y * x_len + z_n * xy_len) * 3) as isize) - c0_g;
+                c3_g = *g_table.offset(((x * len + y * x_len + z_n * xy_len) * 3) as isize) - c0_g;
                 c1_b = *b_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3) as isize)
                     - *b_table.offset(((x * len + y * x_len + z_n * xy_len) * 3) as isize);
                 c2_b = *b_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3) as isize)
                     - *b_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3) as isize);
-                c3_b =
-                    *b_table.offset(((x * len + y * x_len + z_n * xy_len) * 3) as isize) - c0_b
+                c3_b = *b_table.offset(((x * len + y * x_len + z_n * xy_len) * 3) as isize) - c0_b
             }
         } else if rx >= rz {
             //ry > rx && rx >= rz

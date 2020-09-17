@@ -92,17 +92,15 @@ unsafe extern "C" fn lut_interp_linear_precache_output(
      * We'll divide out the PRECACHE_OUTPUT_MAX next */
     let mut value: u32 = input_value * (length - 1) as libc::c_uint;
     /* equivalent to ceil(value/PRECACHE_OUTPUT_MAX) */
-    let mut upper: u32 =
-        (value + (8192 - 1) as libc::c_uint - 1) / (8192 - 1) as libc::c_uint;
+    let mut upper: u32 = (value + (8192 - 1) as libc::c_uint - 1) / (8192 - 1) as libc::c_uint;
     /* equivalent to floor(value/PRECACHE_OUTPUT_MAX) */
     let mut lower: u32 = value / (8192 - 1) as libc::c_uint;
     /* interp is the distance from upper to value scaled to 0..PRECACHE_OUTPUT_MAX */
     let mut interp: u32 = value % (8192 - 1) as libc::c_uint;
     /* the table values range from 0..65535 */
     value = *table.offset(upper as isize) as libc::c_uint * interp
-        + *table.offset(lower as isize) as libc::c_uint
-            * ((8192 - 1) as libc::c_uint - interp); // 0..(65535*PRECACHE_OUTPUT_MAX)
-                                                           /* round and scale */
+        + *table.offset(lower as isize) as libc::c_uint * ((8192 - 1) as libc::c_uint - interp); // 0..(65535*PRECACHE_OUTPUT_MAX)
+                                                                                                 /* round and scale */
     value = value + ((8192 - 1) * 65535 / 255 / 2) as libc::c_uint; // scale to 0..255
     value = value / ((8192 - 1) * 65535 / 255) as libc::c_uint;
     return value as u8;
@@ -464,8 +462,7 @@ pub unsafe extern "C" fn compute_precache(mut trc: *mut curveType, mut output: *
         if inverted_size < 256 {
             inverted_size = 256
         }
-        let mut inverted: *mut u16 =
-            invert_lut(gamma_table_uint.as_mut_ptr(), 256, inverted_size);
+        let mut inverted: *mut u16 = invert_lut(gamma_table_uint.as_mut_ptr(), 256, inverted_size);
         if inverted.is_null() {
             return false;
         }
