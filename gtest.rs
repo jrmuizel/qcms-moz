@@ -1,4 +1,5 @@
-use crate::transform_util::lut_inverse_interp16;
+use crate::{transform_util::lut_inverse_interp16, iccread::qcms_data_create_rgb_with_gamma, iccread::qcms_CIE_xyY, iccread::qcms_CIE_xyYTRIPLE, transform::qcms_transform};
+pub type size_t = libc::c_ulong;
 
 #[test]
 fn test_lut_inverse_crash() {
@@ -104,4 +105,25 @@ fn test_lut_inverse_non_monotonic() {
     }
 
     // Make sure we don't crash, hang or let sanitizers do their magic
+}
+/* qcms_data_create_rgb_with_gamma is broken
+#[test]
+fn profile_from_gamma() {
+
+    let white_point = qcms_CIE_xyY { x: 0.64, y: 0.33, Y: 1.};
+    let primaries = qcms_CIE_xyYTRIPLE {
+        red: qcms_CIE_xyY { x: 0.64, y: 0.33, Y: 1.},
+        green: qcms_CIE_xyY { x: 0.21, y: 0.71, Y: 1.},
+        blue: qcms_CIE_xyY { x: 0.15, y: 0.06, Y: 1.}
+    };
+    let mut mem: *mut libc::c_void = std::ptr::null_mut();
+    let mut size: size_t = 0;
+    unsafe { qcms_data_create_rgb_with_gamma(white_point, primaries, 2.2, &mut mem, &mut size); }
+    assert!(size != 0)
+}
+*/
+
+#[test]
+fn alignment() {
+    assert_eq!(std::mem::align_of::<qcms_transform>(), 16);
 }
