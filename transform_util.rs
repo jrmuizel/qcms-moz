@@ -153,12 +153,12 @@ pub unsafe extern "C" fn compute_curve_gamma_table_type_parametric(
     mut parameter: *mut f32,
     mut count: i32,
 ) {
-    let mut interval: f32 = 0.;
-    let mut a: f32 = 0.;
-    let mut b: f32 = 0.;
-    let mut c: f32 = 0.;
-    let mut e: f32 = 0.;
-    let mut f: f32 = 0.;
+    let mut interval: f32;
+    let mut a: f32;
+    let mut b: f32;
+    let mut c: f32;
+    let mut e: f32;
+    let mut f: f32;
     let mut y: f32 = *parameter.offset(0isize);
     if count == 0 {
         a = 1.;
@@ -287,7 +287,7 @@ pub unsafe extern "C" fn lut_inverse_interp16(
     let mut l: i32 = 1; // 'int' Give spacing for negative values
     let mut r: i32 = 0x10000;
     let mut x: i32 = 0;
-    let mut res: i32 = 0;
+    let mut res: i32;
 
     let mut NumZeroes: i32 = 0;
     while *LutTable.offset(NumZeroes as isize) as i32 == 0 && NumZeroes < length - 1 {
@@ -307,8 +307,8 @@ pub unsafe extern "C" fn lut_inverse_interp16(
     }
     // Does the curve belong to this case?
     if NumZeroes > 1 || NumPoles > 1 {
-        let mut a_0: i32 = 0;
-        let mut b_0: i32 = 0;
+        let mut a_0: i32;
+        let mut b_0: i32;
         // Identify if value fall downto 0 or FFFF zone
         if Value as i32 == 0 {
             return 0u16;

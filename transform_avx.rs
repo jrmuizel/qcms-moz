@@ -62,13 +62,13 @@ unsafe extern "C" fn qcms_transform_data_template_lut_avx<F: Format>(
     let mut vec_r: __m256 = _mm256_setzero_ps();
     let mut vec_g: __m256 = _mm256_setzero_ps();
     let mut vec_b: __m256 = _mm256_setzero_ps();
-    let mut result: __m256 = _mm256_setzero_ps();
-    let mut vec_r0: __m128 = _mm_setzero_ps();
-    let mut vec_g0: __m128 = _mm_setzero_ps();
-    let mut vec_b0: __m128 = _mm_setzero_ps();
-    let mut vec_r1: __m128 = _mm_setzero_ps();
-    let mut vec_g1: __m128 = _mm_setzero_ps();
-    let mut vec_b1: __m128 = _mm_setzero_ps();
+    let mut result: __m256;
+    let mut vec_r0: __m128;
+    let mut vec_g0: __m128;
+    let mut vec_b0: __m128;
+    let mut vec_r1: __m128;
+    let mut vec_g1: __m128;
+    let mut vec_b1: __m128;
     let mut alpha1: libc::c_uchar = 0;
     let mut alpha2: libc::c_uchar = 0;
     /* CYA */

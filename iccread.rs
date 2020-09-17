@@ -479,17 +479,17 @@ pub unsafe extern "C" fn qcms_profile_is_bogus(mut profile: *mut qcms_profile) -
     let mut sum: [f32; 3] = [0.; 3];
     let mut target: [f32; 3] = [0.; 3];
     let mut tolerance: [f32; 3] = [0.; 3];
-    let mut rX: f32 = 0.;
-    let mut rY: f32 = 0.;
-    let mut rZ: f32 = 0.;
-    let mut gX: f32 = 0.;
-    let mut gY: f32 = 0.;
-    let mut gZ: f32 = 0.;
-    let mut bX: f32 = 0.;
-    let mut bY: f32 = 0.;
-    let mut bZ: f32 = 0.;
-    let mut negative: bool = false;
-    let mut i: libc::c_uint = 0;
+    let mut rX: f32;
+    let mut rY: f32;
+    let mut rZ: f32;
+    let mut gX: f32;
+    let mut gY: f32;
+    let mut gZ: f32;
+    let mut bX: f32;
+    let mut bY: f32;
+    let mut bZ: f32;
+    let mut negative: bool;
+    let mut i: libc::c_uint;
     // We currently only check the bogosity of RGB profiles
     if (*profile).color_space != RGB_SIGNATURE {
         return false;
@@ -602,7 +602,7 @@ unsafe extern "C" fn read_tag_s15Fixed16ArrayType(
         invalid: false,
     };
     if !tag.is_null() {
-        let mut i: u8 = 0;
+        let mut i: u8;
         let mut offset: u32 = (*tag).offset;
         let mut type_0: u32 = read_u32(src, offset as size_t);
         // Check mandatory type signature for s16Fixed16ArrayType
@@ -668,10 +668,10 @@ unsafe extern "C" fn read_curveType(
     mut len: *mut u32,
 ) -> *mut curveType {
     static mut COUNT_TO_LENGTH: [u32; 5] = [1, 3, 4, 5, 7]; //PARAMETRIC_CURVE_TYPE
-    let mut curve: *mut curveType = 0 as *mut curveType;
+    let mut curve: *mut curveType;
     let mut type_0: u32 = read_u32(src, offset as size_t);
-    let mut count: u32 = 0;
-    let mut i: u32 = 0;
+    let mut count: u32;
+    let mut i: u32;
     if type_0 != CURVE_TYPE && type_0 != PARAMETRIC_CURVE_TYPE {
         invalid_source(
             src,
@@ -769,7 +769,7 @@ unsafe extern "C" fn read_nested_curveType(
     mut curve_offset: u32,
 ) {
     let mut channel_offset: u32 = 0;
-    let mut i: i32 = 0;
+    let mut i: i32;
     i = 0;
     while i < num_channels as i32 {
         let mut tag_len: u32 = 0;
@@ -792,7 +792,7 @@ unsafe extern "C" fn read_nested_curveType(
     }
 }
 unsafe extern "C" fn mAB_release(mut lut: *mut lutmABType) {
-    let mut i: u8 = 0;
+    let mut i: u8;
     i = 0u8;
     while (i as i32) < (*lut).num_in_channels as i32 {
         free((*lut).a_curves[i as usize] as *mut libc::c_void);
@@ -814,18 +814,18 @@ unsafe extern "C" fn read_tag_lutmABType(
 ) -> *mut lutmABType {
     let mut tag: *const tag = find_tag(index, tag_id);
     let mut offset: u32 = (*tag).offset;
-    let mut a_curve_offset: u32 = 0;
-    let mut b_curve_offset: u32 = 0;
-    let mut m_curve_offset: u32 = 0;
-    let mut matrix_offset: u32 = 0;
-    let mut clut_offset: u32 = 0;
+    let mut a_curve_offset: u32;
+    let mut b_curve_offset: u32;
+    let mut m_curve_offset: u32;
+    let mut matrix_offset: u32;
+    let mut clut_offset: u32;
     let mut clut_size: u32 = 1;
-    let mut clut_precision: u8 = 0;
+    let mut clut_precision: u8;
     let mut type_0: u32 = read_u32(src, offset as size_t);
-    let mut num_in_channels: u8 = 0;
-    let mut num_out_channels: u8 = 0;
-    let mut lut: *mut lutmABType = 0 as *mut lutmABType;
-    let mut i: u32 = 0;
+    let mut num_in_channels: u8;
+    let mut num_out_channels: u8;
+    let mut lut: *mut lutmABType;
+    let mut i: u32;
     if type_0 != LUT_MAB_TYPE && type_0 != LUT_MBA_TYPE {
         return 0 as *mut lutmABType;
     }
@@ -999,18 +999,18 @@ unsafe extern "C" fn read_tag_lutType(
     let mut tag: *const tag = find_tag(index, tag_id);
     let mut offset: u32 = (*tag).offset;
     let mut type_0: u32 = read_u32(src, offset as size_t);
-    let mut num_input_table_entries: u16 = 0;
-    let mut num_output_table_entries: u16 = 0;
-    let mut in_chan: u8 = 0;
-    let mut grid_points: u8 = 0;
-    let mut out_chan: u8 = 0;
-    let mut input_offset: u32 = 0;
-    let mut clut_offset: u32 = 0;
-    let mut output_offset: u32 = 0;
-    let mut clut_size: u32 = 0;
-    let mut entry_size: size_t = 0;
-    let mut lut: *mut lutType = 0 as *mut lutType;
-    let mut i: u32 = 0;
+    let mut num_input_table_entries: u16;
+    let mut num_output_table_entries: u16;
+    let mut in_chan: u8;
+    let mut grid_points: u8;
+    let mut out_chan: u8;
+    let mut input_offset: u32;
+    let mut clut_offset: u32;
+    let mut output_offset: u32;
+    let mut clut_size: u32;
+    let mut entry_size: size_t;
+    let mut lut: *mut lutType;
+    let mut i: u32;
     if type_0 == LUT8_TYPE {
         num_input_table_entries = 256u16;
         num_output_table_entries = 256u16;
@@ -1192,7 +1192,7 @@ pub unsafe extern "C" fn qcms_profile_create() -> *mut qcms_profile {
 /* build sRGB gamma table */
 /* based on cmsBuildParametricGamma() */
 unsafe extern "C" fn build_sRGB_gamma_table(mut num_entries: i32) -> *mut u16 {
-    let mut i: i32 = 0;
+    let mut i: i32;
     /* taken from lcms: Build_sRGBGamma() */
     let mut gamma: f64 = 2.4f64;
     let mut a: f64 = 1.0f64 / 1.055f64;
@@ -1207,8 +1207,8 @@ unsafe extern "C" fn build_sRGB_gamma_table(mut num_entries: i32) -> *mut u16 {
     i = 0;
     while i < num_entries {
         let mut x: f64 = i as f64 / (num_entries - 1) as f64;
-        let mut y: f64 = 0.;
-        let mut output: f64 = 0.;
+        let mut y: f64;
+        let mut output: f64;
         // IEC 61966-2.1 (sRGB)
         // Y = (aX + b)^Gamma | X >= d
         // Y = cX             | X < d
@@ -1236,8 +1236,8 @@ unsafe extern "C" fn build_sRGB_gamma_table(mut num_entries: i32) -> *mut u16 {
     return table;
 }
 unsafe extern "C" fn curve_from_table(mut table: *mut u16, mut num_entries: i32) -> *mut curveType {
-    let mut curve: *mut curveType = 0 as *mut curveType;
-    let mut i: i32 = 0;
+    let mut curve: *mut curveType;
+    let mut i: i32;
     curve = malloc(
         ::std::mem::size_of::<curveType>()
             + ::std::mem::size_of::<uInt16Number>() * num_entries as usize,
@@ -1264,7 +1264,7 @@ unsafe extern "C" fn float_to_u8Fixed8Number(mut a: f32) -> u16 {
     };
 }
 unsafe extern "C" fn curve_from_gamma(mut gamma: f32) -> *mut curveType {
-    let mut curve: *mut curveType = 0 as *mut curveType;
+    let mut curve: *mut curveType;
     let mut num_entries: i32 = 1;
     curve = malloc(
         ::std::mem::size_of::<curveType>()
@@ -1362,11 +1362,11 @@ unsafe extern "C" fn white_point_from_temp(mut temp_K: i32) -> qcms_CIE_xyY {
         y: 0.,
         Y: 0.,
     };
-    let mut x: f64 = 0.;
-    let mut y: f64 = 0.;
-    let mut T: f64 = 0.;
-    let mut T2: f64 = 0.;
-    let mut T3: f64 = 0.;
+    let mut x: f64;
+    let mut y: f64;
+    let mut T: f64;
+    let mut T2: f64;
+    let mut T3: f64;
     // double M1, M2;
     // No optimization provided.
     T = temp_K as f64; // Square
@@ -1409,8 +1409,8 @@ pub unsafe extern "C" fn qcms_white_point_sRGB() -> qcms_CIE_xyY {
 }
 #[no_mangle]
 pub unsafe extern "C" fn qcms_profile_sRGB() -> *mut qcms_profile {
-    let mut profile: *mut qcms_profile = 0 as *mut qcms_profile;
-    let mut table: *mut u16 = 0 as *mut u16;
+    let mut profile: *mut qcms_profile;
+    let mut table: *mut u16;
     let mut Rec709Primaries: qcms_CIE_xyYTRIPLE = {
         let mut init = qcms_CIE_xyYTRIPLE {
             red: {
@@ -1440,12 +1440,7 @@ pub unsafe extern "C" fn qcms_profile_sRGB() -> *mut qcms_profile {
         };
         init
     };
-    let mut D65: qcms_CIE_xyY = qcms_CIE_xyY {
-        x: 0.,
-        y: 0.,
-        Y: 0.,
-    };
-    D65 = qcms_white_point_sRGB();
+    let D65 = qcms_white_point_sRGB();
     table = build_sRGB_gamma_table(1024);
     if table.is_null() {
         return 0 as *mut qcms_profile;
@@ -1461,7 +1456,7 @@ pub unsafe extern "C" fn qcms_profile_from_memory(
     mut size: size_t,
 ) -> *mut qcms_profile {
     let mut current_block: u64;
-    let mut length: u32 = 0;
+    let mut length: u32;
     let mut source: mem_source = mem_source {
         buf: 0 as *const libc::c_uchar,
         size: 0,
@@ -1470,7 +1465,7 @@ pub unsafe extern "C" fn qcms_profile_from_memory(
     };
     let mut src: *mut mem_source = &mut source;
     let mut index;
-    let mut profile: *mut qcms_profile = 0 as *mut qcms_profile;
+    let mut profile: *mut qcms_profile;
     source.buf = mem as *const libc::c_uchar;
     source.size = size;
     source.valid = true;
@@ -1636,11 +1631,11 @@ unsafe extern "C" fn qcms_data_from_file(
     mut mem: *mut *mut libc::c_void,
     mut size: *mut size_t,
 ) {
-    let mut length: u32 = 0;
-    let mut remaining_length: u32 = 0;
-    let mut read_length: size_t = 0;
+    let mut length: u32;
+    let mut remaining_length: u32;
+    let mut read_length: size_t;
     let mut length_be: be32 = 0;
-    let mut data: *mut libc::c_void = 0 as *mut libc::c_void;
+    let mut data: *mut libc::c_void;
     *mem = 0 as *mut libc::c_void;
     *size = 0;
     if fread(
@@ -1686,7 +1681,7 @@ unsafe extern "C" fn qcms_data_from_file(
 #[no_mangle]
 pub unsafe extern "C" fn qcms_profile_from_file(mut file: *mut FILE) -> *mut qcms_profile {
     let mut length: size_t = 0;
-    let mut profile: *mut qcms_profile = 0 as *mut qcms_profile;
+    let mut profile: *mut qcms_profile;
     let mut data: *mut libc::c_void = 0 as *mut libc::c_void;
     qcms_data_from_file(file, &mut data, &mut length);
     if data.is_null() || length == 0 {
@@ -1714,7 +1709,7 @@ pub unsafe extern "C" fn qcms_data_from_path(
     mut mem: *mut *mut libc::c_void,
     mut size: *mut size_t,
 ) {
-    let mut file: *mut FILE = 0 as *mut FILE;
+    let mut file: *mut FILE;
     *mem = 0 as *mut libc::c_void;
     *size = 0;
     file = fopen(path, b"rb\x00" as *const u8 as *const libc::c_char);
@@ -1766,13 +1761,13 @@ pub unsafe extern "C" fn qcms_data_create_rgb_with_gamma(
     mut mem: *mut *mut libc::c_void,
     mut size: *mut size_t,
 ) {
-    let mut length: u32 = 0;
-    let mut index: u32 = 0;
-    let mut xyz_count: u32 = 0;
-    let mut trc_count: u32 = 0;
-    let mut tag_table_offset: size_t = 0;
-    let mut tag_data_offset: size_t = 0;
-    let mut data: *mut libc::c_void = 0 as *mut libc::c_void;
+    let mut length: u32;
+    let mut index: u32;
+    let mut xyz_count: u32;
+    let mut trc_count: u32;
+    let mut tag_table_offset: size_t;
+    let mut tag_data_offset: size_t;
+    let mut data: *mut libc::c_void;
     let mut colorants: matrix = matrix {
         m: [[0.; 3]; 3],
         invalid: false,

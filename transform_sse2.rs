@@ -54,10 +54,10 @@ unsafe extern "C" fn qcms_transform_data_template_lut_sse2<F: Format>(
     let scale: __m128 = _mm_set1_ps(FLOATSCALE);
     let components: libc::c_uint = if F::kAIndex == 0xff { 3 } else { 4 } as libc::c_uint;
     /* working variables */
-    let mut vec_r: __m128 = _mm_setzero_ps();
-    let mut vec_g: __m128 = _mm_setzero_ps();
-    let mut vec_b: __m128 = _mm_setzero_ps();
-    let mut result: __m128 = _mm_setzero_ps();
+    let mut vec_r: __m128;
+    let mut vec_g: __m128;
+    let mut vec_b: __m128;
+    let mut result: __m128;
     let mut alpha: libc::c_uchar = 0;
     /* CYA */
     if length == 0 {

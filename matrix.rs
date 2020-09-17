@@ -61,7 +61,7 @@ pub fn matrix_invert(mut mat: matrix) -> matrix {
         m: [[0.; 3]; 3],
         invalid: false,
     };
-    let mut i: i32 = 0;
+    let mut i: i32;
 
     const a: [i32; 3] = [2, 2, 1];
     const b: [i32; 3] = [1, 0, 0];
@@ -123,9 +123,9 @@ pub fn matrix_multiply(mut a: matrix, mut b: matrix) -> matrix {
         m: [[0.; 3]; 3],
         invalid: false,
     };
-    let mut dx: i32 = 0;
+    let mut dx: i32;
 
-    let mut o: i32 = 0;
+    let mut o: i32;
     let mut dy: i32 = 0;
     while dy < 3 {
         dx = 0;

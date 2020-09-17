@@ -54,7 +54,7 @@ fn test_lut_inverse() {
     //      X
     //     X
     // XXXX
-    let mut value: u16 = 0;
+    let mut value: u16;
     let mut lutTable: [u16; 256] = [0; 256];
 
     for i in 0..20 {

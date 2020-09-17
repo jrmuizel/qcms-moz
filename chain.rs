@@ -620,9 +620,9 @@ unsafe extern "C" fn qcms_transform_module_gamma_table(
     mut dest: *mut f32,
     mut length: size_t,
 ) {
-    let mut out_r: f32 = 0.;
-    let mut out_g: f32 = 0.;
-    let mut out_b: f32 = 0.;
+    let mut out_r: f32;
+    let mut out_g: f32;
+    let mut out_b: f32;
     let mut i: size_t = 0;
     while i < length {
         let fresh24 = src;
@@ -655,9 +655,9 @@ unsafe extern "C" fn qcms_transform_module_gamma_lut(
     mut dest: *mut f32,
     mut length: size_t,
 ) {
-    let mut out_r: f32 = 0.;
-    let mut out_g: f32 = 0.;
-    let mut out_b: f32 = 0.;
+    let mut out_r: f32;
+    let mut out_g: f32;
+    let mut out_b: f32;
     let mut i: size_t = 0;
     while i < length {
         let fresh30 = src;
@@ -798,7 +798,7 @@ unsafe extern "C" fn qcms_modular_transform_alloc() -> *mut qcms_modular_transfo
         as *mut qcms_modular_transform;
 }
 unsafe extern "C" fn qcms_modular_transform_release(mut transform: *mut qcms_modular_transform) {
-    let mut next_transform: *mut qcms_modular_transform = 0 as *mut qcms_modular_transform;
+    let mut next_transform: *mut qcms_modular_transform;
     while !transform.is_null() {
         next_transform = (*transform).next_transform;
         // clut may use a single block of memory.
@@ -909,10 +909,10 @@ unsafe extern "C" fn qcms_modular_transform_create_mAB(
     let mut current_block: u64;
     let mut first_transform: *mut qcms_modular_transform = 0 as *mut qcms_modular_transform;
     let mut next_transform: *mut *mut qcms_modular_transform = &mut first_transform;
-    let mut transform: *mut qcms_modular_transform = 0 as *mut qcms_modular_transform;
+    let mut transform: *mut qcms_modular_transform;
     if !(*lut).a_curves[0].is_null() {
-        let mut clut_length: usize = 0;
-        let mut clut: *mut f32 = 0 as *mut f32;
+        let mut clut_length: usize;
+        let mut clut: *mut f32;
         // If the A curve is present this also implies the
         // presence of a CLUT.
         if (*lut).clut_table.is_null() {
@@ -1082,12 +1082,12 @@ unsafe extern "C" fn qcms_modular_transform_create_lut(
     let mut first_transform: *mut qcms_modular_transform = 0 as *mut qcms_modular_transform;
     let mut next_transform: *mut *mut qcms_modular_transform = &mut first_transform;
 
-    let mut in_curve_len: usize = 0;
-    let mut clut_length: usize = 0;
-    let mut out_curve_len: usize = 0;
-    let mut in_curves: *mut f32 = 0 as *mut f32;
-    let mut clut: *mut f32 = 0 as *mut f32;
-    let mut out_curves: *mut f32 = 0 as *mut f32;
+    let mut in_curve_len: usize;
+    let mut clut_length: usize;
+    let mut out_curve_len: usize;
+    let mut in_curves: *mut f32;
+    let mut clut: *mut f32;
+    let mut out_curves: *mut f32;
     let mut transform: *mut qcms_modular_transform = qcms_modular_transform_alloc();
     if !transform.is_null() {
         append_transform(transform, &mut next_transform);

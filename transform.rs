@@ -795,21 +795,21 @@ unsafe extern "C" fn qcms_transform_data_tetra_clut_template<F: Format>(
     let mut r_table: *mut f32 = (*transform).r_clut;
     let mut g_table: *mut f32 = (*transform).g_clut;
     let mut b_table: *mut f32 = (*transform).b_clut;
-    let mut c0_r: f32 = 0.;
-    let mut c1_r: f32 = 0.;
-    let mut c2_r: f32 = 0.;
-    let mut c3_r: f32 = 0.;
-    let mut c0_g: f32 = 0.;
-    let mut c1_g: f32 = 0.;
-    let mut c2_g: f32 = 0.;
-    let mut c3_g: f32 = 0.;
-    let mut c0_b: f32 = 0.;
-    let mut c1_b: f32 = 0.;
-    let mut c2_b: f32 = 0.;
-    let mut c3_b: f32 = 0.;
-    let mut clut_r: f32 = 0.;
-    let mut clut_g: f32 = 0.;
-    let mut clut_b: f32 = 0.;
+    let mut c0_r: f32;
+    let mut c1_r: f32;
+    let mut c2_r: f32;
+    let mut c3_r: f32;
+    let mut c0_g: f32;
+    let mut c1_g: f32;
+    let mut c2_g: f32;
+    let mut c3_g: f32;
+    let mut c0_b: f32;
+    let mut c1_b: f32;
+    let mut c2_b: f32;
+    let mut c3_b: f32;
+    let mut clut_r: f32;
+    let mut clut_g: f32;
+    let mut clut_b: f32;
     let mut i: libc::c_uint = 0;
     while (i as libc::c_ulong) < length {
         let mut in_r: libc::c_uchar = *src.offset(F::kRIndex as isize);
@@ -1257,10 +1257,10 @@ pub unsafe extern "C" fn qcms_transform_precacheLUT_float(
     mut in_type: qcms_data_type,
 ) -> *mut qcms_transform {
     /* The range between which 2 consecutive sample points can be used to interpolate */
-    let mut x: u16 = 0;
-    let mut y: u16 = 0;
-    let mut z: u16 = 0;
-    let mut l: u32 = 0;
+    let mut x: u16;
+    let mut y: u16;
+    let mut z: u16;
+    let mut l: u32;
     let mut lutSize: u32 = (3 * samples * samples * samples) as u32;
 
     let mut lut: *mut f32 = 0 as *mut f32;

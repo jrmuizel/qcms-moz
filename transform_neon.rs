@@ -58,10 +58,10 @@ unsafe extern "C" fn qcms_transform_data_template_lut_neon<F: Format>(
     let scale: float32x4_t = vld1q_dup_f32(&floatScale);
     let components: libc::c_uint = if F::kAIndex == 0xff { 3 } else { 4 } as libc::c_uint;
     /* working variables */
-    let mut vec_r: float32x4_t = zeroed();
-    let mut vec_g: float32x4_t = zeroed();
-    let mut vec_b: float32x4_t = zeroed();
-    let mut result: int32x4_t = zeroed();
+    let mut vec_r: float32x4_t;
+    let mut vec_g: float32x4_t;
+    let mut vec_b: float32x4_t;
+    let mut result: int32x4_t;
     let mut alpha: libc::c_uchar = 0;
     /* CYA */
     if length == 0 {
