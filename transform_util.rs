@@ -1,7 +1,7 @@
 use ::libc;
 use libc::{free, malloc};
 
-use crate::iccread::{curveType, qcms_profile};
+use crate::{iccread::{curveType, qcms_profile}, s15Fixed16Number};
 use crate::matrix::matrix;
 
 pub type __darwin_size_t = libc::c_ulong;
@@ -36,10 +36,6 @@ pub struct lutmABType {
     pub m_curves: [*mut curveType; 10],
     pub clut_table_data: [f32; 0],
 }
-
-pub type uInt16Number = u16;
-pub type uint32_t = libc::c_uint;
-pub type s15Fixed16Number = int32_t;
 
 #[repr(C)]
 #[derive(Copy, Clone)]

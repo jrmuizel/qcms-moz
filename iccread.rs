@@ -24,7 +24,7 @@
 use ::libc;
 use libc::{calloc, fclose, fopen, fread, free, malloc, memcpy, memset, FILE};
 
-use crate::{matrix::matrix, qcms_intent, QCMS_INTENT_PERCEPTUAL};
+use crate::{matrix::matrix, qcms_intent, QCMS_INTENT_PERCEPTUAL, s15Fixed16Number};
 use crate::transform::{get_rgb_colorants, precache_output, precache_release, set_rgb_colorants};
 
 extern "C" {
@@ -127,7 +127,6 @@ pub struct curveType {
     pub data: [uInt16Number; 0],
 }
 pub type uInt16Number = u16;
-pub type s15Fixed16Number = int32_t;
 
 #[repr(C)]
 #[derive(Copy, Clone)]

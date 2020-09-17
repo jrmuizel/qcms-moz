@@ -27,7 +27,7 @@ use crate::{
         build_colorant_matrix, build_input_gamma_table, build_output_lut, lut_interp_linear,
         lut_interp_linear_float,
     },
-transform_util::clamp_float};
+transform_util::clamp_float, s15Fixed16Number};
 use ::libc::{self, calloc, free, malloc, memcpy, memset};
 
 pub type __darwin_size_t = libc::c_ulong;
@@ -37,23 +37,6 @@ pub type uint8_t = libc::c_uchar;
 pub type uint16_t = libc::c_ushort;
 pub type uint32_t = libc::c_uint;
 
-#[repr(C)]
-#[derive(Copy, Clone)]
-pub struct precache_output {
-    pub ref_count: i32,
-    pub data: [u8; 8192],
-}
-
-pub type uInt16Number = u16;
-pub type s15Fixed16Number = int32_t;
-
-#[repr(C)]
-#[derive(Copy, Clone)]
-pub struct XYZNumber {
-    pub X: s15Fixed16Number,
-    pub Y: s15Fixed16Number,
-    pub Z: s15Fixed16Number,
-}
 
 #[repr(C)]
 #[derive(Copy, Clone)]

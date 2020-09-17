@@ -21,7 +21,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-use crate::{iccread::{curveType, qcms_CIE_xyY, qcms_CIE_xyYTRIPLE, qcms_profile}, qcms_intent, transform_util::clamp_float};
+use crate::{iccread::{curveType, qcms_CIE_xyY, qcms_CIE_xyYTRIPLE, qcms_profile}, qcms_intent, transform_util::clamp_float, s15Fixed16Number};
 use crate::{
     chain::qcms_chain_transform,
     matrix::*,
@@ -149,9 +149,6 @@ pub struct lutmABType {
     pub m_curves: [*mut curveType; 10],
     pub clut_table_data: [f32; 0],
 }
-
-pub type uInt16Number = u16;
-pub type s15Fixed16Number = int32_t;
 
 #[repr(C)]
 #[derive(Copy, Clone)]

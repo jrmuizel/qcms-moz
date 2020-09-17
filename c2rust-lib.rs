@@ -28,6 +28,8 @@ pub const QCMS_INTENT_RELATIVE_COLORIMETRIC: qcms_intent = 1;
 pub const QCMS_INTENT_PERCEPTUAL: qcms_intent = 0;
 pub const QCMS_INTENT_MIN: qcms_intent = 0;
 
+pub type s15Fixed16Number = i32;
+
 pub mod chain;
 pub mod gtest;
 pub mod iccread;
