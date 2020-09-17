@@ -195,12 +195,8 @@ pub struct tag {
 pub type be32 = u32;
 pub type be16 = u16;
 
-#[repr(C)]
-#[derive(Copy, Clone)]
-pub struct tag_index {
-    pub count: u32,
-    pub tags: *mut tag,
-}
+type tag_index = [tag];
+
 /* a wrapper around the memory that we are going to parse
  * into a qcms_profile */
 
@@ -395,43 +391,32 @@ unsafe extern "C" fn read_pcs(mut profile: *mut qcms_profile, mut mem: *mut mem_
 unsafe extern "C" fn read_tag_table(
     mut profile: *mut qcms_profile,
     mut mem: *mut mem_source,
-) -> tag_index {
-    let mut index: tag_index = {
-        let mut init = tag_index {
-            count: 0u32,
-            tags: 0 as *mut tag,
-        };
-        init
-    };
-    let mut i: libc::c_uint = 0;
-    index.count = read_u32(mem, 128);
-    if index.count > 1024u32 {
+) -> Vec<tag> {
+    let count = read_u32(mem, 128);
+    if count > 1024 {
         invalid_source(
             mem,
             b"max number of tags exceeded\x00" as *const u8 as *const libc::c_char,
         );
-        return index;
+        return Vec::new();
     }
-    index.tags = malloc(::std::mem::size_of::<tag>() * index.count as usize) as *mut tag;
-    if !index.tags.is_null() {
-        i = 0u32;
-        while i < index.count {
-            (*index.tags.offset(i as isize)).signature = read_u32(
+    let mut index = Vec::with_capacity(count as usize);
+    for i in 0..count {
+    index.push(tag { signature: read_u32(
                 mem,
-                ((128i32 + 4i32) as libc::c_uint + 4u32 * i * 3u32) as size_t,
-            );
-            (*index.tags.offset(i as isize)).offset = read_u32(
+                (128 + 4 + 4*i*3) as size_t,
+            ),
+            offset: read_u32(
                 mem,
-                ((128i32 + 4i32) as libc::c_uint + 4u32 * i * 3u32 + 4u32) as size_t,
-            );
-            (*index.tags.offset(i as isize)).size = read_u32(
+                (128 + 4 + 4*i*3 + 4) as size_t,
+            ),
+            size:read_u32(
                 mem,
-                ((128i32 + 4i32) as libc::c_uint + 4u32 * i * 3u32 + 8u32) as size_t,
-            );
-            i = i + 1
-        }
+                (128 + 4  + 4*i*3 + 8) as size_t,
+            )});
     }
-    return index;
+
+    index
 }
 /* if we've already got an ICC_H header we can ignore the following */
 /* icc34 defines */
@@ -608,17 +593,13 @@ const TAG_A2B0: u32 = 0x41324230;
 const TAG_B2A0: u32 = 0x42324130;
 const TAG_CHAD: u32 = 0x63686164;
 
-unsafe extern "C" fn find_tag(mut index: tag_index, mut tag_id: u32) -> *mut tag {
-    let mut i: libc::c_uint = 0;
-    let mut tag: *mut tag = 0 as *mut tag;
-    i = 0u32;
-    while i < index.count {
-        if (*index.tags.offset(i as isize)).signature == tag_id {
-            return &mut *index.tags.offset(i as isize) as *mut tag;
+unsafe extern "C" fn find_tag(mut index: &tag_index, mut tag_id: u32) -> *const tag {
+    for t in index {
+        if t.signature == tag_id {
+            return t as *const _;
         }
-        i = i + 1
     }
-    return tag;
+    0 as *const tag
 }
 
 const XYZ_TYPE: u32 =                0x58595a20; // 'XYZ '
@@ -632,10 +613,10 @@ const CHROMATIC_TYPE: u32 =          0x73663332; // 'sf32'
 
 unsafe extern "C" fn read_tag_s15Fixed16ArrayType(
     mut src: *mut mem_source,
-    mut index: tag_index,
+    mut index: &tag_index,
     mut tag_id: u32,
 ) -> matrix {
-    let mut tag: *mut tag = find_tag(index, tag_id);
+    let mut tag: *const tag = find_tag(index, tag_id);
     let mut matrix: matrix = matrix {
         m: [[0.; 3]; 3],
         invalid: false,
@@ -672,7 +653,7 @@ unsafe extern "C" fn read_tag_s15Fixed16ArrayType(
 }
 unsafe extern "C" fn read_tag_XYZType(
     mut src: *mut mem_source,
-    mut index: tag_index,
+    mut index: &tag_index,
     mut tag_id: u32,
 ) -> XYZNumber {
     let mut num: XYZNumber = {
@@ -683,7 +664,7 @@ unsafe extern "C" fn read_tag_XYZType(
         };
         init
     };
-    let mut tag: *mut tag = find_tag(index, tag_id);
+    let mut tag: *const tag = find_tag(&index, tag_id);
     if !tag.is_null() {
         let mut offset: u32 = (*tag).offset;
         let mut type_0: u32 = read_u32(src, offset as size_t);
@@ -790,10 +771,10 @@ unsafe extern "C" fn read_curveType(
 }
 unsafe extern "C" fn read_tag_curveType(
     mut src: *mut mem_source,
-    mut index: tag_index,
+    mut index: &tag_index,
     mut tag_id: u32,
 ) -> *mut curveType {
-    let mut tag: *mut tag = find_tag(index, tag_id);
+    let mut tag: *const tag = find_tag(index, tag_id);
     let mut curve: *mut curveType = 0 as *mut curveType;
     if !tag.is_null() {
         let mut len: u32 = 0;
@@ -854,10 +835,10 @@ unsafe extern "C" fn mAB_release(mut lut: *mut lutmABType) {
 /* See section 10.10 for specs */
 unsafe extern "C" fn read_tag_lutmABType(
     mut src: *mut mem_source,
-    mut index: tag_index,
+    mut index: &tag_index,
     mut tag_id: u32,
 ) -> *mut lutmABType {
-    let mut tag: *mut tag = find_tag(index, tag_id);
+    let mut tag: *const tag = find_tag(index, tag_id);
     let mut offset: u32 = (*tag).offset;
     let mut a_curve_offset: u32 = 0;
     let mut b_curve_offset: u32 = 0;
@@ -1062,10 +1043,10 @@ unsafe extern "C" fn read_tag_lutmABType(
 }
 unsafe extern "C" fn read_tag_lutType(
     mut src: *mut mem_source,
-    mut index: tag_index,
+    mut index: &tag_index,
     mut tag_id: u32,
 ) -> *mut lutType {
-    let mut tag: *mut tag = find_tag(index, tag_id);
+    let mut tag: *const tag = find_tag(index, tag_id);
     let mut offset: u32 = (*tag).offset;
     let mut type_0: u32 = read_u32(src, offset as size_t);
     let mut num_input_table_entries: u16 = 0;
@@ -1543,10 +1524,7 @@ pub unsafe extern "C" fn qcms_profile_from_memory(
         invalid_reason: 0 as *const libc::c_char,
     };
     let mut src: *mut mem_source = &mut source;
-    let mut index: tag_index = tag_index {
-        count: 0,
-        tags: 0 as *mut tag,
-    };
+    let mut index;
     let mut profile: *mut qcms_profile = 0 as *mut qcms_profile;
     source.buf = mem as *const libc::c_uchar;
     source.size = size;
@@ -1578,9 +1556,9 @@ pub unsafe extern "C" fn qcms_profile_from_memory(
     //TODO read rest of profile stuff
     if (*src).valid {
         index = read_tag_table(profile, src);
-        if !(!(*src).valid || index.tags.is_null()) {
-            if !find_tag(index, TAG_CHAD).is_null() {
-                (*profile).chromaticAdaption = read_tag_s15Fixed16ArrayType(src, index, TAG_CHAD)
+        if !(!(*src).valid || index.is_empty()) {
+            if !find_tag(&index, TAG_CHAD).is_null() {
+                (*profile).chromaticAdaption = read_tag_s15Fixed16ArrayType(src, &index, TAG_CHAD)
             } else {
                 (*profile).chromaticAdaption.invalid = 1i32 != 0
                 //Signal the data is not present
@@ -1591,43 +1569,43 @@ pub unsafe extern "C" fn qcms_profile_from_memory(
                 || (*profile).class_type == 0x73706163u32
             {
                 if (*profile).color_space == 0x52474220u32 {
-                    if !find_tag(index, TAG_A2B0).is_null() {
-                        if read_u32(src, (*find_tag(index, TAG_A2B0)).offset as size_t)
+                    if !find_tag(&index, TAG_A2B0).is_null() {
+                        if read_u32(src, (*find_tag(&index, TAG_A2B0)).offset as size_t)
                             == LUT8_TYPE
-                            || read_u32(src, (*find_tag(index, TAG_A2B0)).offset as size_t)
+                            || read_u32(src, (*find_tag(&index, TAG_A2B0)).offset as size_t)
                                 == LUT16_TYPE
                         {
-                            (*profile).A2B0 = read_tag_lutType(src, index, TAG_A2B0)
-                        } else if read_u32(src, (*find_tag(index, TAG_A2B0)).offset as size_t)
+                            (*profile).A2B0 = read_tag_lutType(src, &index, TAG_A2B0)
+                        } else if read_u32(src, (*find_tag(&index, TAG_A2B0)).offset as size_t)
                             == LUT_MAB_TYPE
                         {
-                            (*profile).mAB = read_tag_lutmABType(src, index, TAG_A2B0)
+                            (*profile).mAB = read_tag_lutmABType(src, &index, TAG_A2B0)
                         }
                     }
-                    if !find_tag(index, TAG_B2A0).is_null() {
-                        if read_u32(src, (*find_tag(index, TAG_B2A0)).offset as size_t)
+                    if !find_tag(&index, TAG_B2A0).is_null() {
+                        if read_u32(src, (*find_tag(&index, TAG_B2A0)).offset as size_t)
                             == LUT8_TYPE
-                            || read_u32(src, (*find_tag(index, TAG_B2A0)).offset as size_t)
+                            || read_u32(src, (*find_tag(&index, TAG_B2A0)).offset as size_t)
                                 == LUT16_TYPE
                         {
-                            (*profile).B2A0 = read_tag_lutType(src, index, TAG_B2A0)
-                        } else if read_u32(src, (*find_tag(index, TAG_B2A0)).offset as size_t)
+                            (*profile).B2A0 = read_tag_lutType(src, &index, TAG_B2A0)
+                        } else if read_u32(src, (*find_tag(&index, TAG_B2A0)).offset as size_t)
                             == LUT_MBA_TYPE
                         {
-                            (*profile).mBA = read_tag_lutmABType(src, index, TAG_B2A0)
+                            (*profile).mBA = read_tag_lutmABType(src, &index, TAG_B2A0)
                         }
                     }
-                    if !find_tag(index, TAG_rXYZ).is_null() || !qcms_supports_iccv4 {
-                        (*profile).redColorant = read_tag_XYZType(src, index, TAG_rXYZ);
-                        (*profile).greenColorant = read_tag_XYZType(src, index, TAG_gXYZ);
-                        (*profile).blueColorant = read_tag_XYZType(src, index, TAG_bXYZ)
+                    if !find_tag(&index, TAG_rXYZ).is_null() || !qcms_supports_iccv4 {
+                        (*profile).redColorant = read_tag_XYZType(src, &index, TAG_rXYZ);
+                        (*profile).greenColorant = read_tag_XYZType(src, &index, TAG_gXYZ);
+                        (*profile).blueColorant = read_tag_XYZType(src, &index, TAG_bXYZ)
                     }
                     if !(*src).valid {
                         current_block = 17808765469879209355;
-                    } else if !find_tag(index, TAG_rTRC).is_null() || !qcms_supports_iccv4 {
-                        (*profile).redTRC = read_tag_curveType(src, index, TAG_rTRC);
-                        (*profile).greenTRC = read_tag_curveType(src, index, TAG_gTRC);
-                        (*profile).blueTRC = read_tag_curveType(src, index, TAG_bTRC);
+                    } else if !find_tag(&index, TAG_rTRC).is_null() || !qcms_supports_iccv4 {
+                        (*profile).redTRC = read_tag_curveType(src, &index, TAG_rTRC);
+                        (*profile).greenTRC = read_tag_curveType(src, &index, TAG_gTRC);
+                        (*profile).blueTRC = read_tag_curveType(src, &index, TAG_bTRC);
                         if (*profile).redTRC.is_null()
                             || (*profile).blueTRC.is_null()
                             || (*profile).greenTRC.is_null()
@@ -1640,7 +1618,7 @@ pub unsafe extern "C" fn qcms_profile_from_memory(
                         current_block = 3580086814630675314;
                     }
                 } else if (*profile).color_space == 0x47524159u32 {
-                    (*profile).grayTRC = read_tag_curveType(src, index, TAG_kTRC);
+                    (*profile).grayTRC = read_tag_curveType(src, &index, TAG_kTRC);
                     if (*profile).grayTRC.is_null() {
                         current_block = 17808765469879209355;
                     } else {
@@ -1654,14 +1632,12 @@ pub unsafe extern "C" fn qcms_profile_from_memory(
                     17808765469879209355 => {}
                     _ => {
                         if (*src).valid {
-                            free(index.tags as *mut libc::c_void);
                             return profile;
                         }
                     }
                 }
             }
         }
-        free(index.tags as *mut libc::c_void);
     }
     qcms_profile_release(profile);
     return 0 as *mut qcms_profile;
