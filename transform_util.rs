@@ -3,7 +3,8 @@ use libc::{free, malloc};
 
 use crate::matrix::matrix;
 use crate::{
-    iccread::{curveType, qcms_profile}, s15Fixed16Number_to_float,
+    iccread::{curveType, qcms_profile},
+    s15Fixed16Number_to_float,
 };
 
 pub type __darwin_size_t = libc::c_ulong;

@@ -2,9 +2,9 @@
 use crate::{
     iccread::qcms_CIE_xyY, iccread::qcms_CIE_xyYTRIPLE,
     iccread::qcms_profile_create_rgb_with_gamma, iccread::qcms_white_point_sRGB,
-    transform::qcms_profile_precache_output_transform,
-    transform::qcms_transform, transform::qcms_transform_create, transform::qcms_transform_data,
-    transform::QCMS_DATA_RGB_8, transform_util::lut_inverse_interp16, QCMS_INTENT_PERCEPTUAL,
+    transform::qcms_profile_precache_output_transform, transform::qcms_transform,
+    transform::qcms_transform_create, transform::qcms_transform_data, transform::QCMS_DATA_RGB_8,
+    transform_util::lut_inverse_interp16, QCMS_INTENT_PERCEPTUAL,
 };
 pub type size_t = libc::c_ulong;
 

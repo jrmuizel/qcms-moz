@@ -22,7 +22,8 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 use crate::{
     iccread::{lutType, lutmABType, qcms_profile},
-    matrix::{matrix, matrix_invert}, s15Fixed16Number_to_float,
+    matrix::{matrix, matrix_invert},
+    s15Fixed16Number_to_float,
     transform_util::clamp_float,
     transform_util::{
         build_colorant_matrix, build_input_gamma_table, build_output_lut, lut_interp_linear,

@@ -24,7 +24,10 @@
 use ::libc;
 use libc::{calloc, fclose, fopen, fread, free, malloc, memcpy, memset, FILE};
 
-use crate::{transform::{get_rgb_colorants, precache_output, precache_release, set_rgb_colorants}, double_to_s15Fixed16Number};
+use crate::{
+    double_to_s15Fixed16Number,
+    transform::{get_rgb_colorants, precache_output, precache_release, set_rgb_colorants},
+};
 use crate::{
     matrix::matrix, qcms_intent, s15Fixed16Number, s15Fixed16Number_to_float,
     QCMS_INTENT_PERCEPTUAL,
@@ -205,7 +208,7 @@ pub struct mem_source {
     pub buf: *const libc::c_uchar,
     pub size: size_t,
     pub valid: bool,
-    pub invalid_reason: *const libc::c_char,
+    pub invalid_reason: Option<&'static str>,
 }
 pub type uInt8Number = u8;
 #[inline]
@@ -231,19 +234,16 @@ unsafe extern "C" fn be32_to_cpu(mut v: be32) -> u32 {
 unsafe extern "C" fn be16_to_cpu(mut v: be16) -> u16 {
     return ((v as i32 & 0xff) << 8 | (v as i32 & 0xff00) >> 8) as u16;
 }
-unsafe extern "C" fn invalid_source(mut mem: *mut mem_source, mut reason: *const libc::c_char) {
+unsafe extern "C" fn invalid_source(mut mem: *mut mem_source, reason: &'static str) {
     (*mem).valid = false;
-    (*mem).invalid_reason = reason;
+    (*mem).invalid_reason = Some(reason);
 }
 unsafe extern "C" fn read_u32(mut mem: *mut mem_source, mut offset: size_t) -> u32 {
     /* Subtract from mem->size instead of the more intuitive adding to offset.
      * This avoids overflowing offset. The subtraction is safe because
      * mem->size is guaranteed to be > 4 */
     if offset > (*mem).size - 4 {
-        invalid_source(
-            mem,
-            b"Invalid offset\x00" as *const u8 as *const libc::c_char,
-        );
+        invalid_source(mem, "Invalid offset");
         return 0;
     } else {
         let mut k: be32 = 0;
@@ -257,10 +257,7 @@ unsafe extern "C" fn read_u32(mut mem: *mut mem_source, mut offset: size_t) -> u
 }
 unsafe extern "C" fn read_u16(mut mem: *mut mem_source, mut offset: size_t) -> u16 {
     if offset > (*mem).size - 2 {
-        invalid_source(
-            mem,
-            b"Invalid offset\x00" as *const u8 as *const libc::c_char,
-        );
+        invalid_source(mem, "Invalid offset");
         return 0u16;
     } else {
         let mut k: be16 = 0;
@@ -274,10 +271,7 @@ unsafe extern "C" fn read_u16(mut mem: *mut mem_source, mut offset: size_t) -> u
 }
 unsafe extern "C" fn read_u8(mut mem: *mut mem_source, mut offset: size_t) -> u8 {
     if offset > (*mem).size - 1 {
-        invalid_source(
-            mem,
-            b"Invalid offset\x00" as *const u8 as *const libc::c_char,
-        );
+        invalid_source(mem, "Invalid offset");
         return 0u8;
     } else {
         return *((*mem).buf.offset(offset as isize) as *mut u8);
@@ -324,20 +318,17 @@ unsafe extern "C" fn check_profile_version(mut src: *mut mem_source) {
     }
     */
     if reserved1 as i32 != 0 || reserved2 as i32 != 0 {
-        invalid_source(
-            src,
-            b"Invalid reserved bytes\x00" as *const u8 as *const libc::c_char,
-        );
+        invalid_source(src, "Invalid reserved bytes");
     };
 }
 
-const INPUT_DEVICE_PROFILE: u32 =   0x73636e72; // 'scnr'
+const INPUT_DEVICE_PROFILE: u32 = 0x73636e72; // 'scnr'
 const DISPLAY_DEVICE_PROFILE: u32 = 0x6d6e7472; // 'mntr'
-const OUTPUT_DEVICE_PROFILE: u32 =  0x70727472; // 'prtr'
-const DEVICE_LINK_PROFILE: u32 =    0x6c696e6b; // 'link'
-const COLOR_SPACE_PROFILE: u32 =    0x73706163; // 'spac'
-const ABSTRACT_PROFILE: u32 =       0x61627374; // 'abst'
-const NAMED_COLOR_PROFILE: u32 =    0x6e6d636c; // 'nmcl'
+const OUTPUT_DEVICE_PROFILE: u32 = 0x70727472; // 'prtr'
+const DEVICE_LINK_PROFILE: u32 = 0x6c696e6b; // 'link'
+const COLOR_SPACE_PROFILE: u32 = 0x73706163; // 'spac'
+const ABSTRACT_PROFILE: u32 = 0x61627374; // 'abst'
+const NAMED_COLOR_PROFILE: u32 = 0x6e6d636c; // 'nmcl'
 
 unsafe extern "C" fn read_class_signature(
     mut profile: *mut qcms_profile,
@@ -345,12 +336,12 @@ unsafe extern "C" fn read_class_signature(
 ) {
     (*profile).class_type = read_u32(mem, 12);
     match (*profile).class_type {
-        DISPLAY_DEVICE_PROFILE | INPUT_DEVICE_PROFILE | OUTPUT_DEVICE_PROFILE | COLOR_SPACE_PROFILE => {}
+        DISPLAY_DEVICE_PROFILE
+        | INPUT_DEVICE_PROFILE
+        | OUTPUT_DEVICE_PROFILE
+        | COLOR_SPACE_PROFILE => {}
         _ => {
-            invalid_source(
-                mem,
-                b"Invalid  Profile/Device Class signature\x00" as *const u8 as *const libc::c_char,
-            );
+            invalid_source(mem, "Invalid  Profile/Device Class signature");
         }
     };
 }
@@ -359,10 +350,7 @@ unsafe extern "C" fn read_color_space(mut profile: *mut qcms_profile, mut mem: *
     match (*profile).color_space {
         RGB_SIGNATURE | GRAY_SIGNATURE => {}
         _ => {
-            invalid_source(
-                mem,
-                b"Unsupported colorspace\x00" as *const u8 as *const libc::c_char,
-            );
+            invalid_source(mem, "Unsupported colorspace");
         }
     };
 }
@@ -371,10 +359,7 @@ unsafe extern "C" fn read_pcs(mut profile: *mut qcms_profile, mut mem: *mut mem_
     match (*profile).pcs {
         XYZ_SIGNATURE | LAB_SIGNATURE => {}
         _ => {
-            invalid_source(
-                mem,
-                b"Unsupported pcs\x00" as *const u8 as *const libc::c_char,
-            );
+            invalid_source(mem, "Unsupported pcs");
         }
     };
 }
@@ -384,10 +369,7 @@ unsafe extern "C" fn read_tag_table(
 ) -> Vec<tag> {
     let count = read_u32(mem, 128);
     if count > 1024 {
-        invalid_source(
-            mem,
-            b"max number of tags exceeded\x00" as *const u8 as *const libc::c_char,
-        );
+        invalid_source(mem, "max number of tags exceeded");
         return Vec::new();
     }
     let mut index = Vec::with_capacity(count as usize);
@@ -610,10 +592,7 @@ unsafe extern "C" fn read_tag_s15Fixed16ArrayType(
         let mut type_0: u32 = read_u32(src, offset as size_t);
         // Check mandatory type signature for s16Fixed16ArrayType
         if type_0 != CHROMATIC_TYPE {
-            invalid_source(
-                src,
-                b"unexpected type, expected \'sf32\'\x00" as *const u8 as *const libc::c_char,
-            );
+            invalid_source(src, "unexpected type, expected \'sf32\'");
         }
         i = 0u8;
         while (i as i32) < 9 {
@@ -625,10 +604,7 @@ unsafe extern "C" fn read_tag_s15Fixed16ArrayType(
         matrix.invalid = false
     } else {
         matrix.invalid = true;
-        invalid_source(
-            src,
-            b"missing sf32tag\x00" as *const u8 as *const libc::c_char,
-        );
+        invalid_source(src, "missing sf32tag");
     }
     return matrix;
 }
@@ -646,19 +622,13 @@ unsafe extern "C" fn read_tag_XYZType(
         let mut offset: u32 = (*tag).offset;
         let mut type_0: u32 = read_u32(src, offset as size_t);
         if type_0 != XYZ_TYPE {
-            invalid_source(
-                src,
-                b"unexpected type, expected XYZ\x00" as *const u8 as *const libc::c_char,
-            );
+            invalid_source(src, "unexpected type, expected XYZ");
         }
         num.X = read_s15Fixed16Number(src, (offset + 8) as size_t);
         num.Y = read_s15Fixed16Number(src, (offset + 12) as size_t);
         num.Z = read_s15Fixed16Number(src, (offset + 16) as size_t)
     } else {
-        invalid_source(
-            src,
-            b"missing xyztag\x00" as *const u8 as *const libc::c_char,
-        );
+        invalid_source(src, "missing xyztag");
     }
     return num;
 }
@@ -676,20 +646,14 @@ unsafe extern "C" fn read_curveType(
     let mut count: u32;
     let mut i: u32;
     if type_0 != CURVE_TYPE && type_0 != PARAMETRIC_CURVE_TYPE {
-        invalid_source(
-            src,
-            b"unexpected type, expected CURV or PARA\x00" as *const u8 as *const libc::c_char,
-        );
+        invalid_source(src, "unexpected type, expected CURV or PARA");
         return 0 as *mut curveType;
     }
     if type_0 == CURVE_TYPE {
         count = read_u32(src, (offset + 8) as size_t);
         //arbitrary
         if count > 40000 {
-            invalid_source(
-                src,
-                b"curve size too large\x00" as *const u8 as *const libc::c_char,
-            );
+            invalid_source(src, "curve size too large");
             return 0 as *mut curveType;
         }
         curve = malloc(
@@ -711,10 +675,7 @@ unsafe extern "C" fn read_curveType(
     } else {
         count = read_u16(src, (offset + 8) as size_t) as u32;
         if count > 4 {
-            invalid_source(
-                src,
-                b"parametric function type not supported.\x00" as *const u8 as *const libc::c_char,
-            );
+            invalid_source(src, "parametric function type not supported.");
             return 0 as *mut curveType;
         }
         curve = malloc(::std::mem::size_of::<curveType>()) as *mut curveType;
@@ -736,11 +697,7 @@ unsafe extern "C" fn read_curveType(
             /* we have a type 1 or type 2 function that has a division by 'a' */
             let mut a: f32 = (*curve).parameter[1];
             if a == 0.0 {
-                invalid_source(
-                    src,
-                    b"parametricCurve definition causes division by zero.\x00" as *const u8
-                        as *const libc::c_char,
-                );
+                invalid_source(src, "parametricCurve definition causes division by zero");
             }
         }
     }
@@ -757,10 +714,7 @@ unsafe extern "C" fn read_tag_curveType(
         let mut len: u32 = 0;
         return read_curveType(src, (*tag).offset, &mut len);
     } else {
-        invalid_source(
-            src,
-            b"missing curvetag\x00" as *const u8 as *const libc::c_char,
-        );
+        invalid_source(src, "missing curvetag");
     }
     return curve;
 }
@@ -779,10 +733,7 @@ unsafe extern "C" fn read_nested_curveType(
         (*curveArray)[i as usize] =
             read_curveType(src, curve_offset + channel_offset, &mut tag_len);
         if (*curveArray)[i as usize].is_null() {
-            invalid_source(
-                src,
-                b"invalid nested curveType curve\x00" as *const u8 as *const libc::c_char,
-            );
+            invalid_source(src, "invalid nested curveType curve");
             break;
         } else {
             channel_offset = channel_offset + tag_len;
@@ -875,10 +826,7 @@ unsafe extern "C" fn read_tag_lutmABType(
         while i < num_in_channels as libc::c_uint {
             clut_size = clut_size * read_u8(src, (clut_offset + i) as size_t) as libc::c_uint;
             if clut_size == 0 {
-                invalid_source(
-                    src,
-                    b"bad clut_size\x00" as *const u8 as *const libc::c_char,
-                );
+                invalid_source(src, "bad clut_size");
             }
             i = i + 1
         }
@@ -908,10 +856,7 @@ unsafe extern "C" fn read_tag_lutmABType(
         while i < num_in_channels as libc::c_uint {
             (*lut).num_grid_points[i as usize] = read_u8(src, (clut_offset + i) as size_t);
             if (*lut).num_grid_points[i as usize] as i32 == 0 {
-                invalid_source(
-                    src,
-                    b"bad grid_points\x00" as *const u8 as *const libc::c_char,
-                );
+                invalid_source(src, "bad grid_points");
             }
             i = i + 1
         }
@@ -956,10 +901,7 @@ unsafe extern "C" fn read_tag_lutmABType(
     if b_curve_offset != 0 {
         read_nested_curveType(src, &mut (*lut).b_curves, num_out_channels, b_curve_offset);
     } else {
-        invalid_source(
-            src,
-            b"B curves required\x00" as *const u8 as *const libc::c_char,
-        );
+        invalid_source(src, "B curves required");
     }
     if clut_offset != 0 {
         clut_precision = read_u8(src, (clut_offset + 16) as size_t);
@@ -982,10 +924,7 @@ unsafe extern "C" fn read_tag_lutmABType(
                 i = i + 1
             }
         } else {
-            invalid_source(
-                src,
-                b"Invalid clut precision\x00" as *const u8 as *const libc::c_char,
-            );
+            invalid_source(src, "Invalid clut precision");
         }
     }
     if !(*src).valid {
@@ -1023,20 +962,14 @@ unsafe extern "C" fn read_tag_lutType(
         num_input_table_entries = read_u16(src, (offset + 48) as size_t);
         num_output_table_entries = read_u16(src, (offset + 50) as size_t);
         if num_input_table_entries as i32 == 0 || num_output_table_entries as i32 == 0 {
-            invalid_source(
-                src,
-                b"Bad channel count\x00" as *const u8 as *const libc::c_char,
-            );
+            invalid_source(src, "Bad channel count");
             return 0 as *mut lutType;
         }
         entry_size = 2;
         input_offset = 52
     } else {
         debug_assert!(false);
-        invalid_source(
-            src,
-            b"Unexpected lut type\x00" as *const u8 as *const libc::c_char,
-        );
+        invalid_source(src, "Unexpected lut type");
         return 0 as *mut lutType;
     }
     in_chan = read_u8(src, (offset + 8) as size_t);
@@ -1044,24 +977,15 @@ unsafe extern "C" fn read_tag_lutType(
     grid_points = read_u8(src, (offset + 10) as size_t);
     clut_size = (grid_points as f64).powf(in_chan as f64) as u32;
     if clut_size > 500000 {
-        invalid_source(
-            src,
-            b"CLUT too large\x00" as *const u8 as *const libc::c_char,
-        );
+        invalid_source(src, "CLUT too large");
         return 0 as *mut lutType;
     }
     if clut_size <= 0 {
-        invalid_source(
-            src,
-            b"CLUT must not be empty.\x00" as *const u8 as *const libc::c_char,
-        );
+        invalid_source(src, "CLUT must not be empty.");
         return 0 as *mut lutType;
     }
     if in_chan as i32 != 3 || out_chan as i32 != 3 {
-        invalid_source(
-            src,
-            b"CLUT only supports RGB\x00" as *const u8 as *const libc::c_char,
-        );
+        invalid_source(src, "CLUT only supports RGB");
         return 0 as *mut lutType;
     }
     lut = malloc(
@@ -1073,10 +997,7 @@ unsafe extern "C" fn read_tag_lutType(
                 * ::std::mem::size_of::<f32>(),
     ) as *mut lutType;
     if lut.is_null() {
-        invalid_source(
-            src,
-            b"CLUT too large\x00" as *const u8 as *const libc::c_char,
-        );
+        invalid_source(src, "CLUT too large");
         return 0 as *mut lutType;
     }
     /* compute the offsets of tables */
@@ -1181,10 +1102,7 @@ unsafe extern "C" fn read_rendering_intent(
     match (*profile).rendering_intent {
         0 | 2 | 1 | 3 => {}
         _ => {
-            invalid_source(
-                src,
-                b"unknown rendering intent\x00" as *const u8 as *const libc::c_char,
-            );
+            invalid_source(src, "unknown rendering intent");
         }
     };
 }
@@ -1464,7 +1382,7 @@ pub unsafe extern "C" fn qcms_profile_from_memory(
         buf: 0 as *const libc::c_uchar,
         size: 0,
         valid: false,
-        invalid_reason: 0 as *const libc::c_char,
+        invalid_reason: None,
     };
     let mut src: *mut mem_source = &mut source;
     let mut index;

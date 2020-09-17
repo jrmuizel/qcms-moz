@@ -21,14 +21,20 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+#[cfg(any(target_arch = "arm", target_arch = "aarch64"))]
+use crate::transform_neon::{
+    qcms_transform_data_bgra_out_lut_neon, qcms_transform_data_rgb_out_lut_neon,
+    qcms_transform_data_rgba_out_lut_neon,
+};
 use crate::{
     chain::qcms_chain_transform,
+    double_to_s15Fixed16Number,
     matrix::*,
     transform_util::{
         build_colorant_matrix, build_input_gamma_table, build_output_lut, compute_precache,
         lut_interp_linear,
     },
-double_to_s15Fixed16Number};
+};
 use crate::{
     iccread::{curveType, qcms_CIE_xyY, qcms_CIE_xyYTRIPLE, qcms_profile},
     qcms_intent, s15Fixed16Number,
@@ -44,11 +50,6 @@ use crate::{
         qcms_transform_data_bgra_out_lut_sse2, qcms_transform_data_rgb_out_lut_sse2,
         qcms_transform_data_rgba_out_lut_sse2,
     },
-};
-#[cfg(any(target_arch = "arm", target_arch = "aarch64"))]
-use crate::transform_neon::{
-    qcms_transform_data_bgra_out_lut_neon, qcms_transform_data_rgb_out_lut_neon,
-    qcms_transform_data_rgba_out_lut_neon,
 };
 
 use ::libc::{self, free, malloc};
@@ -246,7 +247,6 @@ pub struct GrayAlpha;
 impl GrayFormat for GrayAlpha {
     const has_alpha: bool = false;
 }
-
 
 #[inline]
 fn clamp_u8(mut v: f32) -> u8 {
@@ -1281,17 +1281,11 @@ pub unsafe extern "C" fn qcms_transform_precacheLUT_float(
             (*transform).b_clut = &mut *lut.offset(2isize) as *mut f32;
             (*transform).grid_size = samples as u16;
             if in_type == QCMS_DATA_RGBA_8 {
-                (*transform).transform_fn = Some(
-                    qcms_transform_data_tetra_clut_rgba
-                )
+                (*transform).transform_fn = Some(qcms_transform_data_tetra_clut_rgba)
             } else if in_type == QCMS_DATA_BGRA_8 {
-                (*transform).transform_fn = Some(
-                    qcms_transform_data_tetra_clut_bgra
-                )
+                (*transform).transform_fn = Some(qcms_transform_data_tetra_clut_bgra)
             } else if in_type == QCMS_DATA_RGB_8 {
-                (*transform).transform_fn = Some(
-                    qcms_transform_data_tetra_clut_rgb
-                )
+                (*transform).transform_fn = Some(qcms_transform_data_tetra_clut_rgb)
             }
             debug_assert!((*transform).transform_fn.is_some());
         }
@@ -1409,17 +1403,11 @@ pub unsafe extern "C" fn qcms_transform_create(
                 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
                 {
                     if in_type == QCMS_DATA_RGB_8 {
-                        (*transform).transform_fn = Some(
-                            qcms_transform_data_rgb_out_lut_avx
-                        )
+                        (*transform).transform_fn = Some(qcms_transform_data_rgb_out_lut_avx)
                     } else if in_type == QCMS_DATA_RGBA_8 {
-                        (*transform).transform_fn = Some(
-                            qcms_transform_data_rgba_out_lut_avx
-                        )
+                        (*transform).transform_fn = Some(qcms_transform_data_rgba_out_lut_avx)
                     } else if in_type == QCMS_DATA_BGRA_8 {
-                        (*transform).transform_fn = Some(
-                            qcms_transform_data_bgra_out_lut_avx
-                        )
+                        (*transform).transform_fn = Some(qcms_transform_data_bgra_out_lut_avx)
                     }
                 }
             } else if cfg!(any(target_arch = "x86", target_arch = "x86_64"))
@@ -1428,59 +1416,36 @@ pub unsafe extern "C" fn qcms_transform_create(
                 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
                 {
                     if in_type == QCMS_DATA_RGB_8 {
-                        (*transform).transform_fn = Some(
-                            qcms_transform_data_rgb_out_lut_sse2
-                        )
+                        (*transform).transform_fn = Some(qcms_transform_data_rgb_out_lut_sse2)
                     } else if in_type == QCMS_DATA_RGBA_8 {
-                        (*transform).transform_fn = Some(
-                            qcms_transform_data_rgba_out_lut_sse2
-                        )
+                        (*transform).transform_fn = Some(qcms_transform_data_rgba_out_lut_sse2)
                     } else if in_type == QCMS_DATA_BGRA_8 {
-                        (*transform).transform_fn = Some(
-                            qcms_transform_data_bgra_out_lut_sse2
-                        )
+                        (*transform).transform_fn = Some(qcms_transform_data_bgra_out_lut_sse2)
                     }
                 }
-            } else if cfg!(any(target_arch = "arm", target_arch = "aarch64"))
-                && qcms_supports_neon
+            } else if cfg!(any(target_arch = "arm", target_arch = "aarch64")) && qcms_supports_neon
             {
                 #[cfg(any(target_arch = "arm", target_arch = "aarch64"))]
                 {
                     if in_type == QCMS_DATA_RGB_8 {
-                        (*transform).transform_fn = Some(
-                            qcms_transform_data_rgb_out_lut_neon
-                        )
+                        (*transform).transform_fn = Some(qcms_transform_data_rgb_out_lut_neon)
                     } else if in_type == QCMS_DATA_RGBA_8 {
-                        (*transform).transform_fn = Some(
-                            qcms_transform_data_rgba_out_lut_neon
-                        )
+                        (*transform).transform_fn = Some(qcms_transform_data_rgba_out_lut_neon)
                     } else if in_type == QCMS_DATA_BGRA_8 {
-                        (*transform).transform_fn = Some(
-                            qcms_transform_data_bgra_out_lut_neon
-                        )
+                        (*transform).transform_fn = Some(qcms_transform_data_bgra_out_lut_neon)
                     }
                 }
             } else if in_type == QCMS_DATA_RGBA_8 {
-                (*transform).transform_fn = Some(
-                    qcms_transform_data_rgba_out_lut_precache
-                )
+                (*transform).transform_fn = Some(qcms_transform_data_rgba_out_lut_precache)
             } else if in_type == QCMS_DATA_BGRA_8 {
-                (*transform).transform_fn = Some(
-                    qcms_transform_data_bgra_out_lut_precache
-                )
+                (*transform).transform_fn = Some(qcms_transform_data_bgra_out_lut_precache)
             }
         } else if in_type == QCMS_DATA_RGB_8 {
-            (*transform).transform_fn = Some(
-                qcms_transform_data_rgb_out_lut
-            )
+            (*transform).transform_fn = Some(qcms_transform_data_rgb_out_lut)
         } else if in_type == QCMS_DATA_RGBA_8 {
-            (*transform).transform_fn = Some(
-                qcms_transform_data_rgba_out_lut
-            )
+            (*transform).transform_fn = Some(qcms_transform_data_rgba_out_lut)
         } else if in_type == QCMS_DATA_BGRA_8 {
-            (*transform).transform_fn = Some(
-                qcms_transform_data_bgra_out_lut
-            )
+            (*transform).transform_fn = Some(qcms_transform_data_bgra_out_lut)
         }
         //XXX: avoid duplicating tables if we can
         (*transform).input_gamma_table_r = build_input_gamma_table((*in_0).redTRC);
@@ -1535,53 +1500,33 @@ pub unsafe extern "C" fn qcms_transform_create(
         }
         if precache {
             if out_type == QCMS_DATA_RGB_8 {
-                (*transform).transform_fn = Some(
-                    qcms_transform_data_gray_out_precache
-                )
+                (*transform).transform_fn = Some(qcms_transform_data_gray_out_precache)
             } else if out_type == QCMS_DATA_RGBA_8 {
                 if in_type == QCMS_DATA_GRAY_8 {
-                    (*transform).transform_fn = Some(
-                        qcms_transform_data_gray_rgba_out_precache
-                    )
+                    (*transform).transform_fn = Some(qcms_transform_data_gray_rgba_out_precache)
                 } else {
-                    (*transform).transform_fn = Some(
-                        qcms_transform_data_graya_rgba_out_precache
-                    )
+                    (*transform).transform_fn = Some(qcms_transform_data_graya_rgba_out_precache)
                 }
             } else if out_type == QCMS_DATA_BGRA_8 {
                 if in_type == QCMS_DATA_GRAY_8 {
-                    (*transform).transform_fn = Some(
-                        qcms_transform_data_gray_bgra_out_precache
-                    )
+                    (*transform).transform_fn = Some(qcms_transform_data_gray_bgra_out_precache)
                 } else {
-                    (*transform).transform_fn = Some(
-                        qcms_transform_data_graya_bgra_out_precache
-                    )
+                    (*transform).transform_fn = Some(qcms_transform_data_graya_bgra_out_precache)
                 }
             }
         } else if out_type == QCMS_DATA_RGB_8 {
-            (*transform).transform_fn = Some(
-                qcms_transform_data_gray_out_lut
-            )
+            (*transform).transform_fn = Some(qcms_transform_data_gray_out_lut)
         } else if out_type == QCMS_DATA_RGBA_8 {
             if in_type == QCMS_DATA_GRAY_8 {
-                (*transform).transform_fn = Some(
-                    qcms_transform_data_gray_rgba_out_lut
-                )
+                (*transform).transform_fn = Some(qcms_transform_data_gray_rgba_out_lut)
             } else {
-                (*transform).transform_fn = Some(
-                    qcms_transform_data_graya_rgba_out_lut
-                )
+                (*transform).transform_fn = Some(qcms_transform_data_graya_rgba_out_lut)
             }
         } else if out_type == QCMS_DATA_BGRA_8 {
             if in_type == QCMS_DATA_GRAY_8 {
-                (*transform).transform_fn = Some(
-                    qcms_transform_data_gray_bgra_out_lut
-                )
+                (*transform).transform_fn = Some(qcms_transform_data_gray_bgra_out_lut)
             } else {
-                (*transform).transform_fn = Some(
-                    qcms_transform_data_graya_bgra_out_lut
-                )
+                (*transform).transform_fn = Some(qcms_transform_data_graya_bgra_out_lut)
             }
         }
     } else {
