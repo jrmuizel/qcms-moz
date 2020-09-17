@@ -330,16 +330,22 @@ unsafe extern "C" fn check_profile_version(mut src: *mut mem_source) {
         );
     };
 }
-// 'spac'
-// 'abst'
-// 'nmcl'
+
+const INPUT_DEVICE_PROFILE: u32 =   0x73636e72; // 'scnr'
+const DISPLAY_DEVICE_PROFILE: u32 = 0x6d6e7472; // 'mntr'
+const OUTPUT_DEVICE_PROFILE: u32 =  0x70727472; // 'prtr'
+const DEVICE_LINK_PROFILE: u32 =    0x6c696e6b; // 'link'
+const COLOR_SPACE_PROFILE: u32 =    0x73706163; // 'spac'
+const ABSTRACT_PROFILE: u32 =       0x61627374; // 'abst'
+const NAMED_COLOR_PROFILE: u32 =    0x6e6d636c; // 'nmcl'
+
 unsafe extern "C" fn read_class_signature(
     mut profile: *mut qcms_profile,
     mut mem: *mut mem_source,
 ) {
     (*profile).class_type = read_u32(mem, 12);
     match (*profile).class_type {
-        1835955314 | 1935896178 | 1886549106 | 1936744803 => {}
+        DISPLAY_DEVICE_PROFILE | INPUT_DEVICE_PROFILE | OUTPUT_DEVICE_PROFILE | COLOR_SPACE_PROFILE => {}
         _ => {
             invalid_source(
                 mem,
@@ -351,7 +357,7 @@ unsafe extern "C" fn read_class_signature(
 unsafe extern "C" fn read_color_space(mut profile: *mut qcms_profile, mut mem: *mut mem_source) {
     (*profile).color_space = read_u32(mem, 16);
     match (*profile).color_space {
-        1380401696 | 1196573017 => {}
+        RGB_SIGNATURE | GRAY_SIGNATURE => {}
         _ => {
             invalid_source(
                 mem,
@@ -363,7 +369,7 @@ unsafe extern "C" fn read_color_space(mut profile: *mut qcms_profile, mut mem: *
 unsafe extern "C" fn read_pcs(mut profile: *mut qcms_profile, mut mem: *mut mem_source) {
     (*profile).pcs = read_u32(mem, 20);
     match (*profile).pcs {
-        1482250784 | 1281450528 => {}
+        XYZ_SIGNATURE | LAB_SIGNATURE => {}
         _ => {
             invalid_source(
                 mem,
@@ -1304,7 +1310,7 @@ pub unsafe extern "C" fn qcms_profile_create_rgb_with_gamma_set(
         qcms_profile_release(profile);
         return 0 as *mut qcms_profile;
     }
-    (*profile).class_type = 0x6d6e7472;
+    (*profile).class_type = DISPLAY_DEVICE_PROFILE;
     (*profile).rendering_intent = QCMS_INTENT_PERCEPTUAL;
     (*profile).color_space = RGB_SIGNATURE;
     (*profile).pcs = XYZ_TYPE;
@@ -1342,7 +1348,7 @@ pub unsafe extern "C" fn qcms_profile_create_rgb_with_table(
         qcms_profile_release(profile);
         return 0 as *mut qcms_profile;
     }
-    (*profile).class_type = 0x6d6e7472;
+    (*profile).class_type = DISPLAY_DEVICE_PROFILE;
     (*profile).rendering_intent = QCMS_INTENT_PERCEPTUAL;
     (*profile).color_space = RGB_SIGNATURE;
     (*profile).pcs = XYZ_TYPE;
@@ -1500,10 +1506,10 @@ pub unsafe extern "C" fn qcms_profile_from_memory(
                 (*profile).chromaticAdaption.invalid = true
                 //Signal the data is not present
             }
-            if (*profile).class_type == 0x6d6e7472
-                || (*profile).class_type == 0x73636e72
-                || (*profile).class_type == 0x70727472
-                || (*profile).class_type == 0x73706163
+            if (*profile).class_type == DISPLAY_DEVICE_PROFILE
+                || (*profile).class_type == INPUT_DEVICE_PROFILE
+                || (*profile).class_type == OUTPUT_DEVICE_PROFILE
+                || (*profile).class_type == COLOR_SPACE_PROFILE
             {
                 if (*profile).color_space == RGB_SIGNATURE {
                     if !find_tag(&index, TAG_A2B0).is_null() {
@@ -1847,7 +1853,7 @@ pub unsafe extern "C" fn qcms_data_create_rgb_with_gamma(
      * PCS illumiant field. Likewise mandatory profile tags are omitted.
      */
     write_u32(data, 0, length); // the total length of this memory
-    write_u32(data, 12, 0x6d6e7472); // profile->class_type
+    write_u32(data, 12, DISPLAY_DEVICE_PROFILE); // profile->class_type
     write_u32(data, 16, RGB_SIGNATURE); // profile->color_space
     write_u32(data, 20, XYZ_TYPE); // profile->pcs
     write_u32(data, 64, QCMS_INTENT_PERCEPTUAL); // profile->rendering_intent
