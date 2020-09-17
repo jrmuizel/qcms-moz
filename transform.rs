@@ -45,7 +45,7 @@ use crate::{
         qcms_transform_data_rgba_out_lut_sse2,
     },
 };
-use ::libc::{self, calloc, free, malloc};
+use ::libc::{self, free, malloc};
 use std::sync::atomic;
 use std::sync::atomic::Ordering;
 

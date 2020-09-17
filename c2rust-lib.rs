@@ -5,7 +5,6 @@
 #![allow(non_upper_case_globals)]
 #![allow(unused_assignments)]
 #![allow(unused_mut)]
-#![allow(unused_imports)]
 #![allow(unused_variables)]
 #![feature(stdsimd)]
 // These are needed for the neon intrinsics implementation

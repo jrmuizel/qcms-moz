@@ -21,9 +21,8 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 use crate::{
-    iccread::{curveType, lutType, lutmABType, qcms_profile},
-    matrix::{matrix, matrix_invert},
-    s15Fixed16Number, s15Fixed16Number_to_float,
+    iccread::{lutType, lutmABType, qcms_profile},
+    matrix::{matrix, matrix_invert}, s15Fixed16Number_to_float,
     transform_util::clamp_float,
     transform_util::{
         build_colorant_matrix, build_input_gamma_table, build_output_lut, lut_interp_linear,
@@ -35,7 +34,6 @@ use ::libc::{self, calloc, free, malloc, memcpy, memset};
 pub type __darwin_size_t = libc::c_ulong;
 pub type int32_t = i32;
 pub type size_t = __darwin_size_t;
-
 
 #[repr(C)]
 #[derive(Copy, Clone)]
