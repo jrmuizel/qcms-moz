@@ -1693,7 +1693,7 @@ pub unsafe extern "C" fn qcms_profile_from_path(
     mut path: *const libc::c_char,
 ) -> *mut qcms_profile {
     let mut profile: *mut qcms_profile = 0 as *mut qcms_profile;
-    let mut file: *mut FILE = fopen(path, b"rb\x00" as *const u8 as *const libc::c_char);
+    let mut file = fopen(path, b"rb\x00" as *const u8 as *const libc::c_char);
     if !file.is_null() {
         profile = qcms_profile_from_file(file);
         fclose(file);
@@ -1706,10 +1706,9 @@ pub unsafe extern "C" fn qcms_data_from_path(
     mut mem: *mut *mut libc::c_void,
     mut size: *mut size_t,
 ) {
-    let mut file: *mut FILE;
     *mem = 0 as *mut libc::c_void;
     *size = 0;
-    file = fopen(path, b"rb\x00" as *const u8 as *const libc::c_char);
+    let file = fopen(path, b"rb\x00" as *const u8 as *const libc::c_char);
     if !file.is_null() {
         qcms_data_from_file(file, mem, size);
         fclose(file);
@@ -1725,8 +1724,7 @@ extern "C" {
 #[cfg(windows)]
 #[no_mangle]
 pub unsafe extern "C" fn qcms_profile_from_unicode_path(mut path: *const libc::wchar_t) {
-    let mut file: *mut FILE = 0 as *mut FILE;
-    file = _wfopen(path, ['r' as u16, 'b' as u16, '\0' as u16].as_ptr());
+    let mut file = _wfopen(path, ['r' as u16, 'b' as u16, '\0' as u16].as_ptr());
     if !file.is_null() {
         qcms_profile_from_file(file);
         fclose(file);
@@ -1740,10 +1738,9 @@ pub unsafe extern "C" fn qcms_data_from_unicode_path(
     mut mem: *mut *mut libc::c_void,
     mut size: *mut size_t,
 ) {
-    let mut file: *mut FILE = 0 as *mut FILE;
     *mem = 0 as *mut libc::c_void;
     *size = 0;
-    file = _wfopen(path, ['r' as u16, 'b' as u16, '\0' as u16].as_ptr());
+    let mut file = _wfopen(path, ['r' as u16, 'b' as u16, '\0' as u16].as_ptr());
     if !file.is_null() {
         qcms_data_from_file(file, mem, size);
         fclose(file);
