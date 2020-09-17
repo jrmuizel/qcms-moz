@@ -211,27 +211,26 @@ pub struct mem_source {
 }
 pub type uInt8Number = u8;
 #[inline]
-unsafe extern "C" fn uInt8Number_to_float(mut a: uInt8Number) -> f32 {
+fn uInt8Number_to_float(mut a: uInt8Number) -> f32 {
     return a as int32_t as f32 / 255.0;
 }
 
 #[inline]
-unsafe extern "C" fn uInt16Number_to_float(mut a: uInt16Number) -> f32 {
+fn uInt16Number_to_float(mut a: uInt16Number) -> f32 {
     return a as int32_t as f32 / 65535.0;
 }
 
-unsafe extern "C" fn cpu_to_be32(mut v: u32) -> be32 {
-    return (v & 0xff) << 24 | (v & 0xff00) << 8 | (v & 0xff0000) >> 8 | (v & 0xff000000) >> 24;
+fn cpu_to_be32(mut v: u32) -> be32 {
+    v.to_be()
 }
-unsafe extern "C" fn cpu_to_be16(mut v: u16) -> be16 {
-    return ((v as i32 & 0xff) << 8 | (v as i32 & 0xff00) >> 8) as be16;
+fn cpu_to_be16(mut v: u16) -> be16 {
+    v.to_be()
 }
-unsafe extern "C" fn be32_to_cpu(mut v: be32) -> u32 {
-    return (v & 0xff) << 24 | (v & 0xff00) << 8 | (v & 0xff0000) >> 8 | (v & 0xff000000) >> 24;
-    //return __builtin_bswap32(v);
+fn be32_to_cpu(mut v: be32) -> u32 {
+    u32::from_be(v)
 }
-unsafe extern "C" fn be16_to_cpu(mut v: be16) -> u16 {
-    return ((v as i32 & 0xff) << 8 | (v as i32 & 0xff00) >> 8) as u16;
+fn be16_to_cpu(mut v: be16) -> u16 {
+    u16::from_be(v)
 }
 unsafe extern "C" fn invalid_source(mut mem: *mut mem_source, reason: &'static str) {
     (*mem).valid = false;
