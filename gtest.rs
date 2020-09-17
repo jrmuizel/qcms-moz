@@ -1,4 +1,4 @@
-use crate::{transform_util::lut_inverse_interp16, iccread::qcms_data_create_rgb_with_gamma, iccread::qcms_CIE_xyY, iccread::qcms_CIE_xyYTRIPLE, transform::qcms_transform, iccread::qcms_white_point_sRGB, iccread::qcms_profile_create_rgb_with_gamma, transform::qcms_transform_create, transform::QCMS_DATA_RGB_8, transform::QCMS_INTENT_PERCEPTUAL, transform::qcms_transform_data, transform::qcms_profile_precache_output_transform, transform::qcms_enable_avx};
+use crate::{transform_util::lut_inverse_interp16, iccread::qcms_data_create_rgb_with_gamma, iccread::qcms_CIE_xyY, iccread::qcms_CIE_xyYTRIPLE, transform::qcms_transform, iccread::qcms_white_point_sRGB, iccread::qcms_profile_create_rgb_with_gamma, transform::qcms_transform_create, transform::QCMS_DATA_RGB_8, QCMS_INTENT_PERCEPTUAL, transform::qcms_transform_data, transform::qcms_profile_precache_output_transform, transform::qcms_enable_avx};
 pub type size_t = libc::c_ulong;
 
 #[test]

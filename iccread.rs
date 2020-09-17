@@ -24,7 +24,7 @@
 use ::libc;
 use libc::{calloc, fclose, fopen, fread, free, malloc, memcpy, memset, FILE};
 
-use crate::matrix::matrix;
+use crate::{matrix::matrix, qcms_intent, QCMS_INTENT_PERCEPTUAL};
 use crate::transform::{get_rgb_colorants, precache_output, precache_release, set_rgb_colorants};
 
 extern "C" {
@@ -154,14 +154,6 @@ pub struct XYZNumber {
     pub Y: s15Fixed16Number,
     pub Z: s15Fixed16Number,
 }
-pub type qcms_intent = libc::c_uint;
-pub const QCMS_INTENT_DEFAULT: qcms_intent = 0;
-pub const QCMS_INTENT_MAX: qcms_intent = 3;
-pub const QCMS_INTENT_ABSOLUTE_COLORIMETRIC: qcms_intent = 3;
-pub const QCMS_INTENT_SATURATION: qcms_intent = 2;
-pub const QCMS_INTENT_RELATIVE_COLORIMETRIC: qcms_intent = 1;
-pub const QCMS_INTENT_PERCEPTUAL: qcms_intent = 0;
-pub const QCMS_INTENT_MIN: qcms_intent = 0;
 
 /* the names for the following two types are sort of ugly */
 #[repr(C)]

@@ -21,7 +21,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-use crate::iccread::{curveType, qcms_CIE_xyY, qcms_CIE_xyYTRIPLE, qcms_profile};
+use crate::{iccread::{curveType, qcms_CIE_xyY, qcms_CIE_xyYTRIPLE, qcms_profile}, qcms_intent};
 use crate::{
     chain::qcms_chain_transform,
     matrix::*,
@@ -183,14 +183,7 @@ pub struct XYZNumber {
     pub Y: s15Fixed16Number,
     pub Z: s15Fixed16Number,
 }
-pub type qcms_intent = libc::c_uint;
-pub const QCMS_INTENT_DEFAULT: qcms_intent = 0;
-pub const QCMS_INTENT_MAX: qcms_intent = 3;
-pub const QCMS_INTENT_ABSOLUTE_COLORIMETRIC: qcms_intent = 3;
-pub const QCMS_INTENT_SATURATION: qcms_intent = 2;
-pub const QCMS_INTENT_RELATIVE_COLORIMETRIC: qcms_intent = 1;
-pub const QCMS_INTENT_PERCEPTUAL: qcms_intent = 0;
-pub const QCMS_INTENT_MIN: qcms_intent = 0;
+
 pub type qcms_data_type = libc::c_uint;
 pub const QCMS_DATA_GRAYA_8: qcms_data_type = 4;
 pub const QCMS_DATA_GRAY_8: qcms_data_type = 3;
