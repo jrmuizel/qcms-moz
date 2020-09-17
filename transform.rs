@@ -74,6 +74,7 @@ pub type uint32_t = libc::c_uint;
 
 #[repr(C)]
 #[derive(Copy, Clone)]
+#[repr(align(16))]
 pub struct qcms_transform {
     pub matrix: [[f32; 4]; 3],
     pub input_gamma_table_r: *mut f32,
@@ -1151,33 +1152,10 @@ pub unsafe extern "C" fn precache_release(mut p: *mut precache_output) {
     };
 }
 unsafe extern "C" fn transform_alloc() -> *mut qcms_transform {
-    /* transform needs to be aligned on a 16byte boundrary */
-    let mut original_block: *mut libc::c_char = calloc(
-        ::std::mem::size_of::<qcms_transform>() + ::std::mem::size_of::<*mut libc::c_void>() + 16,
-        1,
-    ) as *mut libc::c_char;
-    /* make room for a pointer to the block returned by calloc */
-    let mut transform_start: *mut libc::c_void = original_block
-        .offset(::std::mem::size_of::<*mut libc::c_void>() as isize)
-        as *mut libc::c_void;
-    /* align transform_start */
-    let mut transform_aligned: *mut qcms_transform =
-        (transform_start as uintptr_t + 15 & !(0xfi32) as libc::c_ulong) as *mut qcms_transform;
-    /* store a pointer to the block returned by calloc so that we can free it later */
-    let mut original_block_ptr: *mut *mut libc::c_void =
-        transform_aligned as *mut *mut libc::c_void;
-    if original_block.is_null() {
-        return 0 as *mut qcms_transform;
-    }
-    original_block_ptr = original_block_ptr.offset(-1);
-    *original_block_ptr = original_block as *mut libc::c_void;
-    return transform_aligned;
+    std::alloc::alloc_zeroed(std::alloc::Layout::new::<qcms_transform>()) as *mut qcms_transform
 }
 unsafe extern "C" fn transform_free(mut t: *mut qcms_transform) {
-    /* get at the pointer to the unaligned block returned by calloc */
-    let mut p: *mut *mut libc::c_void = t as *mut *mut libc::c_void;
-    p = p.offset(-1);
-    free(*p);
+    std::alloc::dealloc(t as *mut u8, std::alloc::Layout::new::<qcms_transform>())
 }
 #[no_mangle]
 pub unsafe extern "C" fn qcms_transform_release(mut t: *mut qcms_transform) {
