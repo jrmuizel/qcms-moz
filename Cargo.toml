@@ -6,9 +6,6 @@ publish = false
 edition = "2018"
 autobins = false
 
-[lib]
-path = "c2rust-lib.rs"
-
 [dependencies]
 libc = "0.2"
 #core_arch = { path = "/Users/jrmuizel/src/stdarch/crates/core_arch" }
