@@ -1,11 +1,3 @@
-use ::libc;
-
-#[repr(C)]
-#[derive(Copy, Clone)]
-pub struct matrix {
-    pub m: [[f32; 3]; 3],
-    pub invalid: bool,
-}
 /* vim: set ts=8 sw=8 noexpandtab: */
 //  qcms
 //  Copyright (C) 2009 Mozilla Foundation
@@ -28,6 +20,14 @@ pub struct matrix {
 // LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+use ::libc;
+
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub struct matrix {
+    pub m: [[f32; 3]; 3],
+    pub invalid: bool,
+}
 
 #[repr(C)]
 #[derive(Copy, Clone)]
