@@ -190,7 +190,6 @@ pub struct tag {
     pub size: u32,
 }
 
-//memset
 /* It might be worth having a unified limit on content controlled
  * allocation per profile. This would remove the need for many
  * of the arbitrary limits that we used */
@@ -205,7 +204,7 @@ type tag_index = [tag];
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct mem_source {
-    pub buf: *const libc::c_uchar,
+    pub buf: *const u8,
     pub size: size_t,
     pub valid: bool,
     pub invalid_reason: Option<&'static str>,
