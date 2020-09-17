@@ -620,7 +620,16 @@ unsafe extern "C" fn find_tag(mut index: tag_index, mut tag_id: u32) -> *mut tag
     }
     return tag;
 }
-// 'sf32'
+
+const XYZ_TYPE: u32 =                0x58595a20; // 'XYZ '
+const CURVE_TYPE: u32 =              0x63757276; // 'curv'
+const PARAMETRIC_CURVE_TYPE: u32 =   0x70617261; // 'para'
+const LUT16_TYPE: u32 =              0x6d667432; // 'mft2'
+const LUT8_TYPE: u32 =               0x6d667431; // 'mft1'
+const LUT_MAB_TYPE: u32 =            0x6d414220; // 'mAB '
+const LUT_MBA_TYPE: u32 =            0x6d424120; // 'mBA '
+const CHROMATIC_TYPE: u32 =          0x73663332; // 'sf32'
+
 unsafe extern "C" fn read_tag_s15Fixed16ArrayType(
     mut src: *mut mem_source,
     mut index: tag_index,
@@ -636,7 +645,7 @@ unsafe extern "C" fn read_tag_s15Fixed16ArrayType(
         let mut offset: u32 = (*tag).offset;
         let mut type_0: u32 = read_u32(src, offset as size_t);
         // Check mandatory type signature for s16Fixed16ArrayType
-        if type_0 != 0x73663332u32 {
+        if type_0 != CHROMATIC_TYPE {
             invalid_source(
                 src,
                 b"unexpected type, expected \'sf32\'\x00" as *const u8 as *const libc::c_char,
@@ -678,7 +687,7 @@ unsafe extern "C" fn read_tag_XYZType(
     if !tag.is_null() {
         let mut offset: u32 = (*tag).offset;
         let mut type_0: u32 = read_u32(src, offset as size_t);
-        if type_0 != 0x58595a20u32 {
+        if type_0 != XYZ_TYPE {
             invalid_source(
                 src,
                 b"unexpected type, expected XYZ\x00" as *const u8 as *const libc::c_char,
@@ -708,14 +717,14 @@ unsafe extern "C" fn read_curveType(
     let mut type_0: u32 = read_u32(src, offset as size_t);
     let mut count: u32 = 0;
     let mut i: u32 = 0;
-    if type_0 != 0x63757276u32 && type_0 != 0x70617261u32 {
+    if type_0 != CURVE_TYPE && type_0 != PARAMETRIC_CURVE_TYPE {
         invalid_source(
             src,
             b"unexpected type, expected CURV or PARA\x00" as *const u8 as *const libc::c_char,
         );
         return 0 as *mut curveType;
     }
-    if type_0 == 0x63757276u32 {
+    if type_0 == CURVE_TYPE {
         count = read_u32(src, (offset + 8u32) as size_t);
         //arbitrary
         if count > 40000u32 {
@@ -733,7 +742,7 @@ unsafe extern "C" fn read_curveType(
             return 0 as *mut curveType;
         }
         (*curve).count = count;
-        (*curve).type_0 = 0x63757276u32;
+        (*curve).type_0 = CURVE_TYPE;
         i = 0u32;
         while i < count {
             *(*curve).data.as_mut_ptr().offset(i as isize) =
@@ -755,7 +764,7 @@ unsafe extern "C" fn read_curveType(
             return 0 as *mut curveType;
         }
         (*curve).count = count;
-        (*curve).type_0 = 0x70617261u32;
+        (*curve).type_0 = PARAMETRIC_CURVE_TYPE;
         i = 0u32;
         while i < COUNT_TO_LENGTH[count as usize] {
             (*curve).parameter[i as usize] = s15Fixed16Number_to_float(read_s15Fixed16Number(
@@ -862,7 +871,7 @@ unsafe extern "C" fn read_tag_lutmABType(
     let mut num_out_channels: u8 = 0;
     let mut lut: *mut lutmABType = 0 as *mut lutmABType;
     let mut i: u32 = 0;
-    if type_0 != 0x6d414220u32 && type_0 != 0x6d424120u32 {
+    if type_0 != LUT_MAB_TYPE && type_0 != LUT_MBA_TYPE {
         return 0 as *mut lutmABType;
     }
     num_in_channels = read_u8(src, (offset + 8u32) as size_t);
@@ -950,7 +959,7 @@ unsafe extern "C" fn read_tag_lutmABType(
         }
     }
     // Reverse the processing of transformation elements for mBA type.
-    (*lut).reversed = type_0 == 0x6d424120u32;
+    (*lut).reversed = type_0 == LUT_MBA_TYPE;
     (*lut).num_in_channels = num_in_channels;
     (*lut).num_out_channels = num_out_channels;
     if matrix_offset != 0 {
@@ -1071,12 +1080,12 @@ unsafe extern "C" fn read_tag_lutType(
     let mut entry_size: size_t = 0;
     let mut lut: *mut lutType = 0 as *mut lutType;
     let mut i: u32 = 0;
-    if type_0 == 0x6d667431u32 {
+    if type_0 == LUT8_TYPE {
         num_input_table_entries = 256u16;
         num_output_table_entries = 256u16;
         entry_size = 1;
         input_offset = 48u32
-    } else if type_0 == 0x6d667432u32 {
+    } else if type_0 == LUT16_TYPE {
         num_input_table_entries = read_u16(src, (offset + 48u32) as size_t);
         num_output_table_entries = read_u16(src, (offset + 50u32) as size_t);
         if num_input_table_entries as i32 == 0i32 || num_output_table_entries as i32 == 0i32 {
@@ -1163,7 +1172,7 @@ unsafe extern "C" fn read_tag_lutType(
     (*lut).e22 = read_s15Fixed16Number(src, (offset + 44u32) as size_t);
     i = 0u32;
     while i < ((*lut).num_input_table_entries as i32 * in_chan as i32) as u32 {
-        if type_0 == 0x6d667431u32 {
+        if type_0 == LUT8_TYPE {
             *(*lut).input_table.offset(i as isize) = uInt8Number_to_float(read_uInt8Number(
                 src,
                 (offset + input_offset) as libc::c_ulong + i as libc::c_ulong * entry_size,
@@ -1181,7 +1190,7 @@ unsafe extern "C" fn read_tag_lutType(
         as u32;
     i = 0u32;
     while i < clut_size * out_chan as libc::c_uint {
-        if type_0 == 0x6d667431u32 {
+        if type_0 == LUT8_TYPE {
             *(*lut).clut_table.offset((i + 0u32) as isize) =
                 uInt8Number_to_float(read_uInt8Number(
                     src,
@@ -1220,7 +1229,7 @@ unsafe extern "C" fn read_tag_lutType(
         as u32;
     i = 0u32;
     while i < ((*lut).num_output_table_entries as i32 * out_chan as i32) as u32 {
-        if type_0 == 0x6d667431u32 {
+        if type_0 == LUT8_TYPE {
             *(*lut).output_table.offset(i as isize) = uInt8Number_to_float(read_uInt8Number(
                 src,
                 output_offset as libc::c_ulong + i as libc::c_ulong * entry_size,
@@ -1310,7 +1319,7 @@ unsafe extern "C" fn curve_from_table(mut table: *mut u16, mut num_entries: i32)
     if curve.is_null() {
         return 0 as *mut curveType;
     }
-    (*curve).type_0 = 0x63757276u32;
+    (*curve).type_0 = CURVE_TYPE;
     (*curve).count = num_entries as u32;
     i = 0i32;
     while i < num_entries {
@@ -1340,7 +1349,7 @@ unsafe extern "C" fn curve_from_gamma(mut gamma: f32) -> *mut curveType {
     }
     (*curve).count = num_entries as u32;
     *(*curve).data.as_mut_ptr().offset(0isize) = float_to_u8Fixed8Number(gamma);
-    (*curve).type_0 = 0x63757276u32;
+    (*curve).type_0 = CURVE_TYPE;
     return curve;
 }
 //XXX: it would be nice if we had a way of ensuring
@@ -1375,7 +1384,7 @@ pub unsafe extern "C" fn qcms_profile_create_rgb_with_gamma_set(
     (*profile).class_type = 0x6d6e7472u32;
     (*profile).rendering_intent = QCMS_INTENT_PERCEPTUAL;
     (*profile).color_space = 0x52474220u32;
-    (*profile).pcs = 0x58595a20u32;
+    (*profile).pcs = XYZ_TYPE;
     return profile;
 }
 #[no_mangle]
@@ -1413,7 +1422,7 @@ pub unsafe extern "C" fn qcms_profile_create_rgb_with_table(
     (*profile).class_type = 0x6d6e7472u32;
     (*profile).rendering_intent = QCMS_INTENT_PERCEPTUAL;
     (*profile).color_space = 0x52474220u32;
-    (*profile).pcs = 0x58595a20u32;
+    (*profile).pcs = XYZ_TYPE;
     return profile;
 }
 /* from lcms: cmsWhitePointFromTemp */
@@ -1584,26 +1593,26 @@ pub unsafe extern "C" fn qcms_profile_from_memory(
                 if (*profile).color_space == 0x52474220u32 {
                     if !find_tag(index, TAG_A2B0).is_null() {
                         if read_u32(src, (*find_tag(index, TAG_A2B0)).offset as size_t)
-                            == 0x6d667431u32
+                            == LUT8_TYPE
                             || read_u32(src, (*find_tag(index, TAG_A2B0)).offset as size_t)
-                                == 0x6d667432u32
+                                == LUT16_TYPE
                         {
                             (*profile).A2B0 = read_tag_lutType(src, index, TAG_A2B0)
                         } else if read_u32(src, (*find_tag(index, TAG_A2B0)).offset as size_t)
-                            == 0x6d414220u32
+                            == LUT_MAB_TYPE
                         {
                             (*profile).mAB = read_tag_lutmABType(src, index, TAG_A2B0)
                         }
                     }
                     if !find_tag(index, TAG_B2A0).is_null() {
                         if read_u32(src, (*find_tag(index, TAG_B2A0)).offset as size_t)
-                            == 0x6d667431u32
+                            == LUT8_TYPE
                             || read_u32(src, (*find_tag(index, TAG_B2A0)).offset as size_t)
-                                == 0x6d667432u32
+                                == LUT16_TYPE
                         {
                             (*profile).B2A0 = read_tag_lutType(src, index, TAG_B2A0)
                         } else if read_u32(src, (*find_tag(index, TAG_B2A0)).offset as size_t)
-                            == 0x6d424120u32
+                            == LUT_MBA_TYPE
                         {
                             (*profile).mBA = read_tag_lutmABType(src, index, TAG_B2A0)
                         }
@@ -1886,7 +1895,7 @@ pub unsafe extern "C" fn qcms_data_create_rgb_with_gamma(
         write_u32(data, tag_table_offset + 4, tag_data_offset as u32);
         write_u32(data, tag_table_offset + 8, 20u32);
         // tag data element
-        write_u32(data, tag_data_offset, 0x58595a20u32);
+        write_u32(data, tag_data_offset, XYZ_TYPE);
         // reserved 4 bytes.
         write_u32(
             data,
@@ -1915,7 +1924,7 @@ pub unsafe extern "C" fn qcms_data_create_rgb_with_gamma(
         write_u32(data, tag_table_offset + 4, tag_data_offset as u32);
         write_u32(data, tag_table_offset + 8, 14u32);
         // tag data element
-        write_u32(data, tag_data_offset, 0x63757276u32);
+        write_u32(data, tag_data_offset, CURVE_TYPE);
         // reserved 4 bytes.
         write_u32(data, tag_data_offset + 8, 1u32); // count
         write_u16(data, tag_data_offset + 12, float_to_u8Fixed8Number(gamma));
@@ -1932,7 +1941,7 @@ pub unsafe extern "C" fn qcms_data_create_rgb_with_gamma(
     write_u32(data, 0, length); // the total length of this memory
     write_u32(data, 12, 0x6d6e7472u32); // profile->class_type
     write_u32(data, 16, 0x52474220u32); // profile->color_space
-    write_u32(data, 20, 0x58595a20u32); // profile->pcs
+    write_u32(data, 20, XYZ_TYPE); // profile->pcs
     write_u32(data, 64, QCMS_INTENT_PERCEPTUAL); // profile->rendering_intent
     write_u32(data, 128, 6u32); // total tag count
                                 // prepare the result
