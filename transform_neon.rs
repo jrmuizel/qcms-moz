@@ -27,7 +27,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut_neon<F: Format>(
      * on x86 but that's too new for us right now. For more info: gcc bug #16660 */
     let mut input: *const f32 = (&mut *input_back.as_mut_ptr().offset(16isize) as *mut libc::c_char
         as uintptr_t
-        & !(0xfi32) as libc::c_ulong) as *mut f32;
+        & !(0xf) as libc::c_ulong) as *mut f32;
     /* share input and output locations to save having to keep the
      * locations in separate registers */
     let mut output: *const u32 = input as *mut u32;
@@ -56,7 +56,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut_neon<F: Format>(
     let max: float32x4_t = vld1q_dup_f32(&clampMaxValue);
     let min: float32x4_t = zeroed();
     let scale: float32x4_t = vld1q_dup_f32(&floatScale);
-    let components: libc::c_uint = if F::kAIndex == 0xff { 3i32 } else { 4i32 } as libc::c_uint;
+    let components: libc::c_uint = if F::kAIndex == 0xff { 3 } else { 4 } as libc::c_uint;
     /* working variables */
     let mut vec_r: float32x4_t = zeroed();
     let mut vec_g: float32x4_t = zeroed();
@@ -77,7 +77,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut_neon<F: Format>(
         alpha = *src.offset(F::kAIndex as isize)
     }
     src = src.offset(components as isize);
-    let mut i: libc::c_uint = 0u32;
+    let mut i: libc::c_uint = 0;
     while (i as libc::c_ulong) < length {
         /* gamma * matrix */
         vec_r = vmulq_f32(vec_r, mat0);
@@ -180,7 +180,7 @@ extern "C" {
 #[cfg(target_arch = "aarch64")]
 #[allow(improper_ctypes)]
 extern "C" {
-    #[link_name = "llvm.aarch64.neon.fcvtzs.v4i32.v4f32"]
+    #[link_name = "llvm.aarch64.neon.fcvtzs.v4.v4f32"]
     fn vcvtq_s32_f32_(a: float32x4_t) -> int32x4_t;
 }
 

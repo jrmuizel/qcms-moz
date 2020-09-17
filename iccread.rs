@@ -222,23 +222,23 @@ unsafe extern "C" fn uInt16Number_to_float(mut a: uInt16Number) -> f32 {
 }
 
 unsafe extern "C" fn cpu_to_be32(mut v: u32) -> be32 {
-    return (v & 0xffu32) << 24i32
-        | (v & 0xff00u32) << 8i32
-        | (v & 0xff0000u32) >> 8i32
-        | (v & 0xff000000u32) >> 24i32;
+    return (v & 0xff) << 24
+        | (v & 0xff00) << 8
+        | (v & 0xff0000) >> 8
+        | (v & 0xff000000) >> 24;
 }
 unsafe extern "C" fn cpu_to_be16(mut v: u16) -> be16 {
-    return ((v as i32 & 0xffi32) << 8i32 | (v as i32 & 0xff00i32) >> 8i32) as be16;
+    return ((v as i32 & 0xff) << 8 | (v as i32 & 0xff00) >> 8) as be16;
 }
 unsafe extern "C" fn be32_to_cpu(mut v: be32) -> u32 {
-    return (v & 0xffu32) << 24i32
-        | (v & 0xff00u32) << 8i32
-        | (v & 0xff0000u32) >> 8i32
-        | (v & 0xff000000u32) >> 24i32;
+    return (v & 0xff) << 24
+        | (v & 0xff00) << 8
+        | (v & 0xff0000) >> 8
+        | (v & 0xff000000) >> 24;
     //return __builtin_bswap32(v);
 }
 unsafe extern "C" fn be16_to_cpu(mut v: be16) -> u16 {
-    return ((v as i32 & 0xffi32) << 8i32 | (v as i32 & 0xff00i32) >> 8i32) as u16;
+    return ((v as i32 & 0xff) << 8 | (v as i32 & 0xff00) >> 8) as u16;
 }
 unsafe extern "C" fn invalid_source(mut mem: *mut mem_source, mut reason: *const libc::c_char) {
     (*mem).valid = false;
@@ -253,7 +253,7 @@ unsafe extern "C" fn read_u32(mut mem: *mut mem_source, mut offset: size_t) -> u
             mem,
             b"Invalid offset\x00" as *const u8 as *const libc::c_char,
         );
-        return 0u32;
+        return 0;
     } else {
         let mut k: be32 = 0;
         memcpy(
@@ -322,8 +322,8 @@ unsafe extern "C" fn check_profile_version(mut src: *mut mem_source) {
     uint8_t major_revision = read_u8(src, 8 + 0);
     uint8_t minor_revision = read_u8(src, 8 + 1);
     */
-    let mut reserved1: u8 = read_u8(src, (8i32 + 2i32) as size_t);
-    let mut reserved2: u8 = read_u8(src, (8i32 + 3i32) as size_t);
+    let mut reserved1: u8 = read_u8(src, (8 + 2) as size_t);
+    let mut reserved2: u8 = read_u8(src, (8 + 3) as size_t);
     /* Checking the version doesn't buy us anything
     if (major_revision != 0x4) {
         if (major_revision > 0x2)
@@ -332,7 +332,7 @@ unsafe extern "C" fn check_profile_version(mut src: *mut mem_source) {
             invalid_source(src, "Unsupported minor revision");
     }
     */
-    if reserved1 as i32 != 0i32 || reserved2 as i32 != 0i32 {
+    if reserved1 as i32 != 0 || reserved2 as i32 != 0 {
         invalid_source(
             src,
             b"Invalid reserved bytes\x00" as *const u8 as *const libc::c_char,
@@ -532,8 +532,8 @@ pub unsafe extern "C" fn qcms_profile_is_bogus(mut profile: *mut qcms_profile) -
     tolerance[1] = 0.02f32;
     tolerance[2] = 0.04f32;
     // Compare with our tolerance
-    i = 0u32;
-    while i < 3u32 {
+    i = 0;
+    while i < 3 {
         if !(sum[i as usize] - tolerance[i as usize] <= target[i as usize]
             && sum[i as usize] + tolerance[i as usize] >= target[i as usize])
         {
@@ -619,11 +619,11 @@ unsafe extern "C" fn read_tag_s15Fixed16ArrayType(
             );
         }
         i = 0u8;
-        while (i as i32) < 9i32 {
-            matrix.m[(i as i32 / 3i32) as usize][(i as i32 % 3i32) as usize] =
+        while (i as i32) < 9 {
+            matrix.m[(i as i32 / 3) as usize][(i as i32 % 3) as usize] =
                 s15Fixed16Number_to_float(read_s15Fixed16Number(
                     src,
-                    (offset + 8u32 + (i as i32 * 4i32) as libc::c_uint) as size_t,
+                    (offset + 8 + (i as i32 * 4) as libc::c_uint) as size_t,
                 ));
             i = i + 1
         }
@@ -644,9 +644,9 @@ unsafe extern "C" fn read_tag_XYZType(
 ) -> XYZNumber {
     let mut num: XYZNumber = {
         let mut init = XYZNumber {
-            X: 0i32,
-            Y: 0i32,
-            Z: 0i32,
+            X: 0,
+            Y: 0,
+            Z: 0,
         };
         init
     };
@@ -660,9 +660,9 @@ unsafe extern "C" fn read_tag_XYZType(
                 b"unexpected type, expected XYZ\x00" as *const u8 as *const libc::c_char,
             );
         }
-        num.X = read_s15Fixed16Number(src, (offset + 8u32) as size_t);
-        num.Y = read_s15Fixed16Number(src, (offset + 12u32) as size_t);
-        num.Z = read_s15Fixed16Number(src, (offset + 16u32) as size_t)
+        num.X = read_s15Fixed16Number(src, (offset + 8) as size_t);
+        num.Y = read_s15Fixed16Number(src, (offset + 12) as size_t);
+        num.Z = read_s15Fixed16Number(src, (offset + 16) as size_t)
     } else {
         invalid_source(
             src,
@@ -679,7 +679,7 @@ unsafe extern "C" fn read_curveType(
     mut offset: u32,
     mut len: *mut u32,
 ) -> *mut curveType {
-    static mut COUNT_TO_LENGTH: [u32; 5] = [1u32, 3u32, 4u32, 5u32, 7u32]; //PARAMETRIC_CURVE_TYPE
+    static mut COUNT_TO_LENGTH: [u32; 5] = [1, 3, 4, 5, 7]; //PARAMETRIC_CURVE_TYPE
     let mut curve: *mut curveType = 0 as *mut curveType;
     let mut type_0: u32 = read_u32(src, offset as size_t);
     let mut count: u32 = 0;
@@ -692,9 +692,9 @@ unsafe extern "C" fn read_curveType(
         return 0 as *mut curveType;
     }
     if type_0 == CURVE_TYPE {
-        count = read_u32(src, (offset + 8u32) as size_t);
+        count = read_u32(src, (offset + 8) as size_t);
         //arbitrary
-        if count > 40000u32 {
+        if count > 40000 {
             invalid_source(
                 src,
                 b"curve size too large\x00" as *const u8 as *const libc::c_char,
@@ -710,16 +710,16 @@ unsafe extern "C" fn read_curveType(
         }
         (*curve).count = count;
         (*curve).type_0 = CURVE_TYPE;
-        i = 0u32;
+        i = 0;
         while i < count {
             *(*curve).data.as_mut_ptr().offset(i as isize) =
-                read_u16(src, (offset + 12u32 + i * 2u32) as size_t);
+                read_u16(src, (offset + 12 + i * 2) as size_t);
             i = i + 1
         }
-        *len = 12u32 + count * 2u32
+        *len = 12 + count * 2
     } else {
-        count = read_u16(src, (offset + 8u32) as size_t) as u32;
-        if count > 4u32 {
+        count = read_u16(src, (offset + 8) as size_t) as u32;
+        if count > 4 {
             invalid_source(
                 src,
                 b"parametric function type not supported.\x00" as *const u8 as *const libc::c_char,
@@ -732,16 +732,16 @@ unsafe extern "C" fn read_curveType(
         }
         (*curve).count = count;
         (*curve).type_0 = PARAMETRIC_CURVE_TYPE;
-        i = 0u32;
+        i = 0;
         while i < COUNT_TO_LENGTH[count as usize] {
             (*curve).parameter[i as usize] = s15Fixed16Number_to_float(read_s15Fixed16Number(
                 src,
-                (offset + 12u32 + i * 4u32) as size_t,
+                (offset + 12 + i * 4) as size_t,
             ));
             i = i + 1
         }
-        *len = 12u32 + COUNT_TO_LENGTH[count as usize] * 4u32;
-        if count == 1u32 || count == 2u32 {
+        *len = 12 + COUNT_TO_LENGTH[count as usize] * 4;
+        if count == 1 || count == 2 {
             /* we have a type 1 or type 2 function that has a division by 'a' */
             let mut a: f32 = (*curve).parameter[1];
             if a == 0.0f32 {
@@ -780,9 +780,9 @@ unsafe extern "C" fn read_nested_curveType(
     mut num_channels: u8,
     mut curve_offset: u32,
 ) {
-    let mut channel_offset: u32 = 0u32;
+    let mut channel_offset: u32 = 0;
     let mut i: i32 = 0;
-    i = 0i32;
+    i = 0;
     while i < num_channels as i32 {
         let mut tag_len: u32 = 0;
         (*curveArray)[i as usize] =
@@ -796,8 +796,8 @@ unsafe extern "C" fn read_nested_curveType(
         } else {
             channel_offset = channel_offset + tag_len;
             // 4 byte aligned
-            if tag_len % 4u32 != 0u32 {
-                channel_offset = channel_offset + (4u32 - tag_len % 4u32)
+            if tag_len % 4 != 0 {
+                channel_offset = channel_offset + (4 - tag_len % 4)
             }
             i += 1
         }
@@ -831,7 +831,7 @@ unsafe extern "C" fn read_tag_lutmABType(
     let mut m_curve_offset: u32 = 0;
     let mut matrix_offset: u32 = 0;
     let mut clut_offset: u32 = 0;
-    let mut clut_size: u32 = 1u32;
+    let mut clut_size: u32 = 1;
     let mut clut_precision: u8 = 0;
     let mut type_0: u32 = read_u32(src, offset as size_t);
     let mut num_in_channels: u8 = 0;
@@ -841,25 +841,25 @@ unsafe extern "C" fn read_tag_lutmABType(
     if type_0 != LUT_MAB_TYPE && type_0 != LUT_MBA_TYPE {
         return 0 as *mut lutmABType;
     }
-    num_in_channels = read_u8(src, (offset + 8u32) as size_t);
-    num_out_channels = read_u8(src, (offset + 9u32) as size_t);
-    if num_in_channels as i32 > 10i32 || num_out_channels as i32 > 10i32 {
+    num_in_channels = read_u8(src, (offset + 8) as size_t);
+    num_out_channels = read_u8(src, (offset + 9) as size_t);
+    if num_in_channels as i32 > 10 || num_out_channels as i32 > 10 {
         return 0 as *mut lutmABType;
     }
     // We require 3in/out channels since we only support RGB->XYZ (or RGB->LAB)
     // XXX: If we remove this restriction make sure that the number of channels
     //      is less or equal to the maximum number of mAB curves in qcmsint.h
     //      also check for clut_size overflow. Also make sure it's != 0
-    if num_in_channels as i32 != 3i32 || num_out_channels as i32 != 3i32 {
+    if num_in_channels as i32 != 3 || num_out_channels as i32 != 3 {
         return 0 as *mut lutmABType;
     }
     // some of this data is optional and is denoted by a zero offset
     // we also use this to track their existance
-    a_curve_offset = read_u32(src, (offset + 28u32) as size_t);
-    clut_offset = read_u32(src, (offset + 24u32) as size_t);
-    m_curve_offset = read_u32(src, (offset + 20u32) as size_t);
-    matrix_offset = read_u32(src, (offset + 16u32) as size_t);
-    b_curve_offset = read_u32(src, (offset + 12u32) as size_t);
+    a_curve_offset = read_u32(src, (offset + 28) as size_t);
+    clut_offset = read_u32(src, (offset + 24) as size_t);
+    m_curve_offset = read_u32(src, (offset + 20) as size_t);
+    matrix_offset = read_u32(src, (offset + 16) as size_t);
+    b_curve_offset = read_u32(src, (offset + 12) as size_t);
     // Convert offsets relative to the tag to relative to the profile
     // preserve zero for optional fields
     if a_curve_offset != 0 {
@@ -878,12 +878,12 @@ unsafe extern "C" fn read_tag_lutmABType(
         b_curve_offset = b_curve_offset + offset
     }
     if clut_offset != 0 {
-        debug_assert!(num_in_channels as i32 == 3i32);
+        debug_assert!(num_in_channels as i32 == 3);
         // clut_size can not overflow since lg(256^num_in_channels) = 24 bits.
-        i = 0u32;
+        i = 0;
         while i < num_in_channels as libc::c_uint {
             clut_size = clut_size * read_u8(src, (clut_offset + i) as size_t) as libc::c_uint;
-            if clut_size == 0u32 {
+            if clut_size == 0 {
                 invalid_source(
                     src,
                     b"bad clut_size\x00" as *const u8 as *const libc::c_char,
@@ -892,11 +892,11 @@ unsafe extern "C" fn read_tag_lutmABType(
             i = i + 1
         }
     } else {
-        clut_size = 0u32
+        clut_size = 0
     }
     // 24bits * 3 won't overflow either
     clut_size = clut_size * num_out_channels as libc::c_uint;
-    if clut_size > 500000u32 {
+    if clut_size > 500000 {
         return 0 as *mut lutmABType;
     }
     lut = malloc(
@@ -908,15 +908,15 @@ unsafe extern "C" fn read_tag_lutmABType(
     // we'll fill in the rest below
     memset(
         lut as *mut libc::c_void,
-        0i32,
+        0,
         ::std::mem::size_of::<lutmABType>(),
     );
     (*lut).clut_table = &mut *(*lut).clut_table_data.as_mut_ptr().offset(0isize) as *mut f32;
     if clut_offset != 0 {
-        i = 0u32;
+        i = 0;
         while i < num_in_channels as libc::c_uint {
             (*lut).num_grid_points[i as usize] = read_u8(src, (clut_offset + i) as size_t);
-            if (*lut).num_grid_points[i as usize] as i32 == 0i32 {
+            if (*lut).num_grid_points[i as usize] as i32 == 0 {
                 invalid_source(
                     src,
                     b"bad grid_points\x00" as *const u8 as *const libc::c_char,
@@ -933,51 +933,51 @@ unsafe extern "C" fn read_tag_lutmABType(
         // read the matrix if we have it
         (*lut).e00 = read_s15Fixed16Number(
             src,
-            (matrix_offset + (4i32 * 0i32) as libc::c_uint) as size_t,
+            (matrix_offset + (4 * 0) as libc::c_uint) as size_t,
         ); // the caller checks that this doesn't happen
         (*lut).e01 = read_s15Fixed16Number(
             src,
-            (matrix_offset + (4i32 * 1i32) as libc::c_uint) as size_t,
+            (matrix_offset + (4 * 1) as libc::c_uint) as size_t,
         );
         (*lut).e02 = read_s15Fixed16Number(
             src,
-            (matrix_offset + (4i32 * 2i32) as libc::c_uint) as size_t,
+            (matrix_offset + (4 * 2) as libc::c_uint) as size_t,
         );
         (*lut).e10 = read_s15Fixed16Number(
             src,
-            (matrix_offset + (4i32 * 3i32) as libc::c_uint) as size_t,
+            (matrix_offset + (4 * 3) as libc::c_uint) as size_t,
         );
         (*lut).e11 = read_s15Fixed16Number(
             src,
-            (matrix_offset + (4i32 * 4i32) as libc::c_uint) as size_t,
+            (matrix_offset + (4 * 4) as libc::c_uint) as size_t,
         );
         (*lut).e12 = read_s15Fixed16Number(
             src,
-            (matrix_offset + (4i32 * 5i32) as libc::c_uint) as size_t,
+            (matrix_offset + (4 * 5) as libc::c_uint) as size_t,
         );
         (*lut).e20 = read_s15Fixed16Number(
             src,
-            (matrix_offset + (4i32 * 6i32) as libc::c_uint) as size_t,
+            (matrix_offset + (4 * 6) as libc::c_uint) as size_t,
         );
         (*lut).e21 = read_s15Fixed16Number(
             src,
-            (matrix_offset + (4i32 * 7i32) as libc::c_uint) as size_t,
+            (matrix_offset + (4 * 7) as libc::c_uint) as size_t,
         );
         (*lut).e22 = read_s15Fixed16Number(
             src,
-            (matrix_offset + (4i32 * 8i32) as libc::c_uint) as size_t,
+            (matrix_offset + (4 * 8) as libc::c_uint) as size_t,
         );
         (*lut).e03 = read_s15Fixed16Number(
             src,
-            (matrix_offset + (4i32 * 9i32) as libc::c_uint) as size_t,
+            (matrix_offset + (4 * 9) as libc::c_uint) as size_t,
         );
         (*lut).e13 = read_s15Fixed16Number(
             src,
-            (matrix_offset + (4i32 * 10i32) as libc::c_uint) as size_t,
+            (matrix_offset + (4 * 10) as libc::c_uint) as size_t,
         );
         (*lut).e23 = read_s15Fixed16Number(
             src,
-            (matrix_offset + (4i32 * 11i32) as libc::c_uint) as size_t,
+            (matrix_offset + (4 * 11) as libc::c_uint) as size_t,
         )
     }
     if a_curve_offset != 0 {
@@ -995,22 +995,22 @@ unsafe extern "C" fn read_tag_lutmABType(
         );
     }
     if clut_offset != 0 {
-        clut_precision = read_u8(src, (clut_offset + 16u32) as size_t);
-        if clut_precision as i32 == 1i32 {
-            i = 0u32;
+        clut_precision = read_u8(src, (clut_offset + 16) as size_t);
+        if clut_precision as i32 == 1 {
+            i = 0;
             while i < clut_size {
                 *(*lut).clut_table.offset(i as isize) = uInt8Number_to_float(read_uInt8Number(
                     src,
-                    (clut_offset + 20u32 + i * 1u32) as size_t,
+                    (clut_offset + 20 + i * 1) as size_t,
                 ));
                 i = i + 1
             }
-        } else if clut_precision as i32 == 2i32 {
-            i = 0u32;
+        } else if clut_precision as i32 == 2 {
+            i = 0;
             while i < clut_size {
                 *(*lut).clut_table.offset(i as isize) = uInt16Number_to_float(read_uInt16Number(
                     src,
-                    (clut_offset + 20u32 + i * 2u32) as size_t,
+                    (clut_offset + 20 + i * 2) as size_t,
                 ));
                 i = i + 1
             }
@@ -1051,11 +1051,11 @@ unsafe extern "C" fn read_tag_lutType(
         num_input_table_entries = 256u16;
         num_output_table_entries = 256u16;
         entry_size = 1;
-        input_offset = 48u32
+        input_offset = 48
     } else if type_0 == LUT16_TYPE {
-        num_input_table_entries = read_u16(src, (offset + 48u32) as size_t);
-        num_output_table_entries = read_u16(src, (offset + 50u32) as size_t);
-        if num_input_table_entries as i32 == 0i32 || num_output_table_entries as i32 == 0i32 {
+        num_input_table_entries = read_u16(src, (offset + 48) as size_t);
+        num_output_table_entries = read_u16(src, (offset + 50) as size_t);
+        if num_input_table_entries as i32 == 0 || num_output_table_entries as i32 == 0 {
             invalid_source(
                 src,
                 b"Bad channel count\x00" as *const u8 as *const libc::c_char,
@@ -1063,7 +1063,7 @@ unsafe extern "C" fn read_tag_lutType(
             return 0 as *mut lutType;
         }
         entry_size = 2;
-        input_offset = 52u32
+        input_offset = 52
     } else {
         debug_assert!(false);
         invalid_source(
@@ -1072,25 +1072,25 @@ unsafe extern "C" fn read_tag_lutType(
         );
         return 0 as *mut lutType;
     }
-    in_chan = read_u8(src, (offset + 8u32) as size_t);
-    out_chan = read_u8(src, (offset + 9u32) as size_t);
-    grid_points = read_u8(src, (offset + 10u32) as size_t);
+    in_chan = read_u8(src, (offset + 8) as size_t);
+    out_chan = read_u8(src, (offset + 9) as size_t);
+    grid_points = read_u8(src, (offset + 10) as size_t);
     clut_size = (grid_points as f64).powf(in_chan as f64) as u32;
-    if clut_size > 500000u32 {
+    if clut_size > 500000 {
         invalid_source(
             src,
             b"CLUT too large\x00" as *const u8 as *const libc::c_char,
         );
         return 0 as *mut lutType;
     }
-    if clut_size <= 0u32 {
+    if clut_size <= 0 {
         invalid_source(
             src,
             b"CLUT must not be empty.\x00" as *const u8 as *const libc::c_char,
         );
         return 0 as *mut lutType;
     }
-    if in_chan as i32 != 3i32 || out_chan as i32 != 3i32 {
+    if in_chan as i32 != 3 || out_chan as i32 != 3 {
         invalid_source(
             src,
             b"CLUT only supports RGB\x00" as *const u8 as *const libc::c_char,
@@ -1128,16 +1128,16 @@ unsafe extern "C" fn read_tag_lutType(
     (*lut).num_input_channels = in_chan;
     (*lut).num_output_channels = out_chan;
     (*lut).num_clut_grid_points = grid_points;
-    (*lut).e00 = read_s15Fixed16Number(src, (offset + 12u32) as size_t);
-    (*lut).e01 = read_s15Fixed16Number(src, (offset + 16u32) as size_t);
-    (*lut).e02 = read_s15Fixed16Number(src, (offset + 20u32) as size_t);
-    (*lut).e10 = read_s15Fixed16Number(src, (offset + 24u32) as size_t);
-    (*lut).e11 = read_s15Fixed16Number(src, (offset + 28u32) as size_t);
-    (*lut).e12 = read_s15Fixed16Number(src, (offset + 32u32) as size_t);
-    (*lut).e20 = read_s15Fixed16Number(src, (offset + 36u32) as size_t);
-    (*lut).e21 = read_s15Fixed16Number(src, (offset + 40u32) as size_t);
-    (*lut).e22 = read_s15Fixed16Number(src, (offset + 44u32) as size_t);
-    i = 0u32;
+    (*lut).e00 = read_s15Fixed16Number(src, (offset + 12) as size_t);
+    (*lut).e01 = read_s15Fixed16Number(src, (offset + 16) as size_t);
+    (*lut).e02 = read_s15Fixed16Number(src, (offset + 20) as size_t);
+    (*lut).e10 = read_s15Fixed16Number(src, (offset + 24) as size_t);
+    (*lut).e11 = read_s15Fixed16Number(src, (offset + 28) as size_t);
+    (*lut).e12 = read_s15Fixed16Number(src, (offset + 32) as size_t);
+    (*lut).e20 = read_s15Fixed16Number(src, (offset + 36) as size_t);
+    (*lut).e21 = read_s15Fixed16Number(src, (offset + 40) as size_t);
+    (*lut).e22 = read_s15Fixed16Number(src, (offset + 44) as size_t);
+    i = 0;
     while i < ((*lut).num_input_table_entries as i32 * in_chan as i32) as u32 {
         if type_0 == LUT8_TYPE {
             *(*lut).input_table.offset(i as isize) = uInt8Number_to_float(read_uInt8Number(
@@ -1155,46 +1155,46 @@ unsafe extern "C" fn read_tag_lutType(
     clut_offset = ((offset + input_offset) as libc::c_ulong
         + ((*lut).num_input_table_entries as i32 * in_chan as i32) as libc::c_ulong * entry_size)
         as u32;
-    i = 0u32;
+    i = 0;
     while i < clut_size * out_chan as libc::c_uint {
         if type_0 == LUT8_TYPE {
-            *(*lut).clut_table.offset((i + 0u32) as isize) =
+            *(*lut).clut_table.offset((i + 0) as isize) =
                 uInt8Number_to_float(read_uInt8Number(
                     src,
                     clut_offset as libc::c_ulong + i as libc::c_ulong * entry_size + 0,
                 ));
-            *(*lut).clut_table.offset((i + 1u32) as isize) =
+            *(*lut).clut_table.offset((i + 1) as isize) =
                 uInt8Number_to_float(read_uInt8Number(
                     src,
                     clut_offset as libc::c_ulong + i as libc::c_ulong * entry_size + 1,
                 ));
-            *(*lut).clut_table.offset((i + 2u32) as isize) = uInt8Number_to_float(read_uInt8Number(
+            *(*lut).clut_table.offset((i + 2) as isize) = uInt8Number_to_float(read_uInt8Number(
                 src,
                 clut_offset as libc::c_ulong + i as libc::c_ulong * entry_size + 2,
             ))
         } else {
-            *(*lut).clut_table.offset((i + 0u32) as isize) =
+            *(*lut).clut_table.offset((i + 0) as isize) =
                 uInt16Number_to_float(read_uInt16Number(
                     src,
                     clut_offset as libc::c_ulong + i as libc::c_ulong * entry_size + 0,
                 ));
-            *(*lut).clut_table.offset((i + 1u32) as isize) =
+            *(*lut).clut_table.offset((i + 1) as isize) =
                 uInt16Number_to_float(read_uInt16Number(
                     src,
                     clut_offset as libc::c_ulong + i as libc::c_ulong * entry_size + 2,
                 ));
-            *(*lut).clut_table.offset((i + 2u32) as isize) =
+            *(*lut).clut_table.offset((i + 2) as isize) =
                 uInt16Number_to_float(read_uInt16Number(
                     src,
                     clut_offset as libc::c_ulong + i as libc::c_ulong * entry_size + 4,
                 ))
         }
-        i = i + 3u32
+        i = i + 3
     }
     output_offset = (clut_offset as libc::c_ulong
         + (clut_size * out_chan as libc::c_uint) as libc::c_ulong * entry_size)
         as u32;
-    i = 0u32;
+    i = 0;
     while i < ((*lut).num_output_table_entries as i32 * out_chan as i32) as u32 {
         if type_0 == LUT8_TYPE {
             *(*lut).output_table.offset(i as isize) = uInt8Number_to_float(read_uInt8Number(
@@ -1245,9 +1245,9 @@ unsafe extern "C" fn build_sRGB_gamma_table(mut num_entries: i32) -> *mut u16 {
     if table.is_null() {
         return 0 as *mut u16;
     }
-    i = 0i32;
+    i = 0;
     while i < num_entries {
-        let mut x: f64 = i as f64 / (num_entries - 1i32) as f64;
+        let mut x: f64 = i as f64 / (num_entries - 1) as f64;
         let mut y: f64 = 0.;
         let mut output: f64 = 0.;
         // IEC 61966-2.1 (sRGB)
@@ -1288,7 +1288,7 @@ unsafe extern "C" fn curve_from_table(mut table: *mut u16, mut num_entries: i32)
     }
     (*curve).type_0 = CURVE_TYPE;
     (*curve).count = num_entries as u32;
-    i = 0i32;
+    i = 0;
     while i < num_entries {
         *(*curve).data.as_mut_ptr().offset(i as isize) = *table.offset(i as isize);
         i += 1
@@ -1306,7 +1306,7 @@ unsafe extern "C" fn float_to_u8Fixed8Number(mut a: f32) -> u16 {
 }
 unsafe extern "C" fn curve_from_gamma(mut gamma: f32) -> *mut curveType {
     let mut curve: *mut curveType = 0 as *mut curveType;
-    let mut num_entries: i32 = 1i32;
+    let mut num_entries: i32 = 1;
     curve = malloc(
         ::std::mem::size_of::<curveType>()
             + ::std::mem::size_of::<uInt16Number>() * num_entries as usize,
@@ -1348,7 +1348,7 @@ pub unsafe extern "C" fn qcms_profile_create_rgb_with_gamma_set(
         qcms_profile_release(profile);
         return 0 as *mut qcms_profile;
     }
-    (*profile).class_type = 0x6d6e7472u32;
+    (*profile).class_type = 0x6d6e7472;
     (*profile).rendering_intent = QCMS_INTENT_PERCEPTUAL;
     (*profile).color_space = RGB_SIGNATURE;
     (*profile).pcs = XYZ_TYPE;
@@ -1386,7 +1386,7 @@ pub unsafe extern "C" fn qcms_profile_create_rgb_with_table(
         qcms_profile_release(profile);
         return 0 as *mut qcms_profile;
     }
-    (*profile).class_type = 0x6d6e7472u32;
+    (*profile).class_type = 0x6d6e7472;
     (*profile).rendering_intent = QCMS_INTENT_PERCEPTUAL;
     (*profile).color_space = RGB_SIGNATURE;
     (*profile).pcs = XYZ_TYPE;
@@ -1446,7 +1446,7 @@ unsafe extern "C" fn white_point_from_temp(mut temp_K: i32) -> qcms_CIE_xyY {
 }
 #[no_mangle]
 pub unsafe extern "C" fn qcms_white_point_sRGB() -> qcms_CIE_xyY {
-    return white_point_from_temp(6504i32);
+    return white_point_from_temp(6504);
 }
 #[no_mangle]
 pub unsafe extern "C" fn qcms_profile_sRGB() -> *mut qcms_profile {
@@ -1487,11 +1487,11 @@ pub unsafe extern "C" fn qcms_profile_sRGB() -> *mut qcms_profile {
         Y: 0.,
     };
     D65 = qcms_white_point_sRGB();
-    table = build_sRGB_gamma_table(1024i32);
+    table = build_sRGB_gamma_table(1024);
     if table.is_null() {
         return 0 as *mut qcms_profile;
     }
-    profile = qcms_profile_create_rgb_with_table(D65, Rec709Primaries, table, 1024i32);
+    profile = qcms_profile_create_rgb_with_table(D65, Rec709Primaries, table, 1024);
     free(table as *mut libc::c_void);
     return profile;
 }
@@ -1526,7 +1526,7 @@ pub unsafe extern "C" fn qcms_profile_from_memory(
         return 0 as *mut qcms_profile;
     }
     /* ensure that the profile size is sane so it's easier to reason about */
-    if source.size <= 64 || source.size >= (1024i32 * 1024i32 * 4i32) as libc::c_ulong {
+    if source.size <= 64 || source.size >= (1024 * 1024 * 4) as libc::c_ulong {
         return 0 as *mut qcms_profile;
     }
     profile = qcms_profile_create();
@@ -1549,10 +1549,10 @@ pub unsafe extern "C" fn qcms_profile_from_memory(
                 (*profile).chromaticAdaption.invalid = true
                 //Signal the data is not present
             }
-            if (*profile).class_type == 0x6d6e7472u32
-                || (*profile).class_type == 0x73636e72u32
-                || (*profile).class_type == 0x70727472u32
-                || (*profile).class_type == 0x73706163u32
+            if (*profile).class_type == 0x6d6e7472
+                || (*profile).class_type == 0x73636e72
+                || (*profile).class_type == 0x70727472
+                || (*profile).class_type == 0x73706163
             {
                 if (*profile).color_space == RGB_SIGNATURE {
                     if !find_tag(&index, TAG_A2B0).is_null() {
@@ -1694,7 +1694,7 @@ unsafe extern "C" fn qcms_data_from_file(
         return;
     }
     length = be32_to_cpu(length_be);
-    if length > (1024i32 * 1024i32 * 4i32) as libc::c_uint
+    if length > (1024 * 1024 * 4) as libc::c_uint
         || (length as libc::c_ulong) < ::std::mem::size_of::<be32>() as libc::c_ulong
     {
         return;
@@ -1830,32 +1830,32 @@ pub unsafe extern "C" fn qcms_data_create_rgb_with_gamma(
     	* (tag table item (12) * total tag (6 = 3 rTRC + 3 rXYZ)) + rTRC elements data (3 * 20)
     	* + rXYZ elements data (3*16), and all tag data elements must start at the 4-byte boundary.
     	*/
-    xyz_count = 3u32; // rXYZ, gXYZ, bXYZ
-    trc_count = 3u32; // rTRC, gTRC, bTRC
-    length = (128i32 + 4i32) as libc::c_uint
-        + 12u32 * (xyz_count + trc_count)
-        + xyz_count * 20u32
-        + trc_count * 16u32;
+    xyz_count = 3; // rXYZ, gXYZ, bXYZ
+    trc_count = 3; // rTRC, gTRC, bTRC
+    length = (128 + 4) as libc::c_uint
+        + 12 * (xyz_count + trc_count)
+        + xyz_count * 20
+        + trc_count * 16;
     // reserve the total memory.
     data = malloc(length as usize);
     if data.is_null() {
         return;
     }
-    memset(data, 0i32, length as usize);
+    memset(data, 0, length as usize);
     // Part1 : write rXYZ, gXYZ and bXYZ
     if !get_rgb_colorants(&mut colorants, white_point, primaries) {
         free(data);
         return;
     }
     // the position of first tag's signature in tag table
-    tag_table_offset = (128i32 + 4i32) as size_t; // the start of tag data elements.
-    tag_data_offset = ((128i32 + 4i32) as libc::c_uint + 12u32 * (xyz_count + trc_count)) as size_t;
-    index = 0u32;
+    tag_table_offset = (128 + 4) as size_t; // the start of tag data elements.
+    tag_data_offset = ((128 + 4) as libc::c_uint + 12 * (xyz_count + trc_count)) as size_t;
+    index = 0;
     while index < xyz_count {
         // tag table
         write_u32(data, tag_table_offset, TAG_XYZ[index as usize]); // 20 bytes per TAG_(r/g/b)XYZ tag element
         write_u32(data, tag_table_offset + 4, tag_data_offset as u32);
-        write_u32(data, tag_table_offset + 8, 20u32);
+        write_u32(data, tag_table_offset + 8, 20);
         // tag data element
         write_u32(data, tag_data_offset, XYZ_TYPE);
         // reserved 4 bytes.
@@ -1879,16 +1879,16 @@ pub unsafe extern "C" fn qcms_data_create_rgb_with_gamma(
         index = index + 1
     }
     // Part2 : write rTRC, gTRC and bTRC
-    index = 0u32;
+    index = 0;
     while index < trc_count {
         // tag table
         write_u32(data, tag_table_offset, TAG_TRC[index as usize]); // 14 bytes per TAG_(r/g/b)TRC element
         write_u32(data, tag_table_offset + 4, tag_data_offset as u32);
-        write_u32(data, tag_table_offset + 8, 14u32);
+        write_u32(data, tag_table_offset + 8, 14);
         // tag data element
         write_u32(data, tag_data_offset, CURVE_TYPE);
         // reserved 4 bytes.
-        write_u32(data, tag_data_offset + 8, 1u32); // count
+        write_u32(data, tag_data_offset + 8, 1); // count
         write_u16(data, tag_data_offset + 12, float_to_u8Fixed8Number(gamma));
         tag_table_offset = tag_table_offset + 12;
         tag_data_offset = tag_data_offset + 16;
@@ -1901,11 +1901,11 @@ pub unsafe extern "C" fn qcms_data_create_rgb_with_gamma(
      * PCS illumiant field. Likewise mandatory profile tags are omitted.
      */
     write_u32(data, 0, length); // the total length of this memory
-    write_u32(data, 12, 0x6d6e7472u32); // profile->class_type
+    write_u32(data, 12, 0x6d6e7472); // profile->class_type
     write_u32(data, 16, RGB_SIGNATURE); // profile->color_space
     write_u32(data, 20, XYZ_TYPE); // profile->pcs
     write_u32(data, 64, QCMS_INTENT_PERCEPTUAL); // profile->rendering_intent
-    write_u32(data, 128, 6u32); // total tag count
+    write_u32(data, 128, 6); // total tag count
                                 // prepare the result
     *mem = data;
     *size = length as size_t;

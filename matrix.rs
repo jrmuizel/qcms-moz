@@ -88,8 +88,8 @@ pub unsafe extern "C" fn matrix_invert(mut mat: matrix) -> matrix {
     };
     let mut i: i32 = 0;
 
-    static mut a: [i32; 3] = [2i32, 2i32, 1i32];
-    static mut b: [i32; 3] = [1i32, 0i32, 0i32];
+    static mut a: [i32; 3] = [2, 2, 1];
+    static mut b: [i32; 3] = [1, 0, 0];
     /* inv  (A) = 1/det (A) * adj (A) */
     let mut det: f32 = matrix_det(mat);
     if det == 0f32 {
@@ -98,10 +98,10 @@ pub unsafe extern "C" fn matrix_invert(mut mat: matrix) -> matrix {
     }
     dest_mat.invalid = false;
     det = 1f32 / det;
-    let mut j: i32 = 0i32;
-    while j < 3i32 {
-        i = 0i32;
-        while i < 3i32 {
+    let mut j: i32 = 0;
+    while j < 3 {
+        i = 0;
+        while i < 3 {
             let mut ai: i32 = a[i as usize];
             let mut aj: i32 = a[j as usize];
             let mut bi: i32 = b[i as usize];
@@ -154,13 +154,13 @@ pub unsafe extern "C" fn matrix_multiply(mut a: matrix, mut b: matrix) -> matrix
     let mut dx: i32 = 0;
 
     let mut o: i32 = 0;
-    let mut dy: i32 = 0i32;
-    while dy < 3i32 {
-        dx = 0i32;
-        while dx < 3i32 {
+    let mut dy: i32 = 0;
+    while dy < 3 {
+        dx = 0;
+        while dx < 3 {
             let mut v: f64 = 0f64;
-            o = 0i32;
-            while o < 3i32 {
+            o = 0;
+            while o < 3 {
                 v += (a.m[dy as usize][o as usize] * b.m[o as usize][dx as usize]) as f64;
                 o += 1
             }

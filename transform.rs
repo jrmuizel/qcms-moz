@@ -473,9 +473,9 @@ pub unsafe extern "C" fn get_rgb_colorants(
     *colorants = build_RGB_to_XYZ_transfer_matrix(white_point, primaries);
     *colorants = adapt_matrix_to_D50(*colorants, white_point);
     return if (*colorants).invalid as i32 != 0 {
-        1i32
+        1
     } else {
-        0i32
+        0
     } != 0;
 }
 /* Alpha is not corrected.
@@ -489,9 +489,9 @@ unsafe extern "C" fn qcms_transform_data_gray_template_lut<I: GrayFormat, F: For
     mut dest: *mut libc::c_uchar,
     mut length: size_t,
 ) {
-    let components: libc::c_uint = if F::kAIndex == 0xff { 3i32 } else { 4i32 } as libc::c_uint;
+    let components: libc::c_uint = if F::kAIndex == 0xff { 3 } else { 4 } as libc::c_uint;
 
-    let mut i: libc::c_uint = 0u32;
+    let mut i: libc::c_uint = 0;
     while (i as libc::c_ulong) < length {
         let fresh0 = src;
         src = src.offset(1);
@@ -575,9 +575,9 @@ unsafe extern "C" fn qcms_transform_data_gray_template_precache<I: GrayFormat, F
     mut dest: *mut libc::c_uchar,
     mut length: size_t,
 ) {
-    let components: libc::c_uint = if F::kAIndex == 0xff { 3i32 } else { 4i32 } as libc::c_uint;
+    let components: libc::c_uint = if F::kAIndex == 0xff { 3 } else { 4 } as libc::c_uint;
 
-    let mut i: libc::c_uint = 0u32;
+    let mut i: libc::c_uint = 0;
     while (i as libc::c_ulong) < length {
         let fresh2 = src;
         src = src.offset(1);
@@ -591,7 +591,7 @@ unsafe extern "C" fn qcms_transform_data_gray_template_precache<I: GrayFormat, F
 
         let mut linear: f32 = *(*transform).input_gamma_table_gray.offset(device as isize);
         /* we could round here... */
-        let mut gray: u16 = (linear * (8192i32 - 1i32) as f32) as u16;
+        let mut gray: u16 = (linear * (8192 - 1) as f32) as u16;
         *dest.offset(F::kRIndex as isize) = (*(*transform).output_table_r).data[gray as usize];
         *dest.offset(F::kGIndex as isize) = (*(*transform).output_table_g).data[gray as usize];
         *dest.offset(F::kBIndex as isize) = (*(*transform).output_table_b).data[gray as usize];
@@ -649,10 +649,10 @@ unsafe extern "C" fn qcms_transform_data_template_lut_precache<F: Format>(
     mut dest: *mut libc::c_uchar,
     mut length: size_t,
 ) {
-    let components: libc::c_uint = if F::kAIndex == 0xff { 3i32 } else { 4i32 } as libc::c_uint;
+    let components: libc::c_uint = if F::kAIndex == 0xff { 3 } else { 4 } as libc::c_uint;
 
     let mut mat: *const [f32; 4] = (*transform).matrix.as_ptr();
-    let mut i: libc::c_uint = 0u32;
+    let mut i: libc::c_uint = 0;
     while (i as libc::c_ulong) < length {
         let mut device_r: libc::c_uchar = *src.offset(F::kRIndex as isize);
         let mut device_g: libc::c_uchar = *src.offset(F::kGIndex as isize);
@@ -680,9 +680,9 @@ unsafe extern "C" fn qcms_transform_data_template_lut_precache<F: Format>(
         out_linear_b = clamp_float(out_linear_b);
         /* we could round here... */
 
-        let mut r: u16 = (out_linear_r * (8192i32 - 1i32) as f32) as u16;
-        let mut g: u16 = (out_linear_g * (8192i32 - 1i32) as f32) as u16;
-        let mut b: u16 = (out_linear_b * (8192i32 - 1i32) as f32) as u16;
+        let mut r: u16 = (out_linear_r * (8192 - 1) as f32) as u16;
+        let mut g: u16 = (out_linear_g * (8192 - 1) as f32) as u16;
+        let mut b: u16 = (out_linear_b * (8192 - 1) as f32) as u16;
         *dest.offset(F::kRIndex as isize) = (*(*transform).output_table_r).data[r as usize];
         *dest.offset(F::kGIndex as isize) = (*(*transform).output_table_g).data[g as usize];
         *dest.offset(F::kBIndex as isize) = (*(*transform).output_table_b).data[b as usize];
@@ -778,7 +778,7 @@ static void qcms_transform_data_clut(const qcms_transform *transform, const unsi
 }
 */
 unsafe extern "C" fn int_div_ceil(mut value: i32, mut div: i32) -> i32 {
-    return (value + div - 1i32) / div;
+    return (value + div - 1) / div;
 }
 // Using lcms' tetra interpolation algorithm.
 unsafe extern "C" fn qcms_transform_data_tetra_clut_template<F: Format>(
@@ -787,9 +787,9 @@ unsafe extern "C" fn qcms_transform_data_tetra_clut_template<F: Format>(
     mut dest: *mut libc::c_uchar,
     mut length: size_t,
 ) {
-    let components: libc::c_uint = if F::kAIndex == 0xff { 3i32 } else { 4i32 } as libc::c_uint;
+    let components: libc::c_uint = if F::kAIndex == 0xff { 3 } else { 4 } as libc::c_uint;
 
-    let mut xy_len: i32 = 1i32;
+    let mut xy_len: i32 = 1;
     let mut x_len: i32 = (*transform).grid_size as i32;
     let mut len: i32 = x_len * x_len;
     let mut r_table: *mut f32 = (*transform).r_clut;
@@ -810,7 +810,7 @@ unsafe extern "C" fn qcms_transform_data_tetra_clut_template<F: Format>(
     let mut clut_r: f32 = 0.;
     let mut clut_g: f32 = 0.;
     let mut clut_b: f32 = 0.;
-    let mut i: libc::c_uint = 0u32;
+    let mut i: libc::c_uint = 0;
     while (i as libc::c_ulong) < length {
         let mut in_r: libc::c_uchar = *src.offset(F::kRIndex as isize);
         let mut in_g: libc::c_uchar = *src.offset(F::kGIndex as isize);
@@ -823,132 +823,132 @@ unsafe extern "C" fn qcms_transform_data_tetra_clut_template<F: Format>(
         let mut linear_r: f32 = in_r as i32 as f32 / 255.0f32;
         let mut linear_g: f32 = in_g as i32 as f32 / 255.0f32;
         let mut linear_b: f32 = in_b as i32 as f32 / 255.0f32;
-        let mut x: i32 = in_r as i32 * ((*transform).grid_size as i32 - 1i32) / 255i32;
-        let mut y: i32 = in_g as i32 * ((*transform).grid_size as i32 - 1i32) / 255i32;
-        let mut z: i32 = in_b as i32 * ((*transform).grid_size as i32 - 1i32) / 255i32;
+        let mut x: i32 = in_r as i32 * ((*transform).grid_size as i32 - 1) / 255;
+        let mut y: i32 = in_g as i32 * ((*transform).grid_size as i32 - 1) / 255;
+        let mut z: i32 = in_b as i32 * ((*transform).grid_size as i32 - 1) / 255;
         let mut x_n: i32 =
-            int_div_ceil(in_r as i32 * ((*transform).grid_size as i32 - 1i32), 255i32);
+            int_div_ceil(in_r as i32 * ((*transform).grid_size as i32 - 1), 255);
         let mut y_n: i32 =
-            int_div_ceil(in_g as i32 * ((*transform).grid_size as i32 - 1i32), 255i32);
+            int_div_ceil(in_g as i32 * ((*transform).grid_size as i32 - 1), 255);
         let mut z_n: i32 =
-            int_div_ceil(in_b as i32 * ((*transform).grid_size as i32 - 1i32), 255i32);
-        let mut rx: f32 = linear_r * ((*transform).grid_size as i32 - 1i32) as f32 - x as f32;
-        let mut ry: f32 = linear_g * ((*transform).grid_size as i32 - 1i32) as f32 - y as f32;
-        let mut rz: f32 = linear_b * ((*transform).grid_size as i32 - 1i32) as f32 - z as f32;
-        c0_r = *r_table.offset(((x * len + y * x_len + z * xy_len) * 3i32) as isize);
-        c0_g = *g_table.offset(((x * len + y * x_len + z * xy_len) * 3i32) as isize);
-        c0_b = *b_table.offset(((x * len + y * x_len + z * xy_len) * 3i32) as isize);
+            int_div_ceil(in_b as i32 * ((*transform).grid_size as i32 - 1), 255);
+        let mut rx: f32 = linear_r * ((*transform).grid_size as i32 - 1) as f32 - x as f32;
+        let mut ry: f32 = linear_g * ((*transform).grid_size as i32 - 1) as f32 - y as f32;
+        let mut rz: f32 = linear_b * ((*transform).grid_size as i32 - 1) as f32 - z as f32;
+        c0_r = *r_table.offset(((x * len + y * x_len + z * xy_len) * 3) as isize);
+        c0_g = *g_table.offset(((x * len + y * x_len + z * xy_len) * 3) as isize);
+        c0_b = *b_table.offset(((x * len + y * x_len + z * xy_len) * 3) as isize);
         if rx >= ry {
             if ry >= rz {
                 //rx >= ry && ry >= rz
                 c1_r =
-                    *r_table.offset(((x_n * len + y * x_len + z * xy_len) * 3i32) as isize) - c0_r; //rz > rx && rx >= ry
-                c2_r = *r_table.offset(((x_n * len + y_n * x_len + z * xy_len) * 3i32) as isize)
-                    - *r_table.offset(((x_n * len + y * x_len + z * xy_len) * 3i32) as isize);
-                c3_r = *r_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3i32) as isize)
-                    - *r_table.offset(((x_n * len + y_n * x_len + z * xy_len) * 3i32) as isize);
+                    *r_table.offset(((x_n * len + y * x_len + z * xy_len) * 3) as isize) - c0_r; //rz > rx && rx >= ry
+                c2_r = *r_table.offset(((x_n * len + y_n * x_len + z * xy_len) * 3) as isize)
+                    - *r_table.offset(((x_n * len + y * x_len + z * xy_len) * 3) as isize);
+                c3_r = *r_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3) as isize)
+                    - *r_table.offset(((x_n * len + y_n * x_len + z * xy_len) * 3) as isize);
                 c1_g =
-                    *g_table.offset(((x_n * len + y * x_len + z * xy_len) * 3i32) as isize) - c0_g;
-                c2_g = *g_table.offset(((x_n * len + y_n * x_len + z * xy_len) * 3i32) as isize)
-                    - *g_table.offset(((x_n * len + y * x_len + z * xy_len) * 3i32) as isize);
-                c3_g = *g_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3i32) as isize)
-                    - *g_table.offset(((x_n * len + y_n * x_len + z * xy_len) * 3i32) as isize);
+                    *g_table.offset(((x_n * len + y * x_len + z * xy_len) * 3) as isize) - c0_g;
+                c2_g = *g_table.offset(((x_n * len + y_n * x_len + z * xy_len) * 3) as isize)
+                    - *g_table.offset(((x_n * len + y * x_len + z * xy_len) * 3) as isize);
+                c3_g = *g_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3) as isize)
+                    - *g_table.offset(((x_n * len + y_n * x_len + z * xy_len) * 3) as isize);
                 c1_b =
-                    *b_table.offset(((x_n * len + y * x_len + z * xy_len) * 3i32) as isize) - c0_b;
-                c2_b = *b_table.offset(((x_n * len + y_n * x_len + z * xy_len) * 3i32) as isize)
-                    - *b_table.offset(((x_n * len + y * x_len + z * xy_len) * 3i32) as isize);
-                c3_b = *b_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3i32) as isize)
-                    - *b_table.offset(((x_n * len + y_n * x_len + z * xy_len) * 3i32) as isize)
+                    *b_table.offset(((x_n * len + y * x_len + z * xy_len) * 3) as isize) - c0_b;
+                c2_b = *b_table.offset(((x_n * len + y_n * x_len + z * xy_len) * 3) as isize)
+                    - *b_table.offset(((x_n * len + y * x_len + z * xy_len) * 3) as isize);
+                c3_b = *b_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3) as isize)
+                    - *b_table.offset(((x_n * len + y_n * x_len + z * xy_len) * 3) as isize)
             } else if rx >= rz {
                 //rx >= rz && rz >= ry
                 c1_r =
-                    *r_table.offset(((x_n * len + y * x_len + z * xy_len) * 3i32) as isize) - c0_r;
-                c2_r = *r_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3i32) as isize)
-                    - *r_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3i32) as isize);
-                c3_r = *r_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3i32) as isize)
-                    - *r_table.offset(((x_n * len + y * x_len + z * xy_len) * 3i32) as isize);
+                    *r_table.offset(((x_n * len + y * x_len + z * xy_len) * 3) as isize) - c0_r;
+                c2_r = *r_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3) as isize)
+                    - *r_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3) as isize);
+                c3_r = *r_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3) as isize)
+                    - *r_table.offset(((x_n * len + y * x_len + z * xy_len) * 3) as isize);
                 c1_g =
-                    *g_table.offset(((x_n * len + y * x_len + z * xy_len) * 3i32) as isize) - c0_g;
-                c2_g = *g_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3i32) as isize)
-                    - *g_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3i32) as isize);
-                c3_g = *g_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3i32) as isize)
-                    - *g_table.offset(((x_n * len + y * x_len + z * xy_len) * 3i32) as isize);
+                    *g_table.offset(((x_n * len + y * x_len + z * xy_len) * 3) as isize) - c0_g;
+                c2_g = *g_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3) as isize)
+                    - *g_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3) as isize);
+                c3_g = *g_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3) as isize)
+                    - *g_table.offset(((x_n * len + y * x_len + z * xy_len) * 3) as isize);
                 c1_b =
-                    *b_table.offset(((x_n * len + y * x_len + z * xy_len) * 3i32) as isize) - c0_b;
-                c2_b = *b_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3i32) as isize)
-                    - *b_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3i32) as isize);
-                c3_b = *b_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3i32) as isize)
-                    - *b_table.offset(((x_n * len + y * x_len + z * xy_len) * 3i32) as isize)
+                    *b_table.offset(((x_n * len + y * x_len + z * xy_len) * 3) as isize) - c0_b;
+                c2_b = *b_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3) as isize)
+                    - *b_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3) as isize);
+                c3_b = *b_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3) as isize)
+                    - *b_table.offset(((x_n * len + y * x_len + z * xy_len) * 3) as isize)
             } else {
-                c1_r = *r_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3i32) as isize)
-                    - *r_table.offset(((x * len + y * x_len + z_n * xy_len) * 3i32) as isize);
-                c2_r = *r_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3i32) as isize)
-                    - *r_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3i32) as isize);
+                c1_r = *r_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3) as isize)
+                    - *r_table.offset(((x * len + y * x_len + z_n * xy_len) * 3) as isize);
+                c2_r = *r_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3) as isize)
+                    - *r_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3) as isize);
                 c3_r =
-                    *r_table.offset(((x * len + y * x_len + z_n * xy_len) * 3i32) as isize) - c0_r;
-                c1_g = *g_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3i32) as isize)
-                    - *g_table.offset(((x * len + y * x_len + z_n * xy_len) * 3i32) as isize);
-                c2_g = *g_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3i32) as isize)
-                    - *g_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3i32) as isize);
+                    *r_table.offset(((x * len + y * x_len + z_n * xy_len) * 3) as isize) - c0_r;
+                c1_g = *g_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3) as isize)
+                    - *g_table.offset(((x * len + y * x_len + z_n * xy_len) * 3) as isize);
+                c2_g = *g_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3) as isize)
+                    - *g_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3) as isize);
                 c3_g =
-                    *g_table.offset(((x * len + y * x_len + z_n * xy_len) * 3i32) as isize) - c0_g;
-                c1_b = *b_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3i32) as isize)
-                    - *b_table.offset(((x * len + y * x_len + z_n * xy_len) * 3i32) as isize);
-                c2_b = *b_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3i32) as isize)
-                    - *b_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3i32) as isize);
+                    *g_table.offset(((x * len + y * x_len + z_n * xy_len) * 3) as isize) - c0_g;
+                c1_b = *b_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3) as isize)
+                    - *b_table.offset(((x * len + y * x_len + z_n * xy_len) * 3) as isize);
+                c2_b = *b_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3) as isize)
+                    - *b_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3) as isize);
                 c3_b =
-                    *b_table.offset(((x * len + y * x_len + z_n * xy_len) * 3i32) as isize) - c0_b
+                    *b_table.offset(((x * len + y * x_len + z_n * xy_len) * 3) as isize) - c0_b
             }
         } else if rx >= rz {
             //ry > rx && rx >= rz
-            c1_r = *r_table.offset(((x_n * len + y_n * x_len + z * xy_len) * 3i32) as isize)
-                - *r_table.offset(((x * len + y_n * x_len + z * xy_len) * 3i32) as isize); //rz > ry && ry > rx
-            c2_r = *r_table.offset(((x * len + y_n * x_len + z * xy_len) * 3i32) as isize) - c0_r;
-            c3_r = *r_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3i32) as isize)
-                - *r_table.offset(((x_n * len + y_n * x_len + z * xy_len) * 3i32) as isize);
-            c1_g = *g_table.offset(((x_n * len + y_n * x_len + z * xy_len) * 3i32) as isize)
-                - *g_table.offset(((x * len + y_n * x_len + z * xy_len) * 3i32) as isize);
-            c2_g = *g_table.offset(((x * len + y_n * x_len + z * xy_len) * 3i32) as isize) - c0_g;
-            c3_g = *g_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3i32) as isize)
-                - *g_table.offset(((x_n * len + y_n * x_len + z * xy_len) * 3i32) as isize);
-            c1_b = *b_table.offset(((x_n * len + y_n * x_len + z * xy_len) * 3i32) as isize)
-                - *b_table.offset(((x * len + y_n * x_len + z * xy_len) * 3i32) as isize);
-            c2_b = *b_table.offset(((x * len + y_n * x_len + z * xy_len) * 3i32) as isize) - c0_b;
-            c3_b = *b_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3i32) as isize)
-                - *b_table.offset(((x_n * len + y_n * x_len + z * xy_len) * 3i32) as isize)
+            c1_r = *r_table.offset(((x_n * len + y_n * x_len + z * xy_len) * 3) as isize)
+                - *r_table.offset(((x * len + y_n * x_len + z * xy_len) * 3) as isize); //rz > ry && ry > rx
+            c2_r = *r_table.offset(((x * len + y_n * x_len + z * xy_len) * 3) as isize) - c0_r;
+            c3_r = *r_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3) as isize)
+                - *r_table.offset(((x_n * len + y_n * x_len + z * xy_len) * 3) as isize);
+            c1_g = *g_table.offset(((x_n * len + y_n * x_len + z * xy_len) * 3) as isize)
+                - *g_table.offset(((x * len + y_n * x_len + z * xy_len) * 3) as isize);
+            c2_g = *g_table.offset(((x * len + y_n * x_len + z * xy_len) * 3) as isize) - c0_g;
+            c3_g = *g_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3) as isize)
+                - *g_table.offset(((x_n * len + y_n * x_len + z * xy_len) * 3) as isize);
+            c1_b = *b_table.offset(((x_n * len + y_n * x_len + z * xy_len) * 3) as isize)
+                - *b_table.offset(((x * len + y_n * x_len + z * xy_len) * 3) as isize);
+            c2_b = *b_table.offset(((x * len + y_n * x_len + z * xy_len) * 3) as isize) - c0_b;
+            c3_b = *b_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3) as isize)
+                - *b_table.offset(((x_n * len + y_n * x_len + z * xy_len) * 3) as isize)
         } else if ry >= rz {
             //ry >= rz && rz > rx
-            c1_r = *r_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3i32) as isize)
-                - *r_table.offset(((x * len + y_n * x_len + z_n * xy_len) * 3i32) as isize);
-            c2_r = *r_table.offset(((x * len + y_n * x_len + z * xy_len) * 3i32) as isize) - c0_r;
-            c3_r = *r_table.offset(((x * len + y_n * x_len + z_n * xy_len) * 3i32) as isize)
-                - *r_table.offset(((x * len + y_n * x_len + z * xy_len) * 3i32) as isize);
-            c1_g = *g_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3i32) as isize)
-                - *g_table.offset(((x * len + y_n * x_len + z_n * xy_len) * 3i32) as isize);
-            c2_g = *g_table.offset(((x * len + y_n * x_len + z * xy_len) * 3i32) as isize) - c0_g;
-            c3_g = *g_table.offset(((x * len + y_n * x_len + z_n * xy_len) * 3i32) as isize)
-                - *g_table.offset(((x * len + y_n * x_len + z * xy_len) * 3i32) as isize);
-            c1_b = *b_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3i32) as isize)
-                - *b_table.offset(((x * len + y_n * x_len + z_n * xy_len) * 3i32) as isize);
-            c2_b = *b_table.offset(((x * len + y_n * x_len + z * xy_len) * 3i32) as isize) - c0_b;
-            c3_b = *b_table.offset(((x * len + y_n * x_len + z_n * xy_len) * 3i32) as isize)
-                - *b_table.offset(((x * len + y_n * x_len + z * xy_len) * 3i32) as isize)
+            c1_r = *r_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3) as isize)
+                - *r_table.offset(((x * len + y_n * x_len + z_n * xy_len) * 3) as isize);
+            c2_r = *r_table.offset(((x * len + y_n * x_len + z * xy_len) * 3) as isize) - c0_r;
+            c3_r = *r_table.offset(((x * len + y_n * x_len + z_n * xy_len) * 3) as isize)
+                - *r_table.offset(((x * len + y_n * x_len + z * xy_len) * 3) as isize);
+            c1_g = *g_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3) as isize)
+                - *g_table.offset(((x * len + y_n * x_len + z_n * xy_len) * 3) as isize);
+            c2_g = *g_table.offset(((x * len + y_n * x_len + z * xy_len) * 3) as isize) - c0_g;
+            c3_g = *g_table.offset(((x * len + y_n * x_len + z_n * xy_len) * 3) as isize)
+                - *g_table.offset(((x * len + y_n * x_len + z * xy_len) * 3) as isize);
+            c1_b = *b_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3) as isize)
+                - *b_table.offset(((x * len + y_n * x_len + z_n * xy_len) * 3) as isize);
+            c2_b = *b_table.offset(((x * len + y_n * x_len + z * xy_len) * 3) as isize) - c0_b;
+            c3_b = *b_table.offset(((x * len + y_n * x_len + z_n * xy_len) * 3) as isize)
+                - *b_table.offset(((x * len + y_n * x_len + z * xy_len) * 3) as isize)
         } else {
-            c1_r = *r_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3i32) as isize)
-                - *r_table.offset(((x * len + y_n * x_len + z_n * xy_len) * 3i32) as isize);
-            c2_r = *r_table.offset(((x * len + y_n * x_len + z_n * xy_len) * 3i32) as isize)
-                - *r_table.offset(((x * len + y * x_len + z_n * xy_len) * 3i32) as isize);
-            c3_r = *r_table.offset(((x * len + y * x_len + z_n * xy_len) * 3i32) as isize) - c0_r;
-            c1_g = *g_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3i32) as isize)
-                - *g_table.offset(((x * len + y_n * x_len + z_n * xy_len) * 3i32) as isize);
-            c2_g = *g_table.offset(((x * len + y_n * x_len + z_n * xy_len) * 3i32) as isize)
-                - *g_table.offset(((x * len + y * x_len + z_n * xy_len) * 3i32) as isize);
-            c3_g = *g_table.offset(((x * len + y * x_len + z_n * xy_len) * 3i32) as isize) - c0_g;
-            c1_b = *b_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3i32) as isize)
-                - *b_table.offset(((x * len + y_n * x_len + z_n * xy_len) * 3i32) as isize);
-            c2_b = *b_table.offset(((x * len + y_n * x_len + z_n * xy_len) * 3i32) as isize)
-                - *b_table.offset(((x * len + y * x_len + z_n * xy_len) * 3i32) as isize);
-            c3_b = *b_table.offset(((x * len + y * x_len + z_n * xy_len) * 3i32) as isize) - c0_b
+            c1_r = *r_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3) as isize)
+                - *r_table.offset(((x * len + y_n * x_len + z_n * xy_len) * 3) as isize);
+            c2_r = *r_table.offset(((x * len + y_n * x_len + z_n * xy_len) * 3) as isize)
+                - *r_table.offset(((x * len + y * x_len + z_n * xy_len) * 3) as isize);
+            c3_r = *r_table.offset(((x * len + y * x_len + z_n * xy_len) * 3) as isize) - c0_r;
+            c1_g = *g_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3) as isize)
+                - *g_table.offset(((x * len + y_n * x_len + z_n * xy_len) * 3) as isize);
+            c2_g = *g_table.offset(((x * len + y_n * x_len + z_n * xy_len) * 3) as isize)
+                - *g_table.offset(((x * len + y * x_len + z_n * xy_len) * 3) as isize);
+            c3_g = *g_table.offset(((x * len + y * x_len + z_n * xy_len) * 3) as isize) - c0_g;
+            c1_b = *b_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3) as isize)
+                - *b_table.offset(((x * len + y_n * x_len + z_n * xy_len) * 3) as isize);
+            c2_b = *b_table.offset(((x * len + y_n * x_len + z_n * xy_len) * 3) as isize)
+                - *b_table.offset(((x * len + y * x_len + z_n * xy_len) * 3) as isize);
+            c3_b = *b_table.offset(((x * len + y * x_len + z_n * xy_len) * 3) as isize) - c0_b
         }
         clut_r = c0_r + c1_r * rx + c2_r * ry + c3_r * rz;
         clut_g = c0_g + c1_g * rx + c2_g * ry + c3_g * rz;
@@ -993,10 +993,10 @@ unsafe extern "C" fn qcms_transform_data_template_lut<F: Format>(
     mut dest: *mut libc::c_uchar,
     mut length: size_t,
 ) {
-    let components: libc::c_uint = if F::kAIndex == 0xff { 3i32 } else { 4i32 } as libc::c_uint;
+    let components: libc::c_uint = if F::kAIndex == 0xff { 3 } else { 4 } as libc::c_uint;
 
     let mut mat: *const [f32; 4] = (*transform).matrix.as_ptr();
-    let mut i: libc::c_uint = 0u32;
+    let mut i: libc::c_uint = 0;
     while (i as libc::c_ulong) < length {
         let mut device_r: libc::c_uchar = *src.offset(F::kRIndex as isize);
         let mut device_g: libc::c_uchar = *src.offset(F::kGIndex as isize);
@@ -1150,7 +1150,7 @@ unsafe extern "C" fn sse_version_available() -> i32 {
     /* we know at build time that 64-bit CPUs always have SSE2
      * this tells the compiler that non-SSE2 branches will never be
      * taken (i.e. OK to optimze away the SSE1 and non-SIMD code */
-    return 2i32;
+    return 2;
 }
 static mut bradford_matrix: matrix = {
     let mut init = matrix {
@@ -1204,7 +1204,7 @@ pub unsafe extern "C" fn compute_whitepoint_adaption(mut X: f32, mut Y: f32, mut
 #[no_mangle]
 pub unsafe extern "C" fn qcms_profile_precache_output_transform(mut profile: *mut qcms_profile) {
     /* we only support precaching on rgb profiles */
-    if (*profile).color_space != 0x52474220u32 {
+    if (*profile).color_space != 0x52474220 {
         return;
     }
     if qcms_supports_iccv4 {
@@ -1273,7 +1273,7 @@ pub unsafe extern "C" fn qcms_transform_precacheLUT_float(
     let mut y: u16 = 0;
     let mut z: u16 = 0;
     let mut l: u32 = 0;
-    let mut lutSize: u32 = (3i32 * samples * samples * samples) as u32;
+    let mut lutSize: u32 = (3 * samples * samples * samples) as u32;
 
     let mut lut: *mut f32 = 0 as *mut f32;
 
@@ -1281,7 +1281,7 @@ pub unsafe extern "C" fn qcms_transform_precacheLUT_float(
     let mut dest: *mut f32 = malloc(lutSize as usize * ::std::mem::size_of::<f32>()) as *mut f32;
     if !src.is_null() && !dest.is_null() {
         /* Prepare a list of points we want to sample */
-        l = 0u32;
+        l = 0;
         x = 0u16;
         while (x as i32) < samples {
             y = 0u16;
@@ -1290,13 +1290,13 @@ pub unsafe extern "C" fn qcms_transform_precacheLUT_float(
                 while (z as i32) < samples {
                     let fresh8 = l;
                     l = l + 1;
-                    *src.offset(fresh8 as isize) = x as i32 as f32 / (samples - 1i32) as f32;
+                    *src.offset(fresh8 as isize) = x as i32 as f32 / (samples - 1) as f32;
                     let fresh9 = l;
                     l = l + 1;
-                    *src.offset(fresh9 as isize) = y as i32 as f32 / (samples - 1i32) as f32;
+                    *src.offset(fresh9 as isize) = y as i32 as f32 / (samples - 1) as f32;
                     let fresh10 = l;
                     l = l + 1;
-                    *src.offset(fresh10 as isize) = z as i32 as f32 / (samples - 1i32) as f32;
+                    *src.offset(fresh10 as isize) = z as i32 as f32 / (samples - 1) as f32;
                     z = z + 1
                 }
                 y = y + 1
@@ -1410,7 +1410,7 @@ pub unsafe extern "C" fn qcms_transform_create(
         // TODO For transforming small data sets of about 200x200 or less
         // precaching should be avoided.
         let mut result: *mut qcms_transform =
-            qcms_transform_precacheLUT_float(transform, in_0, out, 33i32, in_type);
+            qcms_transform_precacheLUT_float(transform, in_0, out, 33, in_type);
         if result.is_null() {
             debug_assert!(false, "precacheLUT failed");
             qcms_transform_release(transform);
@@ -1450,7 +1450,7 @@ pub unsafe extern "C" fn qcms_transform_create(
             return 0 as *mut qcms_transform;
         }
     }
-    if (*in_0).color_space == 0x52474220u32 {
+    if (*in_0).color_space == 0x52474220 {
         if precache {
             if cfg!(any(target_arch = "x86", target_arch = "x86_64")) && qcms_supports_avx {
                 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
@@ -1488,7 +1488,7 @@ pub unsafe extern "C" fn qcms_transform_create(
                     }
                 }
             } else if cfg!(any(target_arch = "x86", target_arch = "x86_64"))
-                && sse_version_available() >= 2i32
+                && sse_version_available() >= 2
             {
                 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
                 {
@@ -1598,10 +1598,10 @@ pub unsafe extern "C" fn qcms_transform_create(
         }
         let mut result_0: matrix = matrix_multiply(out_matrix, in_matrix);
         /* check for NaN values in the matrix and bail if we find any */
-        let mut i: libc::c_uint = 0u32;
-        while i < 3u32 {
-            let mut j: libc::c_uint = 0u32;
-            while j < 3u32 {
+        let mut i: libc::c_uint = 0;
+        while i < 3 {
+            let mut j: libc::c_uint = 0;
+            while j < 3 {
                 if result_0.m[i as usize][j as usize] != result_0.m[i as usize][j as usize] {
                     qcms_transform_release(transform);
                     return 0 as *mut qcms_transform;
@@ -1621,7 +1621,7 @@ pub unsafe extern "C" fn qcms_transform_create(
         (*transform).matrix[0][2] = result_0.m[2][0];
         (*transform).matrix[1][2] = result_0.m[2][1];
         (*transform).matrix[2][2] = result_0.m[2][2]
-    } else if (*in_0).color_space == 0x47524159u32 {
+    } else if (*in_0).color_space == 0x47524159 {
         (*transform).input_gamma_table_gray = build_input_gamma_table((*in_0).grayTRC);
         if (*transform).input_gamma_table_gray.is_null() {
             qcms_transform_release(transform);

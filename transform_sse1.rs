@@ -144,13 +144,13 @@ static mut floatScaleX4: [f32; 4] =
      8192f32,
      8192f32];
 static mut clampMaxValueX4: [f32; 4] =
-    [(8192i32 - 1i32) as f32 /
+    [(8192 - 1) as f32 /
          8192f32,
-     (8192i32 - 1i32) as f32 /
+     (8192 - 1) as f32 /
          8192f32,
-     (8192i32 - 1i32) as f32 /
+     (8192 - 1) as f32 /
          8192f32,
-     (8192i32 - 1i32) as f32 /
+     (8192 - 1) as f32 /
          8192f32];
 
 unsafe extern "C" fn qcms_transform_data_template_lut_sse1<F: Format>(mut transform:
@@ -171,7 +171,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut_sse1<F: Format>(mut transf
     let mut input: *const f32 =
         (&mut *input_back.as_mut_ptr().offset(16isize) as
              *mut libc::c_char as uintptr_t &
-             !(0xfi32) as libc::c_ulong) as *mut f32;
+             !(0xf) as libc::c_ulong) as *mut f32;
     /* share input and output locations to save having to keep the
      * locations in separate registers */
     let mut output: *const uint32_t = input as *mut uint32_t;
@@ -202,8 +202,8 @@ unsafe extern "C" fn qcms_transform_data_template_lut_sse1<F: Format>(mut transf
     let scale: __m128 = _mm_load_ps(floatScaleX4.as_ptr());
     let components: libc::c_uint =
         if F::kAIndex == 0xffu64 {
-            3i32
-        } else { 4i32 } as libc::c_uint;
+            3
+        } else { 4 } as libc::c_uint;
     /* working variables */
     let mut vec_r: __m128 = _mm_setzero_ps();
     let mut vec_g: __m128 = _mm_setzero_ps();
@@ -226,12 +226,12 @@ unsafe extern "C" fn qcms_transform_data_template_lut_sse1<F: Format>(mut transf
     }
     src = src.offset(components as isize);
     /* transform all but final pixel */
-    i = 0u32;
+    i = 0;
     while (i as libc::c_ulong) < length {
         /* position values from gamma tables */
-        vec_r = _mm_shuffle_ps(vec_r, vec_r, 0i32);
-        vec_g = _mm_shuffle_ps(vec_g, vec_g, 0i32);
-        vec_b = _mm_shuffle_ps(vec_b, vec_b, 0i32);
+        vec_r = _mm_shuffle_ps(vec_r, vec_r, 0);
+        vec_g = _mm_shuffle_ps(vec_g, vec_g, 0);
+        vec_b = _mm_shuffle_ps(vec_b, vec_b, 0);
         /* gamma * matrix */
         vec_r = _mm_mul_ps(vec_r, mat0);
         vec_g = _mm_mul_ps(vec_g, mat1);
@@ -277,9 +277,9 @@ unsafe extern "C" fn qcms_transform_data_template_lut_sse1<F: Format>(mut transf
         i = i.wrapping_add(1)
     }
     /* handle final (maybe only) pixel */
-    vec_r = _mm_shuffle_ps(vec_r, vec_r, 0i32);
-    vec_g = _mm_shuffle_ps(vec_g, vec_g, 0i32);
-    vec_b = _mm_shuffle_ps(vec_b, vec_b, 0i32);
+    vec_r = _mm_shuffle_ps(vec_r, vec_r, 0);
+    vec_g = _mm_shuffle_ps(vec_g, vec_g, 0);
+    vec_b = _mm_shuffle_ps(vec_b, vec_b, 0);
     vec_r = _mm_mul_ps(vec_r, mat0);
     vec_g = _mm_mul_ps(vec_g, mat1);
     vec_b = _mm_mul_ps(vec_b, mat2);
