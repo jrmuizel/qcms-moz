@@ -3,22 +3,19 @@ use ::libc;
 #[cfg(target_arch = "x86")]
 pub use std::arch::x86::{
     __m128, __m128i, _mm_add_ps, _mm_cvtps_epi32, _mm_load_ps, _mm_load_ss, _mm_max_ps, _mm_min_ps,
-    _mm_mul_ps, _mm_setzero_ps, _mm_shuffle_ps, _mm_store_si128,
+    _mm_mul_ps, _mm_setzero_ps, _mm_shuffle_ps, _mm_store_si128, _mm_set1_ps
 };
 #[cfg(target_arch = "x86_64")]
 pub use std::arch::x86_64::{
     __m128, __m128i, _mm_add_ps, _mm_cvtps_epi32, _mm_load_ps, _mm_load_ss, _mm_max_ps, _mm_min_ps,
-    _mm_mul_ps, _mm_setzero_ps, _mm_shuffle_ps, _mm_store_si128,
+    _mm_mul_ps, _mm_setzero_ps, _mm_shuffle_ps, _mm_store_si128, _mm_set1_ps
 };
 
 pub type uintptr_t = libc::c_ulong;
 pub type size_t = libc::c_ulong;
+#[repr(align(16))]
 struct Output([u32; 4]);
 
-/* pre-shuffled: just load these into XMM reg instead of load-scalar/shufps sequence */
-static mut floatScaleX4: [f32; 4] = [FLOATSCALE, FLOATSCALE, FLOATSCALE, FLOATSCALE];
-static mut clampMaxValueX4: [f32; 4] = [CLAMPMAXVAL, CLAMPMAXVAL, CLAMPMAXVAL, CLAMPMAXVAL];
-//template <size_t kRIndex, size_t kGIndex, size_t kBIndex, size_t kAIndex = NO_A_INDEX>
 unsafe extern "C" fn qcms_transform_data_template_lut_sse2<F: Format>(
     mut transform: *const qcms_transform,
     mut src: *const libc::c_uchar,
@@ -52,9 +49,9 @@ unsafe extern "C" fn qcms_transform_data_template_lut_sse2<F: Format>(
     let mat1: __m128 = _mm_load_ps((*mat.offset(1isize)).as_ptr());
     let mat2: __m128 = _mm_load_ps((*mat.offset(2isize)).as_ptr());
     /* these values don't change, either */
-    let max: __m128 = _mm_load_ps(clampMaxValueX4.as_ptr());
+    let max: __m128 = _mm_set1_ps(CLAMPMAXVAL);
     let min: __m128 = _mm_setzero_ps();
-    let scale: __m128 = _mm_load_ps(floatScaleX4.as_ptr());
+    let scale: __m128 = _mm_set1_ps(FLOATSCALE);
     let components: libc::c_uint = if F::kAIndex == 0xff { 3i32 } else { 4i32 } as libc::c_uint;
     /* working variables */
     let mut vec_r: __m128 = _mm_setzero_ps();

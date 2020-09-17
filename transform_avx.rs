@@ -18,8 +18,8 @@ pub use std::arch::x86_64::{
 };
 pub type uintptr_t = libc::c_ulong;
 pub type size_t = libc::c_ulong;
-#[repr(align(16))]
-struct Output([u32; 4]);
+#[repr(align(32))]
+struct Output([u32; 8]);
 
 unsafe extern "C" fn qcms_transform_data_template_lut_avx<F: Format>(
     mut transform: *const qcms_transform,
