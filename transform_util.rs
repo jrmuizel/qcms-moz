@@ -60,7 +60,7 @@ pub unsafe extern "C" fn lut_interp_linear(
         + *table.offset(lower as isize) as i32 as f64 * (upper as f64 - input_value))
         as f32;
     /* scale the value */
-    return value * (1.0f32 / 65535.0f32);
+    return value * (1.0 / 65535.0);
 }
 /* same as above but takes and returns a uint16_t value representing a range from 0..1 */
 #[no_mangle]

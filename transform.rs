@@ -415,9 +415,9 @@ unsafe extern "C" fn adaption_matrix(
     let mut lam_rigg: matrix = {
         let mut init = matrix {
             m: [
-                [0.8951f32, 0.2664f32, -0.1614f32],
-                [-0.7502f32, 1.7135f32, 0.0367f32],
-                [0.0389f32, -0.0685f32, 1.0296f32],
+                [0.8951, 0.2664, -0.1614],
+                [-0.7502, 1.7135, 0.0367],
+                [0.0389, -0.0685, 1.0296],
             ],
             invalid: false,
         };
@@ -820,9 +820,9 @@ unsafe extern "C" fn qcms_transform_data_tetra_clut_template<F: Format>(
             in_a = *src.offset(F::kAIndex as isize)
         }
         src = src.offset(components as isize);
-        let mut linear_r: f32 = in_r as i32 as f32 / 255.0f32;
-        let mut linear_g: f32 = in_g as i32 as f32 / 255.0f32;
-        let mut linear_b: f32 = in_b as i32 as f32 / 255.0f32;
+        let mut linear_r: f32 = in_r as i32 as f32 / 255.0;
+        let mut linear_g: f32 = in_g as i32 as f32 / 255.0;
+        let mut linear_b: f32 = in_b as i32 as f32 / 255.0;
         let mut x: i32 = in_r as i32 * ((*transform).grid_size as i32 - 1) / 255;
         let mut y: i32 = in_g as i32 * ((*transform).grid_size as i32 - 1) / 255;
         let mut z: i32 = in_b as i32 * ((*transform).grid_size as i32 - 1) / 255;
@@ -953,9 +953,9 @@ unsafe extern "C" fn qcms_transform_data_tetra_clut_template<F: Format>(
         clut_r = c0_r + c1_r * rx + c2_r * ry + c3_r * rz;
         clut_g = c0_g + c1_g * rx + c2_g * ry + c3_g * rz;
         clut_b = c0_b + c1_b * rx + c2_b * ry + c3_b * rz;
-        *dest.offset(F::kRIndex as isize) = clamp_u8(clut_r * 255.0f32);
-        *dest.offset(F::kGIndex as isize) = clamp_u8(clut_g * 255.0f32);
-        *dest.offset(F::kBIndex as isize) = clamp_u8(clut_b * 255.0f32);
+        *dest.offset(F::kRIndex as isize) = clamp_u8(clut_r * 255.0);
+        *dest.offset(F::kGIndex as isize) = clamp_u8(clut_g * 255.0);
+        *dest.offset(F::kBIndex as isize) = clamp_u8(clut_b * 255.0);
         if F::kAIndex != 0xff {
             *dest.offset(F::kAIndex as isize) = in_a
         }
@@ -1155,9 +1155,9 @@ unsafe extern "C" fn sse_version_available() -> i32 {
 static mut bradford_matrix: matrix = {
     let mut init = matrix {
         m: [
-            [0.8951f32, 0.2664f32, -0.1614f32],
-            [-0.7502f32, 1.7135f32, 0.0367f32],
-            [0.0389f32, -0.0685f32, 1.0296f32],
+            [0.8951, 0.2664, -0.1614],
+            [-0.7502, 1.7135, 0.0367],
+            [0.0389, -0.0685, 1.0296],
         ],
         invalid: false,
     };
@@ -1166,9 +1166,9 @@ static mut bradford_matrix: matrix = {
 static mut bradford_matrix_inv: matrix = {
     let mut init = matrix {
         m: [
-            [0.9869929f32, -0.1470543f32, 0.1599627f32],
-            [0.4323053f32, 0.5183603f32, 0.0492912f32],
-            [-0.0085287f32, 0.0400428f32, 0.9684867f32],
+            [0.9869929, -0.1470543, 0.1599627],
+            [0.4323053, 0.5183603, 0.0492912],
+            [-0.0085287, 0.0400428, 0.9684867],
         ],
         invalid: false,
     };
@@ -1177,17 +1177,17 @@ static mut bradford_matrix_inv: matrix = {
 // See ICCv4 E.3
 #[no_mangle]
 pub unsafe extern "C" fn compute_whitepoint_adaption(mut X: f32, mut Y: f32, mut Z: f32) -> matrix {
-    let mut p: f32 = (0.96422f32 * bradford_matrix.m[0][0]
-        + 1.000f32 * bradford_matrix.m[1][0]
-        + 0.82521f32 * bradford_matrix.m[2][0])
+    let mut p: f32 = (0.96422 * bradford_matrix.m[0][0]
+        + 1.000 * bradford_matrix.m[1][0]
+        + 0.82521 * bradford_matrix.m[2][0])
         / (X * bradford_matrix.m[0][0] + Y * bradford_matrix.m[1][0] + Z * bradford_matrix.m[2][0]);
-    let mut y: f32 = (0.96422f32 * bradford_matrix.m[0][1]
-        + 1.000f32 * bradford_matrix.m[1][1]
-        + 0.82521f32 * bradford_matrix.m[2][1])
+    let mut y: f32 = (0.96422 * bradford_matrix.m[0][1]
+        + 1.000 * bradford_matrix.m[1][1]
+        + 0.82521 * bradford_matrix.m[2][1])
         / (X * bradford_matrix.m[0][1] + Y * bradford_matrix.m[1][1] + Z * bradford_matrix.m[2][1]);
-    let mut b: f32 = (0.96422f32 * bradford_matrix.m[0][2]
-        + 1.000f32 * bradford_matrix.m[1][2]
-        + 0.82521f32 * bradford_matrix.m[2][2])
+    let mut b: f32 = (0.96422 * bradford_matrix.m[0][2]
+        + 1.000 * bradford_matrix.m[1][2]
+        + 0.82521 * bradford_matrix.m[2][2])
         / (X * bradford_matrix.m[0][2] + Y * bradford_matrix.m[1][2] + Z * bradford_matrix.m[2][2]);
     let mut white_adaption: matrix = {
         let mut init = matrix {

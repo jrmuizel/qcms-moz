@@ -73,7 +73,7 @@ pub type transform_module_fn_t = Option<
 
 #[inline]
 unsafe extern "C" fn lerp(mut a: f32, mut b: f32, mut t: f32) -> f32 {
-    return a * (1.0f32 - t) + b * t;
+    return a * (1.0 - t) + b * t;
 }
 
 unsafe extern "C" fn build_lut_matrix(mut lut: *mut lutType) -> matrix {
@@ -136,40 +136,40 @@ unsafe extern "C" fn qcms_transform_module_LAB_to_XYZ(
     mut length: size_t,
 ) {
     // lcms: D50 XYZ values
-    let mut WhitePointX: f32 = 0.9642f32;
-    let mut WhitePointY: f32 = 1.0f32;
-    let mut WhitePointZ: f32 = 0.8249f32;
+    let mut WhitePointX: f32 = 0.9642;
+    let mut WhitePointY: f32 = 1.0;
+    let mut WhitePointZ: f32 = 0.8249;
     let mut i: size_t = 0;
     while i < length {
         let fresh0 = src;
         src = src.offset(1);
-        let mut device_L: f32 = *fresh0 * 100.0f32;
+        let mut device_L: f32 = *fresh0 * 100.0;
         let fresh1 = src;
         src = src.offset(1);
-        let mut device_a: f32 = *fresh1 * 255.0f32 - 128.0f32;
+        let mut device_a: f32 = *fresh1 * 255.0 - 128.0;
         let fresh2 = src;
         src = src.offset(1);
-        let mut device_b: f32 = *fresh2 * 255.0f32 - 128.0f32;
-        let mut y: f32 = (device_L + 16.0f32) / 116.0f32;
-        let mut X: f32 = if y + 0.002f32 * device_a <= 24.0f32 / 116.0f32 {
-            (108.0f64 / 841.0f64) * ((y + 0.002f32 * device_a) as f64 - 16.0f64 / 116.0f64)
+        let mut device_b: f32 = *fresh2 * 255.0 - 128.0;
+        let mut y: f32 = (device_L + 16.0) / 116.0;
+        let mut X: f32 = if y + 0.002 * device_a <= 24.0 / 116.0 {
+            (108.0f64 / 841.0f64) * ((y + 0.002 * device_a) as f64 - 16.0f64 / 116.0f64)
         } else {
-            ((y + 0.002f32 * device_a)
-                * (y + 0.002f32 * device_a)
-                * (y + 0.002f32 * device_a)
+            ((y + 0.002 * device_a)
+                * (y + 0.002 * device_a)
+                * (y + 0.002 * device_a)
                 * WhitePointX) as f64
         } as f32;
-        let mut Y: f32 = if y <= 24.0f32 / 116.0f32 {
+        let mut Y: f32 = if y <= 24.0 / 116.0 {
             (108.0f64 / 841.0f64) * (y as f64 - 16.0f64 / 116.0f64)
         } else {
             (y * y * y * WhitePointY) as f64
         } as f32;
-        let mut Z: f32 = if y - 0.005f32 * device_b <= 24.0f32 / 116.0f32 {
-            (108.0f64 / 841.0f64) * ((y - 0.005f32 * device_b) as f64 - 16.0f64 / 116.0f64)
+        let mut Z: f32 = if y - 0.005 * device_b <= 24.0 / 116.0 {
+            (108.0f64 / 841.0f64) * ((y - 0.005 * device_b) as f64 - 16.0f64 / 116.0f64)
         } else {
-            ((y - 0.005f32 * device_b)
-                * (y - 0.005f32 * device_b)
-                * (y - 0.005f32 * device_b)
+            ((y - 0.005 * device_b)
+                * (y - 0.005 * device_b)
+                * (y - 0.005 * device_b)
                 * WhitePointZ) as f64
         } as f32;
         let fresh3 = dest;
@@ -192,9 +192,9 @@ unsafe extern "C" fn qcms_transform_module_XYZ_to_LAB(
     mut length: size_t,
 ) {
     // lcms: D50 XYZ values
-    let mut WhitePointX: f32 = 0.9642f32;
-    let mut WhitePointY: f32 = 1.0f32;
-    let mut WhitePointZ: f32 = 0.8249f32;
+    let mut WhitePointX: f32 = 0.9642;
+    let mut WhitePointY: f32 = 1.0;
+    let mut WhitePointZ: f32 = 0.8249;
     let mut i: size_t = 0;
     while i < length {
         let fresh6 = src;
@@ -210,35 +210,35 @@ unsafe extern "C" fn qcms_transform_module_XYZ_to_LAB(
         let mut device_z: f32 =
             (*fresh8 as f64 * (1.0f64 + 32767.0f64 / 32768.0f64) / WhitePointZ as f64) as f32;
         let mut fx: f32 =
-            if device_x <= 24.0f32 / 116.0f32 * (24.0f32 / 116.0f32) * (24.0f32 / 116.0f32) {
+            if device_x <= 24.0 / 116.0 * (24.0 / 116.0) * (24.0 / 116.0) {
                 (841.0f64 / 108.0f64 * device_x as f64) + 16.0f64 / 116.0f64
             } else {
                 (device_x as f64).powf(1.0f64 / 3.0f64)
             } as f32;
         let mut fy: f32 =
-            if device_y <= 24.0f32 / 116.0f32 * (24.0f32 / 116.0f32) * (24.0f32 / 116.0f32) {
+            if device_y <= 24.0 / 116.0 * (24.0 / 116.0) * (24.0 / 116.0) {
                 (841.0f64 / 108.0f64 * device_y as f64) + 16.0f64 / 116.0f64
             } else {
                 (device_y as f64).powf(1.0f64 / 3.0f64)
             } as f32;
         let mut fz: f32 =
-            if device_z <= 24.0f32 / 116.0f32 * (24.0f32 / 116.0f32) * (24.0f32 / 116.0f32) {
+            if device_z <= 24.0 / 116.0 * (24.0 / 116.0) * (24.0 / 116.0) {
                 (841.0f64 / 108.0f64 * device_z as f64) + 16.0f64 / 116.0f64
             } else {
                 (device_z as f64).powf(1.0f64 / 3.0f64)
             } as f32;
-        let mut L: f32 = 116.0f32 * fy - 16.0f32;
-        let mut a: f32 = 500.0f32 * (fx - fy);
-        let mut b: f32 = 200.0f32 * (fy - fz);
+        let mut L: f32 = 116.0 * fy - 16.0;
+        let mut a: f32 = 500.0 * (fx - fy);
+        let mut b: f32 = 200.0 * (fy - fz);
         let fresh9 = dest;
         dest = dest.offset(1);
-        *fresh9 = L / 100.0f32;
+        *fresh9 = L / 100.0;
         let fresh10 = dest;
         dest = dest.offset(1);
-        *fresh10 = (a + 128.0f32) / 255.0f32;
+        *fresh10 = (a + 128.0) / 255.0;
         let fresh11 = dest;
         dest = dest.offset(1);
-        *fresh11 = (b + 128.0f32) / 255.0f32;
+        *fresh11 = (b + 128.0) / 255.0;
         i = i + 1
     }
 }
@@ -1245,15 +1245,15 @@ pub unsafe extern "C" fn qcms_modular_transform_create_input(
                     current_block = 8903102000210989603;
                 } else {
                     append_transform(transform, &mut next_transform);
-                    (*transform).matrix.m[0][0] = 1f32 / 1.999969482421875f32;
-                    (*transform).matrix.m[0][1] = 0.0f32;
-                    (*transform).matrix.m[0][2] = 0.0f32;
-                    (*transform).matrix.m[1][0] = 0.0f32;
-                    (*transform).matrix.m[1][1] = 1f32 / 1.999969482421875f32;
-                    (*transform).matrix.m[1][2] = 0.0f32;
-                    (*transform).matrix.m[2][0] = 0.0f32;
-                    (*transform).matrix.m[2][1] = 0.0f32;
-                    (*transform).matrix.m[2][2] = 1f32 / 1.999969482421875f32;
+                    (*transform).matrix.m[0][0] = 1f32 / 1.999969482421875;
+                    (*transform).matrix.m[0][1] = 0.0;
+                    (*transform).matrix.m[0][2] = 0.0;
+                    (*transform).matrix.m[1][0] = 0.0;
+                    (*transform).matrix.m[1][1] = 1f32 / 1.999969482421875;
+                    (*transform).matrix.m[1][2] = 0.0;
+                    (*transform).matrix.m[2][0] = 0.0;
+                    (*transform).matrix.m[2][1] = 0.0;
+                    (*transform).matrix.m[2][2] = 1f32 / 1.999969482421875;
                     (*transform).matrix.invalid = false;
                     (*transform).transform_module_fn = Some(
                         qcms_transform_module_matrix
@@ -1341,15 +1341,15 @@ unsafe extern "C" fn qcms_modular_transform_create_output(
                 current_block = 15713701561912628542;
             } else {
                 append_transform(transform, &mut next_transform);
-                (*transform).matrix.m[0][0] = 1.999969482421875f32;
-                (*transform).matrix.m[0][1] = 0.0f32;
-                (*transform).matrix.m[0][2] = 0.0f32;
-                (*transform).matrix.m[1][0] = 0.0f32;
-                (*transform).matrix.m[1][1] = 1.999969482421875f32;
-                (*transform).matrix.m[1][2] = 0.0f32;
-                (*transform).matrix.m[2][0] = 0.0f32;
-                (*transform).matrix.m[2][1] = 0.0f32;
-                (*transform).matrix.m[2][2] = 1.999969482421875f32;
+                (*transform).matrix.m[0][0] = 1.999969482421875;
+                (*transform).matrix.m[0][1] = 0.0;
+                (*transform).matrix.m[0][2] = 0.0;
+                (*transform).matrix.m[1][0] = 0.0;
+                (*transform).matrix.m[1][1] = 1.999969482421875;
+                (*transform).matrix.m[1][2] = 0.0;
+                (*transform).matrix.m[2][0] = 0.0;
+                (*transform).matrix.m[2][1] = 0.0;
+                (*transform).matrix.m[2][2] = 1.999969482421875;
                 (*transform).matrix.invalid = false;
                 (*transform).transform_module_fn = Some(
                     qcms_transform_module_matrix

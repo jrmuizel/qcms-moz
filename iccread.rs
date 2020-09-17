@@ -210,7 +210,7 @@ pub struct mem_source {
 pub type uInt8Number = u8;
 #[inline]
 unsafe extern "C" fn uInt8Number_to_float(mut a: uInt8Number) -> f32 {
-    return a as int32_t as f32 / 255.0f32;
+    return a as int32_t as f32 / 255.0;
 }
 #[inline]
 unsafe extern "C" fn double_to_s15Fixed16Number(mut v: f64) -> s15Fixed16Number {
@@ -218,7 +218,7 @@ unsafe extern "C" fn double_to_s15Fixed16Number(mut v: f64) -> s15Fixed16Number 
 }
 #[inline]
 unsafe extern "C" fn uInt16Number_to_float(mut a: uInt16Number) -> f32 {
-    return a as int32_t as f32 / 65535.0f32;
+    return a as int32_t as f32 / 65535.0;
 }
 
 unsafe extern "C" fn cpu_to_be32(mut v: u32) -> be32 {
@@ -521,16 +521,16 @@ pub unsafe extern "C" fn qcms_profile_is_bogus(mut profile: *mut qcms_profile) -
     sum[1] = rY + gY + bY;
     sum[2] = rZ + gZ + bZ;
     // Build our target vector (see mozilla bug 460629)
-    target[0] = 0.96420f32;
-    target[1] = 1.00000f32;
-    target[2] = 0.82491f32;
+    target[0] = 0.96420;
+    target[1] = 1.00000;
+    target[2] = 0.82491;
     // Our tolerance vector - Recommended by Chris Murphy based on
     // conversion from the LAB space criterion of no more than 3 in any one
     // channel. This is similar to, but slightly more tolerant than Adobe's
     // criterion.
-    tolerance[0] = 0.02f32;
-    tolerance[1] = 0.02f32;
-    tolerance[2] = 0.04f32;
+    tolerance[0] = 0.02;
+    tolerance[1] = 0.02;
+    tolerance[2] = 0.04;
     // Compare with our tolerance
     i = 0;
     while i < 3 {
@@ -744,7 +744,7 @@ unsafe extern "C" fn read_curveType(
         if count == 1 || count == 2 {
             /* we have a type 1 or type 2 function that has a division by 'a' */
             let mut a: f32 = (*curve).parameter[1];
-            if a == 0.0f32 {
+            if a == 0.0 {
                 invalid_source(
                     src,
                     b"parametricCurve definition causes division by zero.\x00" as *const u8
@@ -1296,12 +1296,12 @@ unsafe extern "C" fn curve_from_table(mut table: *mut u16, mut num_entries: i32)
     return curve;
 }
 unsafe extern "C" fn float_to_u8Fixed8Number(mut a: f32) -> u16 {
-    if a > 255.0f32 + 255.0f32 / 256f32 {
+    if a > 255.0 + 255.0 / 256f32 {
         return 0xffffu16;
-    } else if a < 0.0f32 {
+    } else if a < 0.0 {
         return 0u16;
     } else {
-        return (a * 256.0f32 + 0.5f32).floor() as u16;
+        return (a * 256.0 + 0.5).floor() as u16;
     };
 }
 unsafe extern "C" fn curve_from_gamma(mut gamma: f32) -> *mut curveType {
