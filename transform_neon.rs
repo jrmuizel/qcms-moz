@@ -8,7 +8,6 @@ use std::mem::zeroed;
 pub type uintptr_t = libc::c_ulong;
 pub type size_t = libc::c_ulong;
 
-/* pre-shuffled: just load these into XMM reg instead of load-scalar/shufps sequence */
 static mut floatScale: f32 = FLOATSCALE;
 static mut clampMaxValue: f32 = CLAMPMAXVAL;
 
