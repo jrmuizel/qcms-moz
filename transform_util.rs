@@ -1,7 +1,7 @@
 use ::libc;
 use libc::{free, malloc};
 
-use crate::{iccread::{curveType, qcms_profile}, s15Fixed16Number};
+use crate::{iccread::{curveType, qcms_profile}, s15Fixed16Number, s15Fixed16Number_to_float};
 use crate::matrix::matrix;
 
 pub type __darwin_size_t = libc::c_ulong;
@@ -11,68 +11,8 @@ pub type int32_t = i32;
 pub type uint8_t = libc::c_uchar;
 pub type uint16_t = libc::c_ushort;
 
-#[repr(C)]
-#[derive(Copy, Clone)]
-pub struct lutmABType {
-    pub num_in_channels: u8,
-    pub num_out_channels: u8,
-    pub num_grid_points: [u8; 16],
-    pub e00: s15Fixed16Number,
-    pub e01: s15Fixed16Number,
-    pub e02: s15Fixed16Number,
-    pub e03: s15Fixed16Number,
-    pub e10: s15Fixed16Number,
-    pub e11: s15Fixed16Number,
-    pub e12: s15Fixed16Number,
-    pub e13: s15Fixed16Number,
-    pub e20: s15Fixed16Number,
-    pub e21: s15Fixed16Number,
-    pub e22: s15Fixed16Number,
-    pub e23: s15Fixed16Number,
-    pub reversed: bool,
-    pub clut_table: *mut f32,
-    pub a_curves: [*mut curveType; 10],
-    pub b_curves: [*mut curveType; 10],
-    pub m_curves: [*mut curveType; 10],
-    pub clut_table_data: [f32; 0],
-}
-
-#[repr(C)]
-#[derive(Copy, Clone)]
-pub struct lutType {
-    pub num_input_channels: u8,
-    pub num_output_channels: u8,
-    pub num_clut_grid_points: u8,
-    pub e00: s15Fixed16Number,
-    pub e01: s15Fixed16Number,
-    pub e02: s15Fixed16Number,
-    pub e10: s15Fixed16Number,
-    pub e11: s15Fixed16Number,
-    pub e12: s15Fixed16Number,
-    pub e20: s15Fixed16Number,
-    pub e21: s15Fixed16Number,
-    pub e22: s15Fixed16Number,
-    pub num_input_table_entries: u16,
-    pub num_output_table_entries: u16,
-    pub input_table: *mut f32,
-    pub clut_table: *mut f32,
-    pub output_table: *mut f32,
-    pub table_data: [f32; 0],
-}
-
-#[repr(C)]
-#[derive(Copy, Clone)]
-pub struct XYZNumber {
-    pub X: s15Fixed16Number,
-    pub Y: s15Fixed16Number,
-    pub Z: s15Fixed16Number,
-}
-
 pub type uint16_fract_t = u16;
-#[inline]
-unsafe extern "C" fn s15Fixed16Number_to_float(mut a: s15Fixed16Number) -> f32 {
-    return a as f32 / 65536.0f32;
-}
+
 #[inline]
 unsafe extern "C" fn u8Fixed8Number_to_float(mut x: u16) -> f32 {
     return (x as i32 as f64 / 256.0f64) as f32;

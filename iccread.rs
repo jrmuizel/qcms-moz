@@ -24,7 +24,7 @@
 use ::libc;
 use libc::{calloc, fclose, fopen, fread, free, malloc, memcpy, memset, FILE};
 
-use crate::{matrix::matrix, qcms_intent, QCMS_INTENT_PERCEPTUAL, s15Fixed16Number};
+use crate::{matrix::matrix, qcms_intent, QCMS_INTENT_PERCEPTUAL, s15Fixed16Number, s15Fixed16Number_to_float};
 use crate::transform::{get_rgb_colorants, precache_output, precache_release, set_rgb_colorants};
 
 extern "C" {
@@ -218,12 +218,6 @@ unsafe extern "C" fn uInt16Number_to_float(mut a: uInt16Number) -> f32 {
     return a as int32_t as f32 / 65535.0f32;
 }
 
-/* produces the nearest float to 'a' with a maximum error
- * of 1/1024 which happens for large values like 0x40000040 */
-#[inline]
-unsafe extern "C" fn s15Fixed16Number_to_float(mut a: s15Fixed16Number) -> f32 {
-    return a as f32 / 65536.0f32;
-}
 unsafe extern "C" fn cpu_to_be32(mut v: u32) -> be32 {
     return (v & 0xffu32) << 24i32
         | (v & 0xff00u32) << 8i32

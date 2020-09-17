@@ -30,6 +30,13 @@ pub const QCMS_INTENT_MIN: qcms_intent = 0;
 
 pub type s15Fixed16Number = i32;
 
+/* produces the nearest float to 'a' with a maximum error
+ * of 1/1024 which happens for large values like 0x40000040 */
+#[inline]
+fn s15Fixed16Number_to_float(mut a: s15Fixed16Number) -> f32 {
+    return a as f32 / 65536.0f32;
+}
+
 pub mod chain;
 pub mod gtest;
 pub mod iccread;

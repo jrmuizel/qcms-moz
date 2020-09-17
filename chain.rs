@@ -27,7 +27,7 @@ use crate::{
         build_colorant_matrix, build_input_gamma_table, build_output_lut, lut_interp_linear,
         lut_interp_linear_float,
     },
-transform_util::clamp_float, s15Fixed16Number};
+transform_util::clamp_float, s15Fixed16Number, s15Fixed16Number_to_float};
 use ::libc::{self, calloc, free, malloc, memcpy, memset};
 
 pub type __darwin_size_t = libc::c_ulong;
@@ -69,10 +69,7 @@ pub struct qcms_modular_transform {
 pub type transform_module_fn_t = Option<
     unsafe extern "C" fn(_: *mut qcms_modular_transform, _: *mut f32, _: *mut f32, _: size_t) -> (),
 >;
-#[inline]
-unsafe extern "C" fn s15Fixed16Number_to_float(mut a: s15Fixed16Number) -> f32 {
-    return a as f32 / 65536.0f32;
-}
+
 #[inline]
 unsafe extern "C" fn lerp(mut a: f32, mut b: f32, mut t: f32) -> f32 {
     return a * (1.0f32 - t) + b * t;
