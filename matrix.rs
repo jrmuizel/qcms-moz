@@ -59,27 +59,21 @@ pub struct vector {
 #[no_mangle]
 pub unsafe extern "C" fn matrix_eval(mut mat: matrix, mut v: vector) -> vector {
     let mut result: vector = vector { v: [0.; 3] };
-    result.v[0usize] = mat.m[0usize][0usize] * v.v[0usize]
-        + mat.m[0usize][1usize] * v.v[1usize]
-        + mat.m[0usize][2usize] * v.v[2usize];
-    result.v[1usize] = mat.m[1usize][0usize] * v.v[0usize]
-        + mat.m[1usize][1usize] * v.v[1usize]
-        + mat.m[1usize][2usize] * v.v[2usize];
-    result.v[2usize] = mat.m[2usize][0usize] * v.v[0usize]
-        + mat.m[2usize][1usize] * v.v[1usize]
-        + mat.m[2usize][2usize] * v.v[2usize];
+    result.v[0] = mat.m[0][0] * v.v[0] + mat.m[0][1] * v.v[1] + mat.m[0][2] * v.v[2];
+    result.v[1] = mat.m[1][0] * v.v[0] + mat.m[1][1] * v.v[1] + mat.m[1][2] * v.v[2];
+    result.v[2] = mat.m[2][0] * v.v[0] + mat.m[2][1] * v.v[1] + mat.m[2][2] * v.v[2];
     return result;
 }
 //XXX: should probably pass by reference and we could
 //probably reuse this computation in matrix_invert
 #[no_mangle]
 pub unsafe extern "C" fn matrix_det(mut mat: matrix) -> f32 {
-    let mut det: f32 = mat.m[0usize][0usize] * mat.m[1usize][1usize] * mat.m[2usize][2usize]
-        + mat.m[0usize][1usize] * mat.m[1usize][2usize] * mat.m[2usize][0usize]
-        + mat.m[0usize][2usize] * mat.m[1usize][0usize] * mat.m[2usize][1usize]
-        - mat.m[0usize][0usize] * mat.m[1usize][2usize] * mat.m[2usize][1usize]
-        - mat.m[0usize][1usize] * mat.m[1usize][0usize] * mat.m[2usize][2usize]
-        - mat.m[0usize][2usize] * mat.m[1usize][1usize] * mat.m[2usize][0usize];
+    let mut det: f32 = mat.m[0][0] * mat.m[1][1] * mat.m[2][2]
+        + mat.m[0][1] * mat.m[1][2] * mat.m[2][0]
+        + mat.m[0][2] * mat.m[1][0] * mat.m[2][1]
+        - mat.m[0][0] * mat.m[1][2] * mat.m[2][1]
+        - mat.m[0][1] * mat.m[1][0] * mat.m[2][2]
+        - mat.m[0][2] * mat.m[1][1] * mat.m[2][0];
     return det;
 }
 /* from pixman and cairo and Mathematics for Game Programmers */
@@ -131,15 +125,15 @@ pub unsafe extern "C" fn matrix_identity() -> matrix {
         m: [[0.; 3]; 3],
         invalid: false,
     };
-    i.m[0usize][0usize] = 1f32;
-    i.m[0usize][1usize] = 0f32;
-    i.m[0usize][2usize] = 0f32;
-    i.m[1usize][0usize] = 0f32;
-    i.m[1usize][1usize] = 1f32;
-    i.m[1usize][2usize] = 0f32;
-    i.m[2usize][0usize] = 0f32;
-    i.m[2usize][1usize] = 0f32;
-    i.m[2usize][2usize] = 1f32;
+    i.m[0][0] = 1f32;
+    i.m[0][1] = 0f32;
+    i.m[0][2] = 0f32;
+    i.m[1][0] = 0f32;
+    i.m[1][1] = 1f32;
+    i.m[1][2] = 0f32;
+    i.m[2][0] = 0f32;
+    i.m[2][1] = 0f32;
+    i.m[2][2] = 1f32;
     i.invalid = 0i32 != 0;
     return i;
 }

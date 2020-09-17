@@ -265,15 +265,15 @@ pub unsafe extern "C" fn build_colorant_matrix(mut p: *mut qcms_profile) -> matr
         m: [[0.; 3]; 3],
         invalid: false,
     };
-    result.m[0usize][0usize] = s15Fixed16Number_to_float((*p).redColorant.X);
-    result.m[0usize][1usize] = s15Fixed16Number_to_float((*p).greenColorant.X);
-    result.m[0usize][2usize] = s15Fixed16Number_to_float((*p).blueColorant.X);
-    result.m[1usize][0usize] = s15Fixed16Number_to_float((*p).redColorant.Y);
-    result.m[1usize][1usize] = s15Fixed16Number_to_float((*p).greenColorant.Y);
-    result.m[1usize][2usize] = s15Fixed16Number_to_float((*p).blueColorant.Y);
-    result.m[2usize][0usize] = s15Fixed16Number_to_float((*p).redColorant.Z);
-    result.m[2usize][1usize] = s15Fixed16Number_to_float((*p).greenColorant.Z);
-    result.m[2usize][2usize] = s15Fixed16Number_to_float((*p).blueColorant.Z);
+    result.m[0][0] = s15Fixed16Number_to_float((*p).redColorant.X);
+    result.m[0][1] = s15Fixed16Number_to_float((*p).greenColorant.X);
+    result.m[0][2] = s15Fixed16Number_to_float((*p).blueColorant.X);
+    result.m[1][0] = s15Fixed16Number_to_float((*p).redColorant.Y);
+    result.m[1][1] = s15Fixed16Number_to_float((*p).greenColorant.Y);
+    result.m[1][2] = s15Fixed16Number_to_float((*p).blueColorant.Y);
+    result.m[2][0] = s15Fixed16Number_to_float((*p).redColorant.Z);
+    result.m[2][1] = s15Fixed16Number_to_float((*p).greenColorant.Z);
+    result.m[2][2] = s15Fixed16Number_to_float((*p).blueColorant.Z);
     result.invalid = 0i32 != 0;
     return result;
 }

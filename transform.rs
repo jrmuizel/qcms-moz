@@ -310,33 +310,33 @@ unsafe extern "C" fn build_RGB_to_XYZ_transfer_matrix(
     let mut yg: f64 = primrs.green.y;
     let mut xb: f64 = primrs.blue.x;
     let mut yb: f64 = primrs.blue.y;
-    primaries.m[0usize][0usize] = xr as f32;
-    primaries.m[0usize][1usize] = xg as f32;
-    primaries.m[0usize][2usize] = xb as f32;
-    primaries.m[1usize][0usize] = yr as f32;
-    primaries.m[1usize][1usize] = yg as f32;
-    primaries.m[1usize][2usize] = yb as f32;
-    primaries.m[2usize][0usize] = (1f64 - xr - yr) as f32;
-    primaries.m[2usize][1usize] = (1f64 - xg - yg) as f32;
-    primaries.m[2usize][2usize] = (1f64 - xb - yb) as f32;
+    primaries.m[0][0] = xr as f32;
+    primaries.m[0][1] = xg as f32;
+    primaries.m[0][2] = xb as f32;
+    primaries.m[1][0] = yr as f32;
+    primaries.m[1][1] = yg as f32;
+    primaries.m[1][2] = yb as f32;
+    primaries.m[2][0] = (1f64 - xr - yr) as f32;
+    primaries.m[2][1] = (1f64 - xg - yg) as f32;
+    primaries.m[2][2] = (1f64 - xb - yb) as f32;
     primaries.invalid = 0i32 != 0;
-    white_point.v[0usize] = (xn / yn) as f32;
-    white_point.v[1usize] = 1f32;
-    white_point.v[2usize] = ((1.0f64 - xn - yn) / yn) as f32;
+    white_point.v[0] = (xn / yn) as f32;
+    white_point.v[1] = 1f32;
+    white_point.v[2] = ((1.0f64 - xn - yn) / yn) as f32;
     let mut primaries_invert: matrix = matrix_invert(primaries);
     if primaries_invert.invalid {
         return matrix_invalid();
     }
     let mut coefs: vector = matrix_eval(primaries_invert, white_point);
-    result.m[0usize][0usize] = (coefs.v[0usize] as f64 * xr) as f32;
-    result.m[0usize][1usize] = (coefs.v[1usize] as f64 * xg) as f32;
-    result.m[0usize][2usize] = (coefs.v[2usize] as f64 * xb) as f32;
-    result.m[1usize][0usize] = (coefs.v[0usize] as f64 * yr) as f32;
-    result.m[1usize][1usize] = (coefs.v[1usize] as f64 * yg) as f32;
-    result.m[1usize][2usize] = (coefs.v[2usize] as f64 * yb) as f32;
-    result.m[2usize][0usize] = (coefs.v[0usize] as f64 * (1.0f64 - xr - yr)) as f32;
-    result.m[2usize][1usize] = (coefs.v[1usize] as f64 * (1.0f64 - xg - yg)) as f32;
-    result.m[2usize][2usize] = (coefs.v[2usize] as f64 * (1.0f64 - xb - yb)) as f32;
+    result.m[0][0] = (coefs.v[0] as f64 * xr) as f32;
+    result.m[0][1] = (coefs.v[1] as f64 * xg) as f32;
+    result.m[0][2] = (coefs.v[2] as f64 * xb) as f32;
+    result.m[1][0] = (coefs.v[0] as f64 * yr) as f32;
+    result.m[1][1] = (coefs.v[1] as f64 * yg) as f32;
+    result.m[1][2] = (coefs.v[2] as f64 * yb) as f32;
+    result.m[2][0] = (coefs.v[0] as f64 * (1.0f64 - xr - yr)) as f32;
+    result.m[2][1] = (coefs.v[1] as f64 * (1.0f64 - xg - yg)) as f32;
+    result.m[2][2] = (coefs.v[2] as f64 * (1.0f64 - xb - yb)) as f32;
     result.invalid = primaries_invert.invalid;
     return result;
 }
@@ -383,24 +383,24 @@ unsafe extern "C" fn compute_chromatic_adaption(
     if chad_inv.invalid {
         return matrix_invalid();
     }
-    cone_source_XYZ.v[0usize] = source_white_point.X as f32;
-    cone_source_XYZ.v[1usize] = source_white_point.Y as f32;
-    cone_source_XYZ.v[2usize] = source_white_point.Z as f32;
-    cone_dest_XYZ.v[0usize] = dest_white_point.X as f32;
-    cone_dest_XYZ.v[1usize] = dest_white_point.Y as f32;
-    cone_dest_XYZ.v[2usize] = dest_white_point.Z as f32;
+    cone_source_XYZ.v[0] = source_white_point.X as f32;
+    cone_source_XYZ.v[1] = source_white_point.Y as f32;
+    cone_source_XYZ.v[2] = source_white_point.Z as f32;
+    cone_dest_XYZ.v[0] = dest_white_point.X as f32;
+    cone_dest_XYZ.v[1] = dest_white_point.Y as f32;
+    cone_dest_XYZ.v[2] = dest_white_point.Z as f32;
 
     let mut cone_source_rgb: vector = matrix_eval(chad, cone_source_XYZ);
     let mut cone_dest_rgb: vector = matrix_eval(chad, cone_dest_XYZ);
-    cone.m[0usize][0usize] = cone_dest_rgb.v[0usize] / cone_source_rgb.v[0usize];
-    cone.m[0usize][1usize] = 0f32;
-    cone.m[0usize][2usize] = 0f32;
-    cone.m[1usize][0usize] = 0f32;
-    cone.m[1usize][1usize] = cone_dest_rgb.v[1usize] / cone_source_rgb.v[1usize];
-    cone.m[1usize][2usize] = 0f32;
-    cone.m[2usize][0usize] = 0f32;
-    cone.m[2usize][1usize] = 0f32;
-    cone.m[2usize][2usize] = cone_dest_rgb.v[2usize] / cone_source_rgb.v[2usize];
+    cone.m[0][0] = cone_dest_rgb.v[0] / cone_source_rgb.v[0];
+    cone.m[0][1] = 0f32;
+    cone.m[0][2] = 0f32;
+    cone.m[1][0] = 0f32;
+    cone.m[1][1] = cone_dest_rgb.v[1] / cone_source_rgb.v[1];
+    cone.m[1][2] = 0f32;
+    cone.m[2][0] = 0f32;
+    cone.m[2][1] = 0f32;
+    cone.m[2][2] = cone_dest_rgb.v[2] / cone_source_rgb.v[2];
     cone.invalid = 0i32 != 0;
     // Normalize
     return matrix_multiply(chad_inv, matrix_multiply(cone, chad));
@@ -453,15 +453,15 @@ pub unsafe extern "C" fn set_rgb_colorants(
         return 0i32 != 0;
     }
     /* note: there's a transpose type of operation going on here */
-    (*profile).redColorant.X = double_to_s15Fixed16Number(colorants.m[0usize][0usize] as f64);
-    (*profile).redColorant.Y = double_to_s15Fixed16Number(colorants.m[1usize][0usize] as f64);
-    (*profile).redColorant.Z = double_to_s15Fixed16Number(colorants.m[2usize][0usize] as f64);
-    (*profile).greenColorant.X = double_to_s15Fixed16Number(colorants.m[0usize][1usize] as f64);
-    (*profile).greenColorant.Y = double_to_s15Fixed16Number(colorants.m[1usize][1usize] as f64);
-    (*profile).greenColorant.Z = double_to_s15Fixed16Number(colorants.m[2usize][1usize] as f64);
-    (*profile).blueColorant.X = double_to_s15Fixed16Number(colorants.m[0usize][2usize] as f64);
-    (*profile).blueColorant.Y = double_to_s15Fixed16Number(colorants.m[1usize][2usize] as f64);
-    (*profile).blueColorant.Z = double_to_s15Fixed16Number(colorants.m[2usize][2usize] as f64);
+    (*profile).redColorant.X = double_to_s15Fixed16Number(colorants.m[0][0] as f64);
+    (*profile).redColorant.Y = double_to_s15Fixed16Number(colorants.m[1][0] as f64);
+    (*profile).redColorant.Z = double_to_s15Fixed16Number(colorants.m[2][0] as f64);
+    (*profile).greenColorant.X = double_to_s15Fixed16Number(colorants.m[0][1] as f64);
+    (*profile).greenColorant.Y = double_to_s15Fixed16Number(colorants.m[1][1] as f64);
+    (*profile).greenColorant.Z = double_to_s15Fixed16Number(colorants.m[2][1] as f64);
+    (*profile).blueColorant.X = double_to_s15Fixed16Number(colorants.m[0][2] as f64);
+    (*profile).blueColorant.Y = double_to_s15Fixed16Number(colorants.m[1][2] as f64);
+    (*profile).blueColorant.Z = double_to_s15Fixed16Number(colorants.m[2][2] as f64);
     return 1i32 != 0;
 }
 #[no_mangle]
@@ -666,15 +666,15 @@ unsafe extern "C" fn qcms_transform_data_template_lut_precache<F: Format>(
         let mut linear_r: f32 = *(*transform).input_gamma_table_r.offset(device_r as isize);
         let mut linear_g: f32 = *(*transform).input_gamma_table_g.offset(device_g as isize);
         let mut linear_b: f32 = *(*transform).input_gamma_table_b.offset(device_b as isize);
-        let mut out_linear_r: f32 = (*mat.offset(0isize))[0usize] * linear_r
-            + (*mat.offset(1isize))[0usize] * linear_g
-            + (*mat.offset(2isize))[0usize] * linear_b;
-        let mut out_linear_g: f32 = (*mat.offset(0isize))[1usize] * linear_r
-            + (*mat.offset(1isize))[1usize] * linear_g
-            + (*mat.offset(2isize))[1usize] * linear_b;
-        let mut out_linear_b: f32 = (*mat.offset(0isize))[2usize] * linear_r
-            + (*mat.offset(1isize))[2usize] * linear_g
-            + (*mat.offset(2isize))[2usize] * linear_b;
+        let mut out_linear_r: f32 = (*mat.offset(0isize))[0] * linear_r
+            + (*mat.offset(1isize))[0] * linear_g
+            + (*mat.offset(2isize))[0] * linear_b;
+        let mut out_linear_g: f32 = (*mat.offset(0isize))[1] * linear_r
+            + (*mat.offset(1isize))[1] * linear_g
+            + (*mat.offset(2isize))[1] * linear_b;
+        let mut out_linear_b: f32 = (*mat.offset(0isize))[2] * linear_r
+            + (*mat.offset(1isize))[2] * linear_g
+            + (*mat.offset(2isize))[2] * linear_b;
         out_linear_r = clamp_float(out_linear_r);
         out_linear_g = clamp_float(out_linear_g);
         out_linear_b = clamp_float(out_linear_b);
@@ -1010,15 +1010,15 @@ unsafe extern "C" fn qcms_transform_data_template_lut<F: Format>(
         let mut linear_r: f32 = *(*transform).input_gamma_table_r.offset(device_r as isize);
         let mut linear_g: f32 = *(*transform).input_gamma_table_g.offset(device_g as isize);
         let mut linear_b: f32 = *(*transform).input_gamma_table_b.offset(device_b as isize);
-        let mut out_linear_r: f32 = (*mat.offset(0isize))[0usize] * linear_r
-            + (*mat.offset(1isize))[0usize] * linear_g
-            + (*mat.offset(2isize))[0usize] * linear_b;
-        let mut out_linear_g: f32 = (*mat.offset(0isize))[1usize] * linear_r
-            + (*mat.offset(1isize))[1usize] * linear_g
-            + (*mat.offset(2isize))[1usize] * linear_b;
-        let mut out_linear_b: f32 = (*mat.offset(0isize))[2usize] * linear_r
-            + (*mat.offset(1isize))[2usize] * linear_g
-            + (*mat.offset(2isize))[2usize] * linear_b;
+        let mut out_linear_r: f32 = (*mat.offset(0isize))[0] * linear_r
+            + (*mat.offset(1isize))[0] * linear_g
+            + (*mat.offset(2isize))[0] * linear_b;
+        let mut out_linear_g: f32 = (*mat.offset(0isize))[1] * linear_r
+            + (*mat.offset(1isize))[1] * linear_g
+            + (*mat.offset(2isize))[1] * linear_b;
+        let mut out_linear_b: f32 = (*mat.offset(0isize))[2] * linear_r
+            + (*mat.offset(1isize))[2] * linear_g
+            + (*mat.offset(2isize))[2] * linear_b;
         out_linear_r = clamp_float(out_linear_r);
         out_linear_g = clamp_float(out_linear_g);
         out_linear_b = clamp_float(out_linear_b);
@@ -1177,24 +1177,18 @@ static mut bradford_matrix_inv: matrix = {
 // See ICCv4 E.3
 #[no_mangle]
 pub unsafe extern "C" fn compute_whitepoint_adaption(mut X: f32, mut Y: f32, mut Z: f32) -> matrix {
-    let mut p: f32 = (0.96422f32 * bradford_matrix.m[0usize][0usize]
-        + 1.000f32 * bradford_matrix.m[1usize][0usize]
-        + 0.82521f32 * bradford_matrix.m[2usize][0usize])
-        / (X * bradford_matrix.m[0usize][0usize]
-            + Y * bradford_matrix.m[1usize][0usize]
-            + Z * bradford_matrix.m[2usize][0usize]);
-    let mut y: f32 = (0.96422f32 * bradford_matrix.m[0usize][1usize]
-        + 1.000f32 * bradford_matrix.m[1usize][1usize]
-        + 0.82521f32 * bradford_matrix.m[2usize][1usize])
-        / (X * bradford_matrix.m[0usize][1usize]
-            + Y * bradford_matrix.m[1usize][1usize]
-            + Z * bradford_matrix.m[2usize][1usize]);
-    let mut b: f32 = (0.96422f32 * bradford_matrix.m[0usize][2usize]
-        + 1.000f32 * bradford_matrix.m[1usize][2usize]
-        + 0.82521f32 * bradford_matrix.m[2usize][2usize])
-        / (X * bradford_matrix.m[0usize][2usize]
-            + Y * bradford_matrix.m[1usize][2usize]
-            + Z * bradford_matrix.m[2usize][2usize]);
+    let mut p: f32 = (0.96422f32 * bradford_matrix.m[0][0]
+        + 1.000f32 * bradford_matrix.m[1][0]
+        + 0.82521f32 * bradford_matrix.m[2][0])
+        / (X * bradford_matrix.m[0][0] + Y * bradford_matrix.m[1][0] + Z * bradford_matrix.m[2][0]);
+    let mut y: f32 = (0.96422f32 * bradford_matrix.m[0][1]
+        + 1.000f32 * bradford_matrix.m[1][1]
+        + 0.82521f32 * bradford_matrix.m[2][1])
+        / (X * bradford_matrix.m[0][1] + Y * bradford_matrix.m[1][1] + Z * bradford_matrix.m[2][1]);
+    let mut b: f32 = (0.96422f32 * bradford_matrix.m[0][2]
+        + 1.000f32 * bradford_matrix.m[1][2]
+        + 0.82521f32 * bradford_matrix.m[2][2])
+        / (X * bradford_matrix.m[0][2] + Y * bradford_matrix.m[1][2] + Z * bradford_matrix.m[2][2]);
     let mut white_adaption: matrix = {
         let mut init = matrix {
             m: [[p, 0f32, 0f32], [0f32, y, 0f32], [0f32, 0f32, b]],
@@ -1618,15 +1612,15 @@ pub unsafe extern "C" fn qcms_transform_create(
         }
         /* store the results in column major mode
          * this makes doing the multiplication with sse easier */
-        (*transform).matrix[0usize][0usize] = result_0.m[0usize][0usize];
-        (*transform).matrix[1usize][0usize] = result_0.m[0usize][1usize];
-        (*transform).matrix[2usize][0usize] = result_0.m[0usize][2usize];
-        (*transform).matrix[0usize][1usize] = result_0.m[1usize][0usize];
-        (*transform).matrix[1usize][1usize] = result_0.m[1usize][1usize];
-        (*transform).matrix[2usize][1usize] = result_0.m[1usize][2usize];
-        (*transform).matrix[0usize][2usize] = result_0.m[2usize][0usize];
-        (*transform).matrix[1usize][2usize] = result_0.m[2usize][1usize];
-        (*transform).matrix[2usize][2usize] = result_0.m[2usize][2usize]
+        (*transform).matrix[0][0] = result_0.m[0][0];
+        (*transform).matrix[1][0] = result_0.m[0][1];
+        (*transform).matrix[2][0] = result_0.m[0][2];
+        (*transform).matrix[0][1] = result_0.m[1][0];
+        (*transform).matrix[1][1] = result_0.m[1][1];
+        (*transform).matrix[2][1] = result_0.m[1][2];
+        (*transform).matrix[0][2] = result_0.m[2][0];
+        (*transform).matrix[1][2] = result_0.m[2][1];
+        (*transform).matrix[2][2] = result_0.m[2][2]
     } else if (*in_0).color_space == 0x47524159u32 {
         (*transform).input_gamma_table_gray = build_input_gamma_table((*in_0).grayTRC);
         if (*transform).input_gamma_table_gray.is_null() {

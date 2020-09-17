@@ -517,20 +517,20 @@ pub unsafe extern "C" fn qcms_profile_is_bogus(mut profile: *mut qcms_profile) -
     bY = s15Fixed16Number_to_float((*profile).blueColorant.Y);
     bZ = s15Fixed16Number_to_float((*profile).blueColorant.Z);
     // Sum the values; they should add up to something close to white
-    sum[0usize] = rX + gX + bX;
-    sum[1usize] = rY + gY + bY;
-    sum[2usize] = rZ + gZ + bZ;
+    sum[0] = rX + gX + bX;
+    sum[1] = rY + gY + bY;
+    sum[2] = rZ + gZ + bZ;
     // Build our target vector (see mozilla bug 460629)
-    target[0usize] = 0.96420f32;
-    target[1usize] = 1.00000f32;
-    target[2usize] = 0.82491f32;
+    target[0] = 0.96420f32;
+    target[1] = 1.00000f32;
+    target[2] = 0.82491f32;
     // Our tolerance vector - Recommended by Chris Murphy based on
     // conversion from the LAB space criterion of no more than 3 in any one
     // channel. This is similar to, but slightly more tolerant than Adobe's
     // criterion.
-    tolerance[0usize] = 0.02f32;
-    tolerance[1usize] = 0.02f32;
-    tolerance[2usize] = 0.04f32;
+    tolerance[0] = 0.02f32;
+    tolerance[1] = 0.02f32;
+    tolerance[2] = 0.04f32;
     // Compare with our tolerance
     i = 0u32;
     while i < 3u32 {
@@ -743,7 +743,7 @@ unsafe extern "C" fn read_curveType(
         *len = 12u32 + COUNT_TO_LENGTH[count as usize] * 4u32;
         if count == 1u32 || count == 2u32 {
             /* we have a type 1 or type 2 function that has a division by 'a' */
-            let mut a: f32 = (*curve).parameter[1usize];
+            let mut a: f32 = (*curve).parameter[1];
             if a == 0.0f32 {
                 invalid_source(
                     src,
@@ -1862,17 +1862,17 @@ pub unsafe extern "C" fn qcms_data_create_rgb_with_gamma(
         write_u32(
             data,
             tag_data_offset + 8,
-            double_to_s15Fixed16Number(colorants.m[0usize][index as usize] as f64) as u32,
+            double_to_s15Fixed16Number(colorants.m[0][index as usize] as f64) as u32,
         );
         write_u32(
             data,
             tag_data_offset + 12,
-            double_to_s15Fixed16Number(colorants.m[1usize][index as usize] as f64) as u32,
+            double_to_s15Fixed16Number(colorants.m[1][index as usize] as f64) as u32,
         );
         write_u32(
             data,
             tag_data_offset + 16,
-            double_to_s15Fixed16Number(colorants.m[2usize][index as usize] as f64) as u32,
+            double_to_s15Fixed16Number(colorants.m[2][index as usize] as f64) as u32,
         );
         tag_table_offset = tag_table_offset + 12;
         tag_data_offset = tag_data_offset + 20;

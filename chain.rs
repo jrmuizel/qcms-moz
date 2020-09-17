@@ -82,15 +82,15 @@ unsafe extern "C" fn build_lut_matrix(mut lut: *mut lutType) -> matrix {
         invalid: false,
     };
     if !lut.is_null() {
-        result.m[0usize][0usize] = s15Fixed16Number_to_float((*lut).e00);
-        result.m[0usize][1usize] = s15Fixed16Number_to_float((*lut).e01);
-        result.m[0usize][2usize] = s15Fixed16Number_to_float((*lut).e02);
-        result.m[1usize][0usize] = s15Fixed16Number_to_float((*lut).e10);
-        result.m[1usize][1usize] = s15Fixed16Number_to_float((*lut).e11);
-        result.m[1usize][2usize] = s15Fixed16Number_to_float((*lut).e12);
-        result.m[2usize][0usize] = s15Fixed16Number_to_float((*lut).e20);
-        result.m[2usize][1usize] = s15Fixed16Number_to_float((*lut).e21);
-        result.m[2usize][2usize] = s15Fixed16Number_to_float((*lut).e22);
+        result.m[0][0] = s15Fixed16Number_to_float((*lut).e00);
+        result.m[0][1] = s15Fixed16Number_to_float((*lut).e01);
+        result.m[0][2] = s15Fixed16Number_to_float((*lut).e02);
+        result.m[1][0] = s15Fixed16Number_to_float((*lut).e10);
+        result.m[1][1] = s15Fixed16Number_to_float((*lut).e11);
+        result.m[1][2] = s15Fixed16Number_to_float((*lut).e12);
+        result.m[2][0] = s15Fixed16Number_to_float((*lut).e20);
+        result.m[2][1] = s15Fixed16Number_to_float((*lut).e21);
+        result.m[2][2] = s15Fixed16Number_to_float((*lut).e22);
         result.invalid = 0i32 != 0
     } else {
         memset(
@@ -108,15 +108,15 @@ unsafe extern "C" fn build_mAB_matrix(mut lut: *mut lutmABType) -> matrix {
         invalid: false,
     };
     if !lut.is_null() {
-        result.m[0usize][0usize] = s15Fixed16Number_to_float((*lut).e00);
-        result.m[0usize][1usize] = s15Fixed16Number_to_float((*lut).e01);
-        result.m[0usize][2usize] = s15Fixed16Number_to_float((*lut).e02);
-        result.m[1usize][0usize] = s15Fixed16Number_to_float((*lut).e10);
-        result.m[1usize][1usize] = s15Fixed16Number_to_float((*lut).e11);
-        result.m[1usize][2usize] = s15Fixed16Number_to_float((*lut).e12);
-        result.m[2usize][0usize] = s15Fixed16Number_to_float((*lut).e20);
-        result.m[2usize][1usize] = s15Fixed16Number_to_float((*lut).e21);
-        result.m[2usize][2usize] = s15Fixed16Number_to_float((*lut).e22);
+        result.m[0][0] = s15Fixed16Number_to_float((*lut).e00);
+        result.m[0][1] = s15Fixed16Number_to_float((*lut).e01);
+        result.m[0][2] = s15Fixed16Number_to_float((*lut).e02);
+        result.m[1][0] = s15Fixed16Number_to_float((*lut).e10);
+        result.m[1][1] = s15Fixed16Number_to_float((*lut).e11);
+        result.m[1][2] = s15Fixed16Number_to_float((*lut).e12);
+        result.m[2][0] = s15Fixed16Number_to_float((*lut).e20);
+        result.m[2][1] = s15Fixed16Number_to_float((*lut).e21);
+        result.m[2][2] = s15Fixed16Number_to_float((*lut).e22);
         result.invalid = 0i32 != 0
     } else {
         memset(
@@ -721,15 +721,15 @@ unsafe extern "C" fn qcms_transform_module_matrix_translate(
     };
     /* store the results in column major mode
      * this makes doing the multiplication with sse easier */
-    mat.m[0usize][0usize] = (*transform).matrix.m[0usize][0usize];
-    mat.m[1usize][0usize] = (*transform).matrix.m[0usize][1usize];
-    mat.m[2usize][0usize] = (*transform).matrix.m[0usize][2usize];
-    mat.m[0usize][1usize] = (*transform).matrix.m[1usize][0usize];
-    mat.m[1usize][1usize] = (*transform).matrix.m[1usize][1usize];
-    mat.m[2usize][1usize] = (*transform).matrix.m[1usize][2usize];
-    mat.m[0usize][2usize] = (*transform).matrix.m[2usize][0usize];
-    mat.m[1usize][2usize] = (*transform).matrix.m[2usize][1usize];
-    mat.m[2usize][2usize] = (*transform).matrix.m[2usize][2usize];
+    mat.m[0][0] = (*transform).matrix.m[0][0];
+    mat.m[1][0] = (*transform).matrix.m[0][1];
+    mat.m[2][0] = (*transform).matrix.m[0][2];
+    mat.m[0][1] = (*transform).matrix.m[1][0];
+    mat.m[1][1] = (*transform).matrix.m[1][1];
+    mat.m[2][1] = (*transform).matrix.m[1][2];
+    mat.m[0][2] = (*transform).matrix.m[2][0];
+    mat.m[1][2] = (*transform).matrix.m[2][1];
+    mat.m[2][2] = (*transform).matrix.m[2][2];
     let mut i: size_t = 0;
     while i < length {
         let fresh36 = src;
@@ -741,18 +741,12 @@ unsafe extern "C" fn qcms_transform_module_matrix_translate(
         let fresh38 = src;
         src = src.offset(1);
         let mut in_b: f32 = *fresh38;
-        let mut out_r: f32 = mat.m[0usize][0usize] * in_r
-            + mat.m[1usize][0usize] * in_g
-            + mat.m[2usize][0usize] * in_b
-            + (*transform).tx;
-        let mut out_g: f32 = mat.m[0usize][1usize] * in_r
-            + mat.m[1usize][1usize] * in_g
-            + mat.m[2usize][1usize] * in_b
-            + (*transform).ty;
-        let mut out_b: f32 = mat.m[0usize][2usize] * in_r
-            + mat.m[1usize][2usize] * in_g
-            + mat.m[2usize][2usize] * in_b
-            + (*transform).tz;
+        let mut out_r: f32 =
+            mat.m[0][0] * in_r + mat.m[1][0] * in_g + mat.m[2][0] * in_b + (*transform).tx;
+        let mut out_g: f32 =
+            mat.m[0][1] * in_r + mat.m[1][1] * in_g + mat.m[2][1] * in_b + (*transform).ty;
+        let mut out_b: f32 =
+            mat.m[0][2] * in_r + mat.m[1][2] * in_g + mat.m[2][2] * in_b + (*transform).tz;
         let fresh39 = dest;
         dest = dest.offset(1);
         *fresh39 = clamp_float(out_r);
@@ -777,15 +771,15 @@ unsafe extern "C" fn qcms_transform_module_matrix(
     };
     /* store the results in column major mode
      * this makes doing the multiplication with sse easier */
-    mat.m[0usize][0usize] = (*transform).matrix.m[0usize][0usize];
-    mat.m[1usize][0usize] = (*transform).matrix.m[0usize][1usize];
-    mat.m[2usize][0usize] = (*transform).matrix.m[0usize][2usize];
-    mat.m[0usize][1usize] = (*transform).matrix.m[1usize][0usize];
-    mat.m[1usize][1usize] = (*transform).matrix.m[1usize][1usize];
-    mat.m[2usize][1usize] = (*transform).matrix.m[1usize][2usize];
-    mat.m[0usize][2usize] = (*transform).matrix.m[2usize][0usize];
-    mat.m[1usize][2usize] = (*transform).matrix.m[2usize][1usize];
-    mat.m[2usize][2usize] = (*transform).matrix.m[2usize][2usize];
+    mat.m[0][0] = (*transform).matrix.m[0][0];
+    mat.m[1][0] = (*transform).matrix.m[0][1];
+    mat.m[2][0] = (*transform).matrix.m[0][2];
+    mat.m[0][1] = (*transform).matrix.m[1][0];
+    mat.m[1][1] = (*transform).matrix.m[1][1];
+    mat.m[2][1] = (*transform).matrix.m[1][2];
+    mat.m[0][2] = (*transform).matrix.m[2][0];
+    mat.m[1][2] = (*transform).matrix.m[2][1];
+    mat.m[2][2] = (*transform).matrix.m[2][2];
     let mut i: size_t = 0;
     while i < length {
         let fresh42 = src;
@@ -797,15 +791,9 @@ unsafe extern "C" fn qcms_transform_module_matrix(
         let fresh44 = src;
         src = src.offset(1);
         let mut in_b: f32 = *fresh44;
-        let mut out_r: f32 = mat.m[0usize][0usize] * in_r
-            + mat.m[1usize][0usize] * in_g
-            + mat.m[2usize][0usize] * in_b;
-        let mut out_g: f32 = mat.m[0usize][1usize] * in_r
-            + mat.m[1usize][1usize] * in_g
-            + mat.m[2usize][1usize] * in_b;
-        let mut out_b: f32 = mat.m[0usize][2usize] * in_r
-            + mat.m[1usize][2usize] * in_g
-            + mat.m[2usize][2usize] * in_b;
+        let mut out_r: f32 = mat.m[0][0] * in_r + mat.m[1][0] * in_g + mat.m[2][0] * in_b;
+        let mut out_g: f32 = mat.m[0][1] * in_r + mat.m[1][1] * in_g + mat.m[2][1] * in_b;
+        let mut out_b: f32 = mat.m[0][2] * in_r + mat.m[1][2] * in_g + mat.m[2][2] * in_b;
         let fresh45 = dest;
         dest = dest.offset(1);
         *fresh45 = clamp_float(out_r);
@@ -935,7 +923,7 @@ unsafe extern "C" fn qcms_modular_transform_create_mAB(
     let mut first_transform: *mut qcms_modular_transform = 0 as *mut qcms_modular_transform;
     let mut next_transform: *mut *mut qcms_modular_transform = &mut first_transform;
     let mut transform: *mut qcms_modular_transform = 0 as *mut qcms_modular_transform;
-    if !(*lut).a_curves[0usize].is_null() {
+    if !(*lut).a_curves[0].is_null() {
         let mut clut_length: usize = 0;
         let mut clut: *mut f32 = 0 as *mut f32;
         // If the A curve is present this also implies the
@@ -949,9 +937,9 @@ unsafe extern "C" fn qcms_modular_transform_create_mAB(
                 current_block = 7590209878260659629;
             } else {
                 append_transform(transform, &mut next_transform);
-                (*transform).input_clut_table_r = build_input_gamma_table((*lut).a_curves[0usize]);
-                (*transform).input_clut_table_g = build_input_gamma_table((*lut).a_curves[1usize]);
-                (*transform).input_clut_table_b = build_input_gamma_table((*lut).a_curves[2usize]);
+                (*transform).input_clut_table_r = build_input_gamma_table((*lut).a_curves[0]);
+                (*transform).input_clut_table_g = build_input_gamma_table((*lut).a_curves[1]);
+                (*transform).input_clut_table_b = build_input_gamma_table((*lut).a_curves[2]);
                 (*transform).transform_module_fn = Some(
                     qcms_transform_module_gamma_table
                         as unsafe extern "C" fn(
@@ -961,9 +949,8 @@ unsafe extern "C" fn qcms_modular_transform_create_mAB(
                             _: size_t,
                         ) -> (),
                 );
-                if (*lut).num_grid_points[0usize] as i32 != (*lut).num_grid_points[1usize] as i32
-                    || (*lut).num_grid_points[1usize] as i32
-                        != (*lut).num_grid_points[2usize] as i32
+                if (*lut).num_grid_points[0] as i32 != (*lut).num_grid_points[1] as i32
+                    || (*lut).num_grid_points[1] as i32 != (*lut).num_grid_points[2] as i32
                 {
                     //XXX: We don't currently support clut that are not squared!
                     current_block = 7590209878260659629;
@@ -975,7 +962,7 @@ unsafe extern "C" fn qcms_modular_transform_create_mAB(
                     } else {
                         append_transform(transform, &mut next_transform);
                         clut_length = (::std::mem::size_of::<f32>() as f64
-                            * ((*lut).num_grid_points[0usize] as f64).powf(3f64)
+                            * ((*lut).num_grid_points[0] as f64).powf(3f64)
                             * 3f64) as usize;
                         clut = malloc(clut_length) as *mut f32;
                         if clut.is_null() {
@@ -989,7 +976,7 @@ unsafe extern "C" fn qcms_modular_transform_create_mAB(
                             (*transform).r_clut = clut.offset(0isize);
                             (*transform).g_clut = clut.offset(1isize);
                             (*transform).b_clut = clut.offset(2isize);
-                            (*transform).grid_size = (*lut).num_grid_points[0usize] as u16;
+                            (*transform).grid_size = (*lut).num_grid_points[0] as u16;
                             (*transform).transform_module_fn = Some(
                                 qcms_transform_module_clut_only
                                     as unsafe extern "C" fn(
@@ -1011,7 +998,7 @@ unsafe extern "C" fn qcms_modular_transform_create_mAB(
     }
     match current_block {
         10652014663920648156 => {
-            if !(*lut).m_curves[0usize].is_null() {
+            if !(*lut).m_curves[0].is_null() {
                 // M curve imples the presence of a Matrix
                 // Prepare M curve
                 transform = qcms_modular_transform_alloc();
@@ -1019,12 +1006,9 @@ unsafe extern "C" fn qcms_modular_transform_create_mAB(
                     current_block = 7590209878260659629;
                 } else {
                     append_transform(transform, &mut next_transform);
-                    (*transform).input_clut_table_r =
-                        build_input_gamma_table((*lut).m_curves[0usize]);
-                    (*transform).input_clut_table_g =
-                        build_input_gamma_table((*lut).m_curves[1usize]);
-                    (*transform).input_clut_table_b =
-                        build_input_gamma_table((*lut).m_curves[2usize]);
+                    (*transform).input_clut_table_r = build_input_gamma_table((*lut).m_curves[0]);
+                    (*transform).input_clut_table_g = build_input_gamma_table((*lut).m_curves[1]);
+                    (*transform).input_clut_table_b = build_input_gamma_table((*lut).m_curves[2]);
                     (*transform).transform_module_fn = Some(
                         qcms_transform_module_gamma_table
                             as unsafe extern "C" fn(
@@ -1067,17 +1051,17 @@ unsafe extern "C" fn qcms_modular_transform_create_mAB(
             match current_block {
                 7590209878260659629 => {}
                 _ => {
-                    if !(*lut).b_curves[0usize].is_null() {
+                    if !(*lut).b_curves[0].is_null() {
                         // Prepare B curve
                         transform = qcms_modular_transform_alloc();
                         if !transform.is_null() {
                             append_transform(transform, &mut next_transform);
                             (*transform).input_clut_table_r =
-                                build_input_gamma_table((*lut).b_curves[0usize]);
+                                build_input_gamma_table((*lut).b_curves[0]);
                             (*transform).input_clut_table_g =
-                                build_input_gamma_table((*lut).b_curves[1usize]);
+                                build_input_gamma_table((*lut).b_curves[1]);
                             (*transform).input_clut_table_b =
-                                build_input_gamma_table((*lut).b_curves[2usize]);
+                                build_input_gamma_table((*lut).b_curves[2]);
                             (*transform).transform_module_fn = Some(
                                 qcms_transform_module_gamma_table
                                     as unsafe extern "C" fn(
@@ -1261,15 +1245,15 @@ pub unsafe extern "C" fn qcms_modular_transform_create_input(
                     current_block = 8903102000210989603;
                 } else {
                     append_transform(transform, &mut next_transform);
-                    (*transform).matrix.m[0usize][0usize] = 1f32 / 1.999969482421875f32;
-                    (*transform).matrix.m[0usize][1usize] = 0.0f32;
-                    (*transform).matrix.m[0usize][2usize] = 0.0f32;
-                    (*transform).matrix.m[1usize][0usize] = 0.0f32;
-                    (*transform).matrix.m[1usize][1usize] = 1f32 / 1.999969482421875f32;
-                    (*transform).matrix.m[1usize][2usize] = 0.0f32;
-                    (*transform).matrix.m[2usize][0usize] = 0.0f32;
-                    (*transform).matrix.m[2usize][1usize] = 0.0f32;
-                    (*transform).matrix.m[2usize][2usize] = 1f32 / 1.999969482421875f32;
+                    (*transform).matrix.m[0][0] = 1f32 / 1.999969482421875f32;
+                    (*transform).matrix.m[0][1] = 0.0f32;
+                    (*transform).matrix.m[0][2] = 0.0f32;
+                    (*transform).matrix.m[1][0] = 0.0f32;
+                    (*transform).matrix.m[1][1] = 1f32 / 1.999969482421875f32;
+                    (*transform).matrix.m[1][2] = 0.0f32;
+                    (*transform).matrix.m[2][0] = 0.0f32;
+                    (*transform).matrix.m[2][1] = 0.0f32;
+                    (*transform).matrix.m[2][2] = 1f32 / 1.999969482421875f32;
                     (*transform).matrix.invalid = 0i32 != 0;
                     (*transform).transform_module_fn = Some(
                         qcms_transform_module_matrix
@@ -1357,15 +1341,15 @@ unsafe extern "C" fn qcms_modular_transform_create_output(
                 current_block = 15713701561912628542;
             } else {
                 append_transform(transform, &mut next_transform);
-                (*transform).matrix.m[0usize][0usize] = 1.999969482421875f32;
-                (*transform).matrix.m[0usize][1usize] = 0.0f32;
-                (*transform).matrix.m[0usize][2usize] = 0.0f32;
-                (*transform).matrix.m[1usize][0usize] = 0.0f32;
-                (*transform).matrix.m[1usize][1usize] = 1.999969482421875f32;
-                (*transform).matrix.m[1usize][2usize] = 0.0f32;
-                (*transform).matrix.m[2usize][0usize] = 0.0f32;
-                (*transform).matrix.m[2usize][1usize] = 0.0f32;
-                (*transform).matrix.m[2usize][2usize] = 1.999969482421875f32;
+                (*transform).matrix.m[0][0] = 1.999969482421875f32;
+                (*transform).matrix.m[0][1] = 0.0f32;
+                (*transform).matrix.m[0][2] = 0.0f32;
+                (*transform).matrix.m[1][0] = 0.0f32;
+                (*transform).matrix.m[1][1] = 1.999969482421875f32;
+                (*transform).matrix.m[1][2] = 0.0f32;
+                (*transform).matrix.m[2][0] = 0.0f32;
+                (*transform).matrix.m[2][1] = 0.0f32;
+                (*transform).matrix.m[2][2] = 1.999969482421875f32;
                 (*transform).matrix.invalid = 0i32 != 0;
                 (*transform).transform_module_fn = Some(
                     qcms_transform_module_matrix
