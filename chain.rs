@@ -68,7 +68,7 @@ pub type transform_module_fn_t = Option<
 >;
 
 #[inline]
-unsafe extern "C" fn lerp(mut a: f32, mut b: f32, mut t: f32) -> f32 {
+fn lerp(mut a: f32, mut b: f32, mut t: f32) -> f32 {
     return a * (1.0 - t) + b * t;
 }
 
