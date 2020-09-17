@@ -35,9 +35,7 @@ use ::libc::{self, calloc, free, malloc, memcpy, memset};
 pub type __darwin_size_t = libc::c_ulong;
 pub type int32_t = i32;
 pub type size_t = __darwin_size_t;
-pub type uint8_t = libc::c_uchar;
-pub type uint16_t = libc::c_ushort;
-pub type uint32_t = libc::c_uint;
+
 
 #[repr(C)]
 #[derive(Copy, Clone)]
