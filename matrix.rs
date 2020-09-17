@@ -56,8 +56,7 @@ pub struct vector {
 // LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#[no_mangle]
-pub unsafe extern "C" fn matrix_eval(mut mat: matrix, mut v: vector) -> vector {
+pub fn matrix_eval(mut mat: matrix, mut v: vector) -> vector {
     let mut result: vector = vector { v: [0.; 3] };
     result.v[0] = mat.m[0][0] * v.v[0] + mat.m[0][1] * v.v[1] + mat.m[0][2] * v.v[2];
     result.v[1] = mat.m[1][0] * v.v[0] + mat.m[1][1] * v.v[1] + mat.m[1][2] * v.v[2];
@@ -66,8 +65,7 @@ pub unsafe extern "C" fn matrix_eval(mut mat: matrix, mut v: vector) -> vector {
 }
 //XXX: should probably pass by reference and we could
 //probably reuse this computation in matrix_invert
-#[no_mangle]
-pub unsafe extern "C" fn matrix_det(mut mat: matrix) -> f32 {
+pub fn matrix_det(mut mat: matrix) -> f32 {
     let mut det: f32 = mat.m[0][0] * mat.m[1][1] * mat.m[2][2]
         + mat.m[0][1] * mat.m[1][2] * mat.m[2][0]
         + mat.m[0][2] * mat.m[1][0] * mat.m[2][1]
@@ -80,16 +78,15 @@ pub unsafe extern "C" fn matrix_det(mut mat: matrix) -> f32 {
 /* lcms uses gauss-jordan elimination with partial pivoting which is
  * less efficient and not as numerically stable. See Mathematics for
  * Game Programmers. */
-#[no_mangle]
-pub unsafe extern "C" fn matrix_invert(mut mat: matrix) -> matrix {
+pub fn matrix_invert(mut mat: matrix) -> matrix {
     let mut dest_mat: matrix = matrix {
         m: [[0.; 3]; 3],
         invalid: false,
     };
     let mut i: i32 = 0;
 
-    static mut a: [i32; 3] = [2, 2, 1];
-    static mut b: [i32; 3] = [1, 0, 0];
+    const a: [i32; 3] = [2, 2, 1];
+    const b: [i32; 3] = [1, 0, 0];
     /* inv  (A) = 1/det (A) * adj (A) */
     let mut det: f32 = matrix_det(mat);
     if det == 0. {
@@ -119,8 +116,7 @@ pub unsafe extern "C" fn matrix_invert(mut mat: matrix) -> matrix {
     }
     return dest_mat;
 }
-#[no_mangle]
-pub unsafe extern "C" fn matrix_identity() -> matrix {
+pub fn matrix_identity() -> matrix {
     let mut i: matrix = matrix {
         m: [[0.; 3]; 3],
         invalid: false,
@@ -137,16 +133,14 @@ pub unsafe extern "C" fn matrix_identity() -> matrix {
     i.invalid = false;
     return i;
 }
-#[no_mangle]
-pub unsafe extern "C" fn matrix_invalid() -> matrix {
+pub fn matrix_invalid() -> matrix {
     let mut inv: matrix = matrix_identity();
     inv.invalid = true;
     return inv;
 }
 /* from pixman */
 /* MAT3per... */
-#[no_mangle]
-pub unsafe extern "C" fn matrix_multiply(mut a: matrix, mut b: matrix) -> matrix {
+pub fn matrix_multiply(mut a: matrix, mut b: matrix) -> matrix {
     let mut result: matrix = matrix {
         m: [[0.; 3]; 3],
         invalid: false,
