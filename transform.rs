@@ -249,26 +249,15 @@ impl GrayFormat for GrayAlpha {
 
 
 #[inline]
-fn clamp_u8(mut v: f32) -> libc::c_uchar {
-    if v as f64 > 255.0f64 {
-        return 255u8;
+fn clamp_u8(mut v: f32) -> u8 {
+    if v > 255. {
+        return 255;
     } else if v < 0. {
-        return 0u8;
+        return 0;
     } else {
-        return ((v as f64 + 0.5f64) as f32).floor() as libc::c_uchar;
+        return (v + 0.5).floor() as u8;
     };
 }
-
-//memcpy
-/* for MSVC, GCC, Intel, and Sun compilers */
-/* _M_IX86 || __i386__ || __i386 || _M_AMD64 || __x86_64__ || __x86_64 */
-/* *
- * AltiVec detection for PowerPC CPUs
- * In case we have a method of detecting do the runtime detection.
- * Otherwise statically choose the AltiVec path in case the compiler
- * was told to build with AltiVec support.
- */
-// (defined(__POWERPC__) || defined(__powerpc__))
 
 // Build a White point, primary chromas transfer matrix from RGB to CIE XYZ
 // This is just an approximation, I am not handling all the non-linear
