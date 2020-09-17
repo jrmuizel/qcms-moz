@@ -1,9 +1,9 @@
 use crate::transform::{qcms_transform, Format, BGRA, CLAMPMAXVAL, FLOATSCALE, RGB, RGBA};
 use ::libc;
 #[cfg(target_arch = "aarch64")]
-use core::arch::aarch64::{float32x4_t, int32x4_t, uint32x4_t, vaddq_f32};
+use core::arch::aarch64::{float32x4_t, int32x4_t, vaddq_f32};
 #[cfg(target_arch = "arm")]
-use core::arch::arm::{float32x4_t, int32x4_t, uint32x4_t, vaddq_f32};
+use core::arch::arm::{float32x4_t, int32x4_t, vaddq_f32};
 use std::mem::zeroed;
 pub type uintptr_t = libc::c_ulong;
 pub type size_t = libc::c_ulong;

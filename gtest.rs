@@ -2,7 +2,7 @@
 use crate::{
     iccread::qcms_CIE_xyY, iccread::qcms_CIE_xyYTRIPLE,
     iccread::qcms_profile_create_rgb_with_gamma, iccread::qcms_white_point_sRGB,
-    transform::qcms_enable_avx, transform::qcms_profile_precache_output_transform,
+    transform::qcms_profile_precache_output_transform,
     transform::qcms_transform, transform::qcms_transform_create, transform::qcms_transform_data,
     transform::QCMS_DATA_RGB_8, transform_util::lut_inverse_interp16, QCMS_INTENT_PERCEPTUAL,
 };
@@ -137,7 +137,9 @@ fn alignment() {
 
 #[test]
 fn basic() {
+    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
     unsafe {
+        use crate::transform::qcms_enable_avx;
         if is_x86_feature_detected!("avx") {
             qcms_enable_avx()
         }

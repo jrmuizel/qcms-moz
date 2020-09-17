@@ -45,6 +45,12 @@ use crate::{
         qcms_transform_data_rgba_out_lut_sse2,
     },
 };
+#[cfg(any(target_arch = "arm", target_arch = "aarch64"))]
+use crate::transform_neon::{
+    qcms_transform_data_bgra_out_lut_neon, qcms_transform_data_rgb_out_lut_neon,
+    qcms_transform_data_rgba_out_lut_neon,
+};
+
 use ::libc::{self, free, malloc};
 use std::sync::atomic;
 use std::sync::atomic::Ordering;
@@ -1512,6 +1518,43 @@ pub unsafe extern "C" fn qcms_transform_create(
                         )
                     }
                 }
+            } else if cfg!(any(target_arch = "arm", target_arch = "aarch64"))
+                && qcms_supports_neon
+            {
+                #[cfg(any(target_arch = "arm", target_arch = "aarch64"))]
+                {
+                    if in_type == QCMS_DATA_RGB_8 {
+                        (*transform).transform_fn = Some(
+                            qcms_transform_data_rgb_out_lut_neon
+                                as unsafe extern "C" fn(
+                                    _: *const qcms_transform,
+                                    _: *const libc::c_uchar,
+                                    _: *mut libc::c_uchar,
+                                    _: size_t,
+                                ) -> (),
+                        )
+                    } else if in_type == QCMS_DATA_RGBA_8 {
+                        (*transform).transform_fn = Some(
+                            qcms_transform_data_rgba_out_lut_neon
+                                as unsafe extern "C" fn(
+                                    _: *const qcms_transform,
+                                    _: *const libc::c_uchar,
+                                    _: *mut libc::c_uchar,
+                                    _: size_t,
+                                ) -> (),
+                        )
+                    } else if in_type == QCMS_DATA_BGRA_8 {
+                        (*transform).transform_fn = Some(
+                            qcms_transform_data_bgra_out_lut_neon
+                                as unsafe extern "C" fn(
+                                    _: *const qcms_transform,
+                                    _: *const libc::c_uchar,
+                                    _: *mut libc::c_uchar,
+                                    _: size_t,
+                                ) -> (),
+                        )
+                    }
+                }
             } else if in_type == QCMS_DATA_RGBA_8 {
                 (*transform).transform_fn = Some(
                     qcms_transform_data_rgba_out_lut_precache
@@ -1757,10 +1800,14 @@ pub unsafe extern "C" fn qcms_enable_iccv4() {
     qcms_supports_iccv4 = true;
 }
 #[no_mangle]
-pub unsafe extern "C" fn qcms_enable_neon() {}
-#[no_mangle]
 pub static mut qcms_supports_avx: bool = false;
+#[no_mangle]
+pub static mut qcms_supports_neon: bool = false;
 #[no_mangle]
 pub unsafe extern "C" fn qcms_enable_avx() {
     qcms_supports_avx = true;
+}
+#[no_mangle]
+pub unsafe extern "C" fn qcms_enable_neon() {
+    qcms_supports_neon = true;
 }
