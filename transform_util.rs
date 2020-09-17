@@ -274,7 +274,7 @@ pub unsafe extern "C" fn build_colorant_matrix(mut p: *mut qcms_profile) -> matr
     result.m[2][0] = s15Fixed16Number_to_float((*p).redColorant.Z);
     result.m[2][1] = s15Fixed16Number_to_float((*p).greenColorant.Z);
     result.m[2][2] = s15Fixed16Number_to_float((*p).blueColorant.Z);
-    result.invalid = 0i32 != 0;
+    result.invalid = false;
     return result;
 }
 /* The following code is copied nearly directly from lcms.
@@ -467,7 +467,7 @@ pub unsafe extern "C" fn compute_precache(mut trc: *mut curveType, mut output: *
         let mut inverted: *mut u16 =
             invert_lut(gamma_table_uint.as_mut_ptr(), 256i32, inverted_size);
         if inverted.is_null() {
-            return 0i32 != 0;
+            return false;
         }
         compute_precache_lut(output, inverted, inverted_size);
         free(inverted as *mut libc::c_void);
@@ -494,12 +494,12 @@ pub unsafe extern "C" fn compute_precache(mut trc: *mut curveType, mut output: *
             inverted_size_0,
         );
         if inverted_0.is_null() {
-            return 0i32 != 0;
+            return false;
         }
         compute_precache_lut(output, inverted_0, inverted_size_0);
         free(inverted_0 as *mut libc::c_void);
     }
-    return 1i32 != 0;
+    return true;
 }
 unsafe extern "C" fn build_linear_table(mut length: i32) -> *mut u16 {
     let mut output: *mut u16 = malloc(::std::mem::size_of::<u16>() * length as usize) as *mut u16;

@@ -319,7 +319,7 @@ unsafe extern "C" fn build_RGB_to_XYZ_transfer_matrix(
     primaries.m[2][0] = (1f64 - xr - yr) as f32;
     primaries.m[2][1] = (1f64 - xg - yg) as f32;
     primaries.m[2][2] = (1f64 - xb - yb) as f32;
-    primaries.invalid = 0i32 != 0;
+    primaries.invalid = false;
     white_point.v[0] = (xn / yn) as f32;
     white_point.v[1] = 1f32;
     white_point.v[2] = ((1.0f64 - xn - yn) / yn) as f32;
@@ -401,7 +401,7 @@ unsafe extern "C" fn compute_chromatic_adaption(
     cone.m[2][0] = 0f32;
     cone.m[2][1] = 0f32;
     cone.m[2][2] = cone_dest_rgb.v[2] / cone_source_rgb.v[2];
-    cone.invalid = 0i32 != 0;
+    cone.invalid = false;
     // Normalize
     return matrix_multiply(chad_inv, matrix_multiply(cone, chad));
 }
@@ -450,7 +450,7 @@ pub unsafe extern "C" fn set_rgb_colorants(
     let mut colorants: matrix = build_RGB_to_XYZ_transfer_matrix(white_point, primaries);
     colorants = adapt_matrix_to_D50(colorants, white_point);
     if colorants.invalid {
-        return 0i32 != 0;
+        return false;
     }
     /* note: there's a transpose type of operation going on here */
     (*profile).redColorant.X = double_to_s15Fixed16Number(colorants.m[0][0] as f64);
@@ -462,7 +462,7 @@ pub unsafe extern "C" fn set_rgb_colorants(
     (*profile).blueColorant.X = double_to_s15Fixed16Number(colorants.m[0][2] as f64);
     (*profile).blueColorant.Y = double_to_s15Fixed16Number(colorants.m[1][2] as f64);
     (*profile).blueColorant.Z = double_to_s15Fixed16Number(colorants.m[2][2] as f64);
-    return 1i32 != 0;
+    return true;
 }
 #[no_mangle]
 pub unsafe extern "C" fn get_rgb_colorants(
@@ -1159,7 +1159,7 @@ static mut bradford_matrix: matrix = {
             [-0.7502f32, 1.7135f32, 0.0367f32],
             [0.0389f32, -0.0685f32, 1.0296f32],
         ],
-        invalid: 0i32 != 0,
+        invalid: false,
     };
     init
 };
@@ -1170,7 +1170,7 @@ static mut bradford_matrix_inv: matrix = {
             [0.4323053f32, 0.5183603f32, 0.0492912f32],
             [-0.0085287f32, 0.0400428f32, 0.9684867f32],
         ],
-        invalid: 0i32 != 0,
+        invalid: false,
     };
     init
 };
@@ -1192,7 +1192,7 @@ pub unsafe extern "C" fn compute_whitepoint_adaption(mut X: f32, mut Y: f32, mut
     let mut white_adaption: matrix = {
         let mut init = matrix {
             m: [[p, 0f32, 0f32], [0f32, y, 0f32], [0f32, 0f32, b]],
-            invalid: 0i32 != 0,
+            invalid: false,
         };
         init
     };
@@ -1365,7 +1365,7 @@ pub unsafe extern "C" fn qcms_transform_create(
     mut intent: qcms_intent,
 ) -> *mut qcms_transform {
     // Ensure the requested input and output types make sense.
-    let mut match_0: bool = 0i32 != 0;
+    let mut match_0: bool = false;
     if in_type == QCMS_DATA_RGB_8 {
         match_0 = out_type == QCMS_DATA_RGB_8
     } else if in_type == QCMS_DATA_RGBA_8 {
@@ -1387,12 +1387,12 @@ pub unsafe extern "C" fn qcms_transform_create(
     if transform.is_null() {
         return 0 as *mut qcms_transform;
     }
-    let mut precache: bool = 0i32 != 0;
+    let mut precache: bool = false;
     if !(*out).output_table_r.is_null()
         && !(*out).output_table_g.is_null()
         && !(*out).output_table_b.is_null()
     {
-        precache = 1i32 != 0
+        precache = true
     }
     // This precache assumes RGB_SIGNATURE (fails on GRAY_SIGNATURE, for instance)
     if qcms_supports_iccv4 as i32 != 0
@@ -1766,7 +1766,7 @@ pub unsafe extern "C" fn qcms_transform_data(
 pub static mut qcms_supports_iccv4: bool = false;
 #[no_mangle]
 pub unsafe extern "C" fn qcms_enable_iccv4() {
-    qcms_supports_iccv4 = 1i32 != 0;
+    qcms_supports_iccv4 = true;
 }
 #[no_mangle]
 pub unsafe extern "C" fn qcms_enable_neon() {}
@@ -1774,5 +1774,5 @@ pub unsafe extern "C" fn qcms_enable_neon() {}
 pub static mut qcms_supports_avx: bool = false;
 #[no_mangle]
 pub unsafe extern "C" fn qcms_enable_avx() {
-    qcms_supports_avx = 1i32 != 0;
+    qcms_supports_avx = true;
 }

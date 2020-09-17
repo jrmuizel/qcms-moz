@@ -241,7 +241,7 @@ unsafe extern "C" fn be16_to_cpu(mut v: be16) -> u16 {
     return ((v as i32 & 0xffi32) << 8i32 | (v as i32 & 0xff00i32) >> 8i32) as u16;
 }
 unsafe extern "C" fn invalid_source(mut mem: *mut mem_source, mut reason: *const libc::c_char) {
-    (*mem).valid = 0i32 != 0;
+    (*mem).valid = false;
     (*mem).invalid_reason = reason;
 }
 unsafe extern "C" fn read_u32(mut mem: *mut mem_source, mut offset: size_t) -> u32 {
@@ -498,14 +498,14 @@ pub unsafe extern "C" fn qcms_profile_is_bogus(mut profile: *mut qcms_profile) -
     let mut i: libc::c_uint = 0;
     // We currently only check the bogosity of RGB profiles
     if (*profile).color_space != RGB_SIGNATURE {
-        return 0i32 != 0;
+        return false;
     }
     if !(*profile).A2B0.is_null()
         || !(*profile).B2A0.is_null()
         || !(*profile).mAB.is_null()
         || !(*profile).mBA.is_null()
     {
-        return 0i32 != 0;
+        return false;
     }
     rX = s15Fixed16Number_to_float((*profile).redColorant.X);
     rY = s15Fixed16Number_to_float((*profile).redColorant.Y);
@@ -537,7 +537,7 @@ pub unsafe extern "C" fn qcms_profile_is_bogus(mut profile: *mut qcms_profile) -
         if !(sum[i as usize] - tolerance[i as usize] <= target[i as usize]
             && sum[i as usize] + tolerance[i as usize] >= target[i as usize])
         {
-            return 1i32 != 0;
+            return true;
         }
         i = i + 1
     }
@@ -627,9 +627,9 @@ unsafe extern "C" fn read_tag_s15Fixed16ArrayType(
                 ));
             i = i + 1
         }
-        matrix.invalid = 0i32 != 0
+        matrix.invalid = false
     } else {
-        matrix.invalid = 1i32 != 0;
+        matrix.invalid = true;
         invalid_source(
             src,
             b"missing sf32tag\x00" as *const u8 as *const libc::c_char,
@@ -1514,7 +1514,7 @@ pub unsafe extern "C" fn qcms_profile_from_memory(
     let mut profile: *mut qcms_profile = 0 as *mut qcms_profile;
     source.buf = mem as *const libc::c_uchar;
     source.size = size;
-    source.valid = 1i32 != 0;
+    source.valid = true;
     if size < 4 {
         return 0 as *mut qcms_profile;
     }
@@ -1546,7 +1546,7 @@ pub unsafe extern "C" fn qcms_profile_from_memory(
             if !find_tag(&index, TAG_CHAD).is_null() {
                 (*profile).chromaticAdaption = read_tag_s15Fixed16ArrayType(src, &index, TAG_CHAD)
             } else {
-                (*profile).chromaticAdaption.invalid = 1i32 != 0
+                (*profile).chromaticAdaption.invalid = true
                 //Signal the data is not present
             }
             if (*profile).class_type == 0x6d6e7472u32

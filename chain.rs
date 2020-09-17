@@ -91,14 +91,14 @@ unsafe extern "C" fn build_lut_matrix(mut lut: *mut lutType) -> matrix {
         result.m[2][0] = s15Fixed16Number_to_float((*lut).e20);
         result.m[2][1] = s15Fixed16Number_to_float((*lut).e21);
         result.m[2][2] = s15Fixed16Number_to_float((*lut).e22);
-        result.invalid = 0i32 != 0
+        result.invalid = false
     } else {
         memset(
             &mut result as *mut matrix as *mut libc::c_void,
             0i32,
             ::std::mem::size_of::<matrix>(),
         );
-        result.invalid = 1i32 != 0
+        result.invalid = true
     }
     return result;
 }
@@ -117,14 +117,14 @@ unsafe extern "C" fn build_mAB_matrix(mut lut: *mut lutmABType) -> matrix {
         result.m[2][0] = s15Fixed16Number_to_float((*lut).e20);
         result.m[2][1] = s15Fixed16Number_to_float((*lut).e21);
         result.m[2][2] = s15Fixed16Number_to_float((*lut).e22);
-        result.invalid = 0i32 != 0
+        result.invalid = false
     } else {
         memset(
             &mut result as *mut matrix as *mut libc::c_void,
             0i32,
             ::std::mem::size_of::<matrix>(),
         );
-        result.invalid = 1i32 != 0
+        result.invalid = true
     }
     return result;
 }
@@ -1254,7 +1254,7 @@ pub unsafe extern "C" fn qcms_modular_transform_create_input(
                     (*transform).matrix.m[2][0] = 0.0f32;
                     (*transform).matrix.m[2][1] = 0.0f32;
                     (*transform).matrix.m[2][2] = 1f32 / 1.999969482421875f32;
-                    (*transform).matrix.invalid = 0i32 != 0;
+                    (*transform).matrix.invalid = false;
                     (*transform).transform_module_fn = Some(
                         qcms_transform_module_matrix
                             as unsafe extern "C" fn(
@@ -1350,7 +1350,7 @@ unsafe extern "C" fn qcms_modular_transform_create_output(
                 (*transform).matrix.m[2][0] = 0.0f32;
                 (*transform).matrix.m[2][1] = 0.0f32;
                 (*transform).matrix.m[2][2] = 1.999969482421875f32;
-                (*transform).matrix.invalid = 0i32 != 0;
+                (*transform).matrix.invalid = false;
                 (*transform).transform_module_fn = Some(
                     qcms_transform_module_matrix
                         as unsafe extern "C" fn(
