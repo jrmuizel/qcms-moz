@@ -92,12 +92,12 @@ pub unsafe extern "C" fn matrix_invert(mut mat: matrix) -> matrix {
     static mut b: [i32; 3] = [1, 0, 0];
     /* inv  (A) = 1/det (A) * adj (A) */
     let mut det: f32 = matrix_det(mat);
-    if det == 0f32 {
+    if det == 0. {
         dest_mat.invalid = true;
         return dest_mat;
     }
     dest_mat.invalid = false;
-    det = 1f32 / det;
+    det = 1. / det;
     let mut j: i32 = 0;
     while j < 3 {
         i = 0;
@@ -125,15 +125,15 @@ pub unsafe extern "C" fn matrix_identity() -> matrix {
         m: [[0.; 3]; 3],
         invalid: false,
     };
-    i.m[0][0] = 1f32;
-    i.m[0][1] = 0f32;
-    i.m[0][2] = 0f32;
-    i.m[1][0] = 0f32;
-    i.m[1][1] = 1f32;
-    i.m[1][2] = 0f32;
-    i.m[2][0] = 0f32;
-    i.m[2][1] = 0f32;
-    i.m[2][2] = 1f32;
+    i.m[0][0] = 1.;
+    i.m[0][1] = 0.;
+    i.m[0][2] = 0.;
+    i.m[1][0] = 0.;
+    i.m[1][1] = 1.;
+    i.m[1][2] = 0.;
+    i.m[2][0] = 0.;
+    i.m[2][1] = 0.;
+    i.m[2][2] = 1.;
     i.invalid = false;
     return i;
 }

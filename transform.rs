@@ -253,7 +253,7 @@ unsafe extern "C" fn double_to_s15Fixed16Number(mut v: f64) -> s15Fixed16Number 
 unsafe extern "C" fn clamp_u8(mut v: f32) -> libc::c_uchar {
     if v as f64 > 255.0f64 {
         return 255u8;
-    } else if v < 0f32 {
+    } else if v < 0. {
         return 0u8;
     } else {
         return ((v as f64 + 0.5f64) as f32).floor() as libc::c_uchar;
@@ -321,7 +321,7 @@ unsafe extern "C" fn build_RGB_to_XYZ_transfer_matrix(
     primaries.m[2][2] = (1f64 - xb - yb) as f32;
     primaries.invalid = false;
     white_point.v[0] = (xn / yn) as f32;
-    white_point.v[1] = 1f32;
+    white_point.v[1] = 1.;
     white_point.v[2] = ((1.0f64 - xn - yn) / yn) as f32;
     let mut primaries_invert: matrix = matrix_invert(primaries);
     if primaries_invert.invalid {
@@ -393,13 +393,13 @@ unsafe extern "C" fn compute_chromatic_adaption(
     let mut cone_source_rgb: vector = matrix_eval(chad, cone_source_XYZ);
     let mut cone_dest_rgb: vector = matrix_eval(chad, cone_dest_XYZ);
     cone.m[0][0] = cone_dest_rgb.v[0] / cone_source_rgb.v[0];
-    cone.m[0][1] = 0f32;
-    cone.m[0][2] = 0f32;
-    cone.m[1][0] = 0f32;
+    cone.m[0][1] = 0.;
+    cone.m[0][2] = 0.;
+    cone.m[1][0] = 0.;
     cone.m[1][1] = cone_dest_rgb.v[1] / cone_source_rgb.v[1];
-    cone.m[1][2] = 0f32;
-    cone.m[2][0] = 0f32;
-    cone.m[2][1] = 0f32;
+    cone.m[1][2] = 0.;
+    cone.m[2][0] = 0.;
+    cone.m[2][1] = 0.;
     cone.m[2][2] = cone_dest_rgb.v[2] / cone_source_rgb.v[2];
     cone.invalid = false;
     // Normalize
@@ -1191,7 +1191,7 @@ pub unsafe extern "C" fn compute_whitepoint_adaption(mut X: f32, mut Y: f32, mut
         / (X * bradford_matrix.m[0][2] + Y * bradford_matrix.m[1][2] + Z * bradford_matrix.m[2][2]);
     let mut white_adaption: matrix = {
         let mut init = matrix {
-            m: [[p, 0f32, 0f32], [0f32, y, 0f32], [0f32, 0f32, b]],
+            m: [[p, 0., 0.], [0., y, 0.], [0., 0., b]],
             invalid: false,
         };
         init

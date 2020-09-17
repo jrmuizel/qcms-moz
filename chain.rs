@@ -1245,15 +1245,15 @@ pub unsafe extern "C" fn qcms_modular_transform_create_input(
                     current_block = 8903102000210989603;
                 } else {
                     append_transform(transform, &mut next_transform);
-                    (*transform).matrix.m[0][0] = 1f32 / 1.999969482421875;
+                    (*transform).matrix.m[0][0] = 1. / 1.999969482421875;
                     (*transform).matrix.m[0][1] = 0.0;
                     (*transform).matrix.m[0][2] = 0.0;
                     (*transform).matrix.m[1][0] = 0.0;
-                    (*transform).matrix.m[1][1] = 1f32 / 1.999969482421875;
+                    (*transform).matrix.m[1][1] = 1. / 1.999969482421875;
                     (*transform).matrix.m[1][2] = 0.0;
                     (*transform).matrix.m[2][0] = 0.0;
                     (*transform).matrix.m[2][1] = 0.0;
-                    (*transform).matrix.m[2][2] = 1f32 / 1.999969482421875;
+                    (*transform).matrix.m[2][2] = 1. / 1.999969482421875;
                     (*transform).matrix.invalid = false;
                     (*transform).transform_module_fn = Some(
                         qcms_transform_module_matrix

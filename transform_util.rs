@@ -34,11 +34,11 @@ pub fn clamp_float(mut a: f32) -> f32 {
     for most consumers.
     */
     if a as f64 > 1.0f64 {
-        return 1f32;
-    } else if a >= 0f32 {
+        return 1.;
+    } else if a >= 0. {
         return a;
     } else {
-        return 0f32;
+        return 0.;
     };
 }
 //'para'
@@ -164,32 +164,32 @@ pub unsafe extern "C" fn compute_curve_gamma_table_type_parametric(
     let mut f: f32 = 0.;
     let mut y: f32 = *parameter.offset(0isize);
     if count == 0 {
-        a = 1f32;
-        b = 0f32;
-        c = 0f32;
-        e = 0f32;
-        f = 0f32;
-        interval = -1f32
+        a = 1.;
+        b = 0.;
+        c = 0.;
+        e = 0.;
+        f = 0.;
+        interval = -1.
     } else if count == 1 {
         a = *parameter.offset(1isize);
         b = *parameter.offset(2isize);
-        c = 0f32;
-        e = 0f32;
-        f = 0f32;
-        interval = -1f32 * *parameter.offset(2isize) / *parameter.offset(1isize)
+        c = 0.;
+        e = 0.;
+        f = 0.;
+        interval = -1. * *parameter.offset(2isize) / *parameter.offset(1isize)
     } else if count == 2 {
         a = *parameter.offset(1isize);
         b = *parameter.offset(2isize);
-        c = 0f32;
+        c = 0.;
         e = *parameter.offset(3isize);
         f = *parameter.offset(3isize);
-        interval = -1f32 * *parameter.offset(2isize) / *parameter.offset(1isize)
+        interval = -1. * *parameter.offset(2isize) / *parameter.offset(1isize)
     } else if count == 3 {
         a = *parameter.offset(1isize);
         b = *parameter.offset(2isize);
         c = *parameter.offset(3isize);
         e = -c;
-        f = 0f32;
+        f = 0.;
         interval = *parameter.offset(4isize)
     } else if count == 4 {
         a = *parameter.offset(1isize);
@@ -200,12 +200,12 @@ pub unsafe extern "C" fn compute_curve_gamma_table_type_parametric(
         interval = *parameter.offset(4isize)
     } else {
         debug_assert!(false, "invalid parametric function type.");
-        a = 1f32;
-        b = 0f32;
-        c = 0f32;
-        e = 0f32;
-        f = 0f32;
-        interval = -1f32
+        a = 1.;
+        b = 0.;
+        c = 0.;
+        e = 0.;
+        f = 0.;
+        interval = -1.
     }
     let mut X: size_t = 0;
     while X < 256 {
