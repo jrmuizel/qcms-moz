@@ -13,6 +13,7 @@ pub use std::arch::x86_64::{
 
 pub type uintptr_t = libc::c_ulong;
 pub type size_t = libc::c_ulong;
+struct Output([u32; 4]);
 
 /* pre-shuffled: just load these into XMM reg instead of load-scalar/shufps sequence */
 static mut floatScaleX4: [f32; 4] = [FLOATSCALE, FLOATSCALE, FLOATSCALE, FLOATSCALE];
@@ -25,17 +26,10 @@ unsafe extern "C" fn qcms_transform_data_template_lut_sse2<F: Format>(
     mut length: size_t,
 ) {
     let mut mat: *const [f32; 4] = (*transform).matrix.as_ptr();
-    let mut input_back: [libc::c_char; 32] = [0; 32];
-    /* Ensure we have a buffer that's 16 byte aligned regardless of the original
-     * stack alignment. We can't use __attribute__((aligned(16))) or __declspec(align(32))
-     * because they don't work on stack variables. gcc 4.4 does do the right thing
-     * on x86 but that's too new for us right now. For more info: gcc bug #16660 */
-    let mut input: *const f32 = (&mut *input_back.as_mut_ptr().offset(16isize) as *mut libc::c_char
-        as uintptr_t
-        & !(0xfi32) as libc::c_ulong) as *mut f32;
+    let mut input: Output = std::mem::zeroed();
     /* share input and output locations to save having to keep the
      * locations in separate registers */
-    let mut output: *const u32 = input as *mut u32;
+    let mut output: *const u32 = &mut input as *mut Output as *mut u32;
     /* deref *transform now to avoid it in loop */
     let mut igtbl_r: *const f32 = (*transform).input_gamma_table_r;
     let mut igtbl_g: *const f32 = (*transform).input_gamma_table_g;
