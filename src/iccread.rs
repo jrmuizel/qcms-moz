@@ -34,7 +34,6 @@ use crate::{
 };
 
 extern "C" {
-    #[no_mangle]
     static mut qcms_supports_iccv4: bool;
 }
 
@@ -232,7 +231,7 @@ fn be32_to_cpu(mut v: be32) -> u32 {
 fn be16_to_cpu(mut v: be16) -> u16 {
     u16::from_be(v)
 }
-unsafe extern "C" fn invalid_source(mut mem: *mut mem_source, reason: &'static str) {
+unsafe fn invalid_source(mut mem: *mut mem_source, reason: &'static str) {
     (*mem).valid = false;
     (*mem).invalid_reason = Some(reason);
 }
@@ -361,7 +360,7 @@ unsafe extern "C" fn read_pcs(mut profile: *mut qcms_profile, mut mem: *mut mem_
         }
     };
 }
-unsafe extern "C" fn read_tag_table(
+unsafe fn read_tag_table(
     mut profile: *mut qcms_profile,
     mut mem: *mut mem_source,
 ) -> Vec<tag> {
@@ -556,7 +555,7 @@ const TAG_A2B0: u32 = 0x41324230;
 const TAG_B2A0: u32 = 0x42324130;
 const TAG_CHAD: u32 = 0x63686164;
 
-unsafe extern "C" fn find_tag(mut index: &tag_index, mut tag_id: u32) -> *const tag {
+unsafe fn find_tag(mut index: &tag_index, mut tag_id: u32) -> *const tag {
     for t in index {
         if t.signature == tag_id {
             return t as *const _;
@@ -574,7 +573,7 @@ const LUT_MAB_TYPE: u32 = 0x6d414220; // 'mAB '
 const LUT_MBA_TYPE: u32 = 0x6d424120; // 'mBA '
 const CHROMATIC_TYPE: u32 = 0x73663332; // 'sf32'
 
-unsafe extern "C" fn read_tag_s15Fixed16ArrayType(
+unsafe fn read_tag_s15Fixed16ArrayType(
     mut src: *mut mem_source,
     mut index: &tag_index,
     mut tag_id: u32,
@@ -606,7 +605,7 @@ unsafe extern "C" fn read_tag_s15Fixed16ArrayType(
     }
     return matrix;
 }
-unsafe extern "C" fn read_tag_XYZType(
+unsafe fn read_tag_XYZType(
     mut src: *mut mem_source,
     mut index: &tag_index,
     mut tag_id: u32,
@@ -701,7 +700,7 @@ unsafe extern "C" fn read_curveType(
     }
     return curve;
 }
-unsafe extern "C" fn read_tag_curveType(
+unsafe fn read_tag_curveType(
     mut src: *mut mem_source,
     mut index: &tag_index,
     mut tag_id: u32,
@@ -759,7 +758,7 @@ unsafe extern "C" fn mAB_release(mut lut: *mut lutmABType) {
     free(lut as *mut libc::c_void);
 }
 /* See section 10.10 for specs */
-unsafe extern "C" fn read_tag_lutmABType(
+unsafe fn read_tag_lutmABType(
     mut src: *mut mem_source,
     mut index: &tag_index,
     mut tag_id: u32,
@@ -931,7 +930,7 @@ unsafe extern "C" fn read_tag_lutmABType(
     }
     return lut;
 }
-unsafe extern "C" fn read_tag_lutType(
+unsafe fn read_tag_lutType(
     mut src: *mut mem_source,
     mut index: &tag_index,
     mut tag_id: u32,
