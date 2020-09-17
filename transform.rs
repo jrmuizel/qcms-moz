@@ -249,7 +249,7 @@ impl GrayFormat for GrayAlpha {
 
 
 #[inline]
-unsafe extern "C" fn clamp_u8(mut v: f32) -> libc::c_uchar {
+fn clamp_u8(mut v: f32) -> libc::c_uchar {
     if v as f64 > 255.0f64 {
         return 255u8;
     } else if v < 0. {
