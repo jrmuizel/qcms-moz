@@ -21,7 +21,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-use crate::{iccread::{curveType, qcms_CIE_xyY, qcms_CIE_xyYTRIPLE, qcms_profile}, qcms_intent};
+use crate::{iccread::{curveType, qcms_CIE_xyY, qcms_CIE_xyYTRIPLE, qcms_profile}, qcms_intent, transform_util::clamp_float};
 use crate::{
     chain::qcms_chain_transform,
     matrix::*,
@@ -256,28 +256,6 @@ unsafe extern "C" fn clamp_u8(mut v: f32) -> libc::c_uchar {
         return 0u8;
     } else {
         return ((v as f64 + 0.5f64) as f32).floor() as libc::c_uchar;
-    };
-}
-#[inline]
-unsafe extern "C" fn clamp_float(mut a: f32) -> f32 {
-    /* One would naturally write this function as the following:
-    if (a > 1.)
-      return 1.;
-    else if (a < 0)
-      return 0;
-    else
-      return a;
-
-    However, that version will let NaNs pass through which is undesirable
-    for most consumers.
-    */
-    if a as f64 > 1.0f64 {
-        return 1f32;
-    } else if a >= 0f32 {
-        return a;
-    } else {
-        // a < 0 or a is NaN
-        return 0f32;
     };
 }
 

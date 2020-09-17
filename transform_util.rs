@@ -82,7 +82,18 @@ unsafe extern "C" fn u8Fixed8Number_to_float(mut x: u16) -> f32 {
     return (x as i32 as f64 / 256.0f64) as f32;
 }
 #[inline]
-unsafe extern "C" fn clamp_float(mut a: f32) -> f32 {
+pub fn clamp_float(mut a: f32) -> f32 {
+  /* One would naturally write this function as the following:
+  if (a > 1.)
+    return 1.;
+  else if (a < 0)
+    return 0;
+  else
+    return a;
+
+  However, that version will let NaNs pass through which is undesirable
+  for most consumers.
+  */
     if a as f64 > 1.0f64 {
         return 1f32;
     } else if a >= 0f32 {

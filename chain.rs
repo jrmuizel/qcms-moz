@@ -27,7 +27,7 @@ use crate::{
         build_colorant_matrix, build_input_gamma_table, build_output_lut, lut_interp_linear,
         lut_interp_linear_float,
     },
-};
+transform_util::clamp_float};
 use ::libc::{self, calloc, free, malloc, memcpy, memset};
 
 pub type __darwin_size_t = libc::c_ulong;
@@ -93,28 +93,6 @@ unsafe extern "C" fn s15Fixed16Number_to_float(mut a: s15Fixed16Number) -> f32 {
 #[inline]
 unsafe extern "C" fn lerp(mut a: f32, mut b: f32, mut t: f32) -> f32 {
     return a * (1.0f32 - t) + b * t;
-}
-#[inline]
-unsafe extern "C" fn clamp_float(mut a: f32) -> f32 {
-    /* One would naturally write this function as the following:
-    if (a > 1.)
-      return 1.;
-    else if (a < 0)
-      return 0;
-    else
-      return a;
-
-    However, that version will let NaNs pass through which is undesirable
-    for most consumers.
-    */
-    if a as f64 > 1.0f64 {
-        return 1f32;
-    } else if a >= 0f32 {
-        return a;
-    } else {
-        // a < 0 or a is NaN
-        return 0f32;
-    };
 }
 
 unsafe extern "C" fn build_lut_matrix(mut lut: *mut lutType) -> matrix {
