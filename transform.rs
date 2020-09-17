@@ -1306,32 +1306,14 @@ pub unsafe extern "C" fn qcms_transform_precacheLUT_float(
             if in_type == QCMS_DATA_RGBA_8 {
                 (*transform).transform_fn = Some(
                     qcms_transform_data_tetra_clut_rgba
-                        as unsafe extern "C" fn(
-                            _: *const qcms_transform,
-                            _: *const libc::c_uchar,
-                            _: *mut libc::c_uchar,
-                            _: size_t,
-                        ) -> (),
                 )
             } else if in_type == QCMS_DATA_BGRA_8 {
                 (*transform).transform_fn = Some(
                     qcms_transform_data_tetra_clut_bgra
-                        as unsafe extern "C" fn(
-                            _: *const qcms_transform,
-                            _: *const libc::c_uchar,
-                            _: *mut libc::c_uchar,
-                            _: size_t,
-                        ) -> (),
                 )
             } else if in_type == QCMS_DATA_RGB_8 {
                 (*transform).transform_fn = Some(
                     qcms_transform_data_tetra_clut_rgb
-                        as unsafe extern "C" fn(
-                            _: *const qcms_transform,
-                            _: *const libc::c_uchar,
-                            _: *mut libc::c_uchar,
-                            _: size_t,
-                        ) -> (),
                 )
             }
             debug_assert!((*transform).transform_fn.is_some());
