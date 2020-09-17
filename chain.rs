@@ -23,11 +23,13 @@
 use crate::{
     iccread::{curveType, lutType, lutmABType, qcms_profile},
     matrix::{matrix, matrix_invert},
+    s15Fixed16Number, s15Fixed16Number_to_float,
+    transform_util::clamp_float,
     transform_util::{
         build_colorant_matrix, build_input_gamma_table, build_output_lut, lut_interp_linear,
         lut_interp_linear_float,
     },
-transform_util::clamp_float, s15Fixed16Number, s15Fixed16Number_to_float};
+};
 use ::libc::{self, calloc, free, malloc, memcpy, memset};
 
 pub type __darwin_size_t = libc::c_ulong;
@@ -36,7 +38,6 @@ pub type size_t = __darwin_size_t;
 pub type uint8_t = libc::c_uchar;
 pub type uint16_t = libc::c_ushort;
 pub type uint32_t = libc::c_uint;
-
 
 #[repr(C)]
 #[derive(Copy, Clone)]

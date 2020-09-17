@@ -18,7 +18,6 @@
 
 extern crate libc;
 
-
 pub type qcms_intent = libc::c_uint;
 pub const QCMS_INTENT_DEFAULT: qcms_intent = 0;
 pub const QCMS_INTENT_MAX: qcms_intent = 3;

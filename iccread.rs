@@ -24,8 +24,11 @@
 use ::libc;
 use libc::{calloc, fclose, fopen, fread, free, malloc, memcpy, memset, FILE};
 
-use crate::{matrix::matrix, qcms_intent, QCMS_INTENT_PERCEPTUAL, s15Fixed16Number, s15Fixed16Number_to_float};
 use crate::transform::{get_rgb_colorants, precache_output, precache_release, set_rgb_colorants};
+use crate::{
+    matrix::matrix, qcms_intent, s15Fixed16Number, s15Fixed16Number_to_float,
+    QCMS_INTENT_PERCEPTUAL,
+};
 
 extern "C" {
     #[no_mangle]
@@ -392,18 +395,11 @@ unsafe extern "C" fn read_tag_table(
     }
     let mut index = Vec::with_capacity(count as usize);
     for i in 0..count {
-    index.push(tag { signature: read_u32(
-                mem,
-                (128 + 4 + 4*i*3) as size_t,
-            ),
-            offset: read_u32(
-                mem,
-                (128 + 4 + 4*i*3 + 4) as size_t,
-            ),
-            size:read_u32(
-                mem,
-                (128 + 4  + 4*i*3 + 8) as size_t,
-            )});
+        index.push(tag {
+            signature: read_u32(mem, (128 + 4 + 4 * i * 3) as size_t),
+            offset: read_u32(mem, (128 + 4 + 4 * i * 3 + 4) as size_t),
+            size: read_u32(mem, (128 + 4 + 4 * i * 3 + 8) as size_t),
+        });
     }
 
     index
@@ -592,14 +588,14 @@ unsafe extern "C" fn find_tag(mut index: &tag_index, mut tag_id: u32) -> *const 
     0 as *const tag
 }
 
-const XYZ_TYPE: u32 =                0x58595a20; // 'XYZ '
-const CURVE_TYPE: u32 =              0x63757276; // 'curv'
-const PARAMETRIC_CURVE_TYPE: u32 =   0x70617261; // 'para'
-const LUT16_TYPE: u32 =              0x6d667432; // 'mft2'
-const LUT8_TYPE: u32 =               0x6d667431; // 'mft1'
-const LUT_MAB_TYPE: u32 =            0x6d414220; // 'mAB '
-const LUT_MBA_TYPE: u32 =            0x6d424120; // 'mBA '
-const CHROMATIC_TYPE: u32 =          0x73663332; // 'sf32'
+const XYZ_TYPE: u32 = 0x58595a20; // 'XYZ '
+const CURVE_TYPE: u32 = 0x63757276; // 'curv'
+const PARAMETRIC_CURVE_TYPE: u32 = 0x70617261; // 'para'
+const LUT16_TYPE: u32 = 0x6d667432; // 'mft2'
+const LUT8_TYPE: u32 = 0x6d667431; // 'mft1'
+const LUT_MAB_TYPE: u32 = 0x6d414220; // 'mAB '
+const LUT_MBA_TYPE: u32 = 0x6d424120; // 'mBA '
+const CHROMATIC_TYPE: u32 = 0x73663332; // 'sf32'
 
 unsafe extern "C" fn read_tag_s15Fixed16ArrayType(
     mut src: *mut mem_source,

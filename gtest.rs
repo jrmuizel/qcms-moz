@@ -1,4 +1,10 @@
-use crate::{transform_util::lut_inverse_interp16, iccread::qcms_data_create_rgb_with_gamma, iccread::qcms_CIE_xyY, iccread::qcms_CIE_xyYTRIPLE, transform::qcms_transform, iccread::qcms_white_point_sRGB, iccread::qcms_profile_create_rgb_with_gamma, transform::qcms_transform_create, transform::QCMS_DATA_RGB_8, QCMS_INTENT_PERCEPTUAL, transform::qcms_transform_data, transform::qcms_profile_precache_output_transform, transform::qcms_enable_avx};
+use crate::{
+    iccread::qcms_CIE_xyY, iccread::qcms_CIE_xyYTRIPLE, iccread::qcms_data_create_rgb_with_gamma,
+    iccread::qcms_profile_create_rgb_with_gamma, iccread::qcms_white_point_sRGB,
+    transform::qcms_enable_avx, transform::qcms_profile_precache_output_transform,
+    transform::qcms_transform, transform::qcms_transform_create, transform::qcms_transform_data,
+    transform::QCMS_DATA_RGB_8, transform_util::lut_inverse_interp16, QCMS_INTENT_PERCEPTUAL,
+};
 pub type size_t = libc::c_ulong;
 
 #[test]
@@ -130,35 +136,51 @@ fn alignment() {
 
 #[test]
 fn basic() {
-    unsafe { if is_x86_feature_detected!("avx") { qcms_enable_avx() } };
+    unsafe {
+        if is_x86_feature_detected!("avx") {
+            qcms_enable_avx()
+        }
+    };
     let sRGB_profile = unsafe { crate::iccread::qcms_profile_sRGB() };
 
-    let mut Rec709Primaries  = qcms_CIE_xyYTRIPLE {
-            red: qcms_CIE_xyY {
-                    x: 0.6400f64,
-                    y: 0.3300f64,
-                    Y: 1.0f64,
-                },
-            green: qcms_CIE_xyY {
-                    x: 0.3000f64,
-                    y: 0.6000f64,
-                    Y: 1.0f64,
-            },
-            blue: qcms_CIE_xyY {
-                    x: 0.1500f64,
-                    y: 0.0600f64,
-                    Y: 1.0f64,
-                },
+    let mut Rec709Primaries = qcms_CIE_xyYTRIPLE {
+        red: qcms_CIE_xyY {
+            x: 0.6400f64,
+            y: 0.3300f64,
+            Y: 1.0f64,
+        },
+        green: qcms_CIE_xyY {
+            x: 0.3000f64,
+            y: 0.6000f64,
+            Y: 1.0f64,
+        },
+        blue: qcms_CIE_xyY {
+            x: 0.1500f64,
+            y: 0.0600f64,
+            Y: 1.0f64,
+        },
     };
-    let D65 = unsafe { qcms_white_point_sRGB() } ;
+    let D65 = unsafe { qcms_white_point_sRGB() };
     let other = unsafe { qcms_profile_create_rgb_with_gamma(D65, Rec709Primaries, 2.2) };
     unsafe { qcms_profile_precache_output_transform(other) };
 
-    let transform = unsafe { qcms_transform_create(sRGB_profile, QCMS_DATA_RGB_8, other, QCMS_DATA_RGB_8, QCMS_INTENT_PERCEPTUAL) };
+    let transform = unsafe {
+        qcms_transform_create(
+            sRGB_profile,
+            QCMS_DATA_RGB_8,
+            other,
+            QCMS_DATA_RGB_8,
+            QCMS_INTENT_PERCEPTUAL,
+        )
+    };
     let mut data: [u8; 120] = [0; 120];
 
-    unsafe { qcms_transform_data(transform, 
-        &data as *const u8 as *const libc::c_void, 
-        &data as *const u8 as *const libc::c_void as *mut libc::c_void,
-        (data.len()/3) as size_t) };
+    unsafe {
+        qcms_transform_data(
+            transform,
+            &data as *const u8 as *const libc::c_void,
+            &data as *const u8 as *const libc::c_void as *mut libc::c_void,
+            (data.len() / 3) as size_t,
+        )
+    };
 }

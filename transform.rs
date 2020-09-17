@@ -21,7 +21,6 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-use crate::{iccread::{curveType, qcms_CIE_xyY, qcms_CIE_xyYTRIPLE, qcms_profile}, qcms_intent, transform_util::clamp_float, s15Fixed16Number};
 use crate::{
     chain::qcms_chain_transform,
     matrix::*,
@@ -29,6 +28,11 @@ use crate::{
         build_colorant_matrix, build_input_gamma_table, build_output_lut, compute_precache,
         lut_interp_linear,
     },
+};
+use crate::{
+    iccread::{curveType, qcms_CIE_xyY, qcms_CIE_xyYTRIPLE, qcms_profile},
+    qcms_intent, s15Fixed16Number,
+    transform_util::clamp_float,
 };
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 use crate::{

@@ -3,12 +3,12 @@ use ::libc;
 #[cfg(target_arch = "x86")]
 pub use std::arch::x86::{
     __m128, __m128i, _mm_add_ps, _mm_cvtps_epi32, _mm_load_ps, _mm_load_ss, _mm_max_ps, _mm_min_ps,
-    _mm_mul_ps, _mm_setzero_ps, _mm_shuffle_ps, _mm_store_si128, _mm_set1_ps
+    _mm_mul_ps, _mm_set1_ps, _mm_setzero_ps, _mm_shuffle_ps, _mm_store_si128,
 };
 #[cfg(target_arch = "x86_64")]
 pub use std::arch::x86_64::{
     __m128, __m128i, _mm_add_ps, _mm_cvtps_epi32, _mm_load_ps, _mm_load_ss, _mm_max_ps, _mm_min_ps,
-    _mm_mul_ps, _mm_setzero_ps, _mm_shuffle_ps, _mm_store_si128, _mm_set1_ps
+    _mm_mul_ps, _mm_set1_ps, _mm_setzero_ps, _mm_shuffle_ps, _mm_store_si128,
 };
 
 pub type uintptr_t = libc::c_ulong;

@@ -1,8 +1,11 @@
 use ::libc;
 use libc::{free, malloc};
 
-use crate::{iccread::{curveType, qcms_profile}, s15Fixed16Number, s15Fixed16Number_to_float};
 use crate::matrix::matrix;
+use crate::{
+    iccread::{curveType, qcms_profile},
+    s15Fixed16Number, s15Fixed16Number_to_float,
+};
 
 pub type __darwin_size_t = libc::c_ulong;
 pub type size_t = __darwin_size_t;
@@ -19,17 +22,17 @@ unsafe extern "C" fn u8Fixed8Number_to_float(mut x: u16) -> f32 {
 }
 #[inline]
 pub fn clamp_float(mut a: f32) -> f32 {
-  /* One would naturally write this function as the following:
-  if (a > 1.)
-    return 1.;
-  else if (a < 0)
-    return 0;
-  else
-    return a;
+    /* One would naturally write this function as the following:
+    if (a > 1.)
+      return 1.;
+    else if (a < 0)
+      return 0;
+    else
+      return a;
 
-  However, that version will let NaNs pass through which is undesirable
-  for most consumers.
-  */
+    However, that version will let NaNs pass through which is undesirable
+    for most consumers.
+    */
     if a as f64 > 1.0f64 {
         return 1f32;
     } else if a >= 0f32 {
