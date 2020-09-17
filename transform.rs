@@ -28,7 +28,7 @@ use crate::{
         build_colorant_matrix, build_input_gamma_table, build_output_lut, compute_precache,
         lut_interp_linear,
     },
-};
+double_to_s15Fixed16Number};
 use crate::{
     iccread::{curveType, qcms_CIE_xyY, qcms_CIE_xyYTRIPLE, qcms_profile},
     qcms_intent, s15Fixed16Number,
@@ -72,12 +72,9 @@ pub struct precache_output {
 }
 
 pub type __darwin_size_t = libc::c_ulong;
-pub type int32_t = i32;
 pub type uintptr_t = libc::c_ulong;
 pub type size_t = __darwin_size_t;
-pub type uint8_t = libc::c_uchar;
-pub type uint16_t = libc::c_ushort;
-pub type uint32_t = libc::c_uint;
+
 /* used as a lookup table for the output transformation.
  * we refcount them so we only need to have one around per output
  * profile, instead of duplicating them per transform */
@@ -251,10 +248,7 @@ impl GrayFormat for GrayAlpha {
     const has_alpha: bool = false;
 }
 
-#[inline]
-unsafe extern "C" fn double_to_s15Fixed16Number(mut v: f64) -> s15Fixed16Number {
-    return (v * 65536f64) as int32_t;
-}
+
 #[inline]
 unsafe extern "C" fn clamp_u8(mut v: f32) -> libc::c_uchar {
     if v as f64 > 255.0f64 {
@@ -1134,13 +1128,8 @@ pub unsafe extern "C" fn qcms_transform_release(mut t: *mut qcms_transform) {
     }
     transform_free(t);
 }
-// Determine if we can build with SSE2 (this was partly copied from jmorecfg.h in
-// mozilla/jpeg)
-// -------------------------------------------------------------------------
-// -------------------------Runtime SSEx Detection-----------------------------
-/* MMX is always supported per
- *  Gecko v1.9.1 minimum CPU requirements */
-unsafe extern "C" fn sse_version_available() -> i32 {
+
+fn sse_version_available() -> i32 {
     /* we know at build time that 64-bit CPUs always have SSE2
      * this tells the compiler that non-SSE2 branches will never be
      * taken (i.e. OK to optimze away the SSE1 and non-SIMD code */

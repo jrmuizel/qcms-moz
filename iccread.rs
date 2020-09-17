@@ -24,7 +24,7 @@
 use ::libc;
 use libc::{calloc, fclose, fopen, fread, free, malloc, memcpy, memset, FILE};
 
-use crate::transform::{get_rgb_colorants, precache_output, precache_release, set_rgb_colorants};
+use crate::{transform::{get_rgb_colorants, precache_output, precache_release, set_rgb_colorants}, double_to_s15Fixed16Number};
 use crate::{
     matrix::matrix, qcms_intent, s15Fixed16Number, s15Fixed16Number_to_float,
     QCMS_INTENT_PERCEPTUAL,
@@ -212,10 +212,7 @@ pub type uInt8Number = u8;
 unsafe extern "C" fn uInt8Number_to_float(mut a: uInt8Number) -> f32 {
     return a as int32_t as f32 / 255.0;
 }
-#[inline]
-unsafe extern "C" fn double_to_s15Fixed16Number(mut v: f64) -> s15Fixed16Number {
-    return (v * 65536f64) as int32_t;
-}
+
 #[inline]
 unsafe extern "C" fn uInt16Number_to_float(mut a: uInt16Number) -> f32 {
     return a as int32_t as f32 / 65535.0;
