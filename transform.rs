@@ -1452,32 +1452,14 @@ pub unsafe extern "C" fn qcms_transform_create(
                     if in_type == QCMS_DATA_RGB_8 {
                         (*transform).transform_fn = Some(
                             qcms_transform_data_rgb_out_lut_avx
-                                as unsafe extern "C" fn(
-                                    _: *const qcms_transform,
-                                    _: *const libc::c_uchar,
-                                    _: *mut libc::c_uchar,
-                                    _: size_t,
-                                ) -> (),
                         )
                     } else if in_type == QCMS_DATA_RGBA_8 {
                         (*transform).transform_fn = Some(
                             qcms_transform_data_rgba_out_lut_avx
-                                as unsafe extern "C" fn(
-                                    _: *const qcms_transform,
-                                    _: *const libc::c_uchar,
-                                    _: *mut libc::c_uchar,
-                                    _: size_t,
-                                ) -> (),
                         )
                     } else if in_type == QCMS_DATA_BGRA_8 {
                         (*transform).transform_fn = Some(
                             qcms_transform_data_bgra_out_lut_avx
-                                as unsafe extern "C" fn(
-                                    _: *const qcms_transform,
-                                    _: *const libc::c_uchar,
-                                    _: *mut libc::c_uchar,
-                                    _: size_t,
-                                ) -> (),
                         )
                     }
                 }
@@ -1489,32 +1471,14 @@ pub unsafe extern "C" fn qcms_transform_create(
                     if in_type == QCMS_DATA_RGB_8 {
                         (*transform).transform_fn = Some(
                             qcms_transform_data_rgb_out_lut_sse2
-                                as unsafe extern "C" fn(
-                                    _: *const qcms_transform,
-                                    _: *const libc::c_uchar,
-                                    _: *mut libc::c_uchar,
-                                    _: size_t,
-                                ) -> (),
                         )
                     } else if in_type == QCMS_DATA_RGBA_8 {
                         (*transform).transform_fn = Some(
                             qcms_transform_data_rgba_out_lut_sse2
-                                as unsafe extern "C" fn(
-                                    _: *const qcms_transform,
-                                    _: *const libc::c_uchar,
-                                    _: *mut libc::c_uchar,
-                                    _: size_t,
-                                ) -> (),
                         )
                     } else if in_type == QCMS_DATA_BGRA_8 {
                         (*transform).transform_fn = Some(
                             qcms_transform_data_bgra_out_lut_sse2
-                                as unsafe extern "C" fn(
-                                    _: *const qcms_transform,
-                                    _: *const libc::c_uchar,
-                                    _: *mut libc::c_uchar,
-                                    _: size_t,
-                                ) -> (),
                         )
                     }
                 }
@@ -1526,85 +1490,37 @@ pub unsafe extern "C" fn qcms_transform_create(
                     if in_type == QCMS_DATA_RGB_8 {
                         (*transform).transform_fn = Some(
                             qcms_transform_data_rgb_out_lut_neon
-                                as unsafe extern "C" fn(
-                                    _: *const qcms_transform,
-                                    _: *const libc::c_uchar,
-                                    _: *mut libc::c_uchar,
-                                    _: size_t,
-                                ) -> (),
                         )
                     } else if in_type == QCMS_DATA_RGBA_8 {
                         (*transform).transform_fn = Some(
                             qcms_transform_data_rgba_out_lut_neon
-                                as unsafe extern "C" fn(
-                                    _: *const qcms_transform,
-                                    _: *const libc::c_uchar,
-                                    _: *mut libc::c_uchar,
-                                    _: size_t,
-                                ) -> (),
                         )
                     } else if in_type == QCMS_DATA_BGRA_8 {
                         (*transform).transform_fn = Some(
                             qcms_transform_data_bgra_out_lut_neon
-                                as unsafe extern "C" fn(
-                                    _: *const qcms_transform,
-                                    _: *const libc::c_uchar,
-                                    _: *mut libc::c_uchar,
-                                    _: size_t,
-                                ) -> (),
                         )
                     }
                 }
             } else if in_type == QCMS_DATA_RGBA_8 {
                 (*transform).transform_fn = Some(
                     qcms_transform_data_rgba_out_lut_precache
-                        as unsafe extern "C" fn(
-                            _: *const qcms_transform,
-                            _: *const libc::c_uchar,
-                            _: *mut libc::c_uchar,
-                            _: size_t,
-                        ) -> (),
                 )
             } else if in_type == QCMS_DATA_BGRA_8 {
                 (*transform).transform_fn = Some(
                     qcms_transform_data_bgra_out_lut_precache
-                        as unsafe extern "C" fn(
-                            _: *const qcms_transform,
-                            _: *const libc::c_uchar,
-                            _: *mut libc::c_uchar,
-                            _: size_t,
-                        ) -> (),
                 )
             }
         } else if in_type == QCMS_DATA_RGB_8 {
             (*transform).transform_fn = Some(
                 qcms_transform_data_rgb_out_lut
-                    as unsafe extern "C" fn(
-                        _: *const qcms_transform,
-                        _: *const libc::c_uchar,
-                        _: *mut libc::c_uchar,
-                        _: size_t,
-                    ) -> (),
             )
         } else if in_type == QCMS_DATA_RGBA_8 {
             (*transform).transform_fn = Some(
                 qcms_transform_data_rgba_out_lut
-                    as unsafe extern "C" fn(
-                        _: *const qcms_transform,
-                        _: *const libc::c_uchar,
-                        _: *mut libc::c_uchar,
-                        _: size_t,
-                    ) -> (),
             )
         } else if in_type == QCMS_DATA_BGRA_8 {
             (*transform).transform_fn = Some(
                 qcms_transform_data_bgra_out_lut
-                    as unsafe extern "C" fn(
-                        _: *const qcms_transform,
-                        _: *const libc::c_uchar,
-                        _: *mut libc::c_uchar,
-                        _: size_t,
-                    ) -> (),
             )
         }
         //XXX: avoid duplicating tables if we can
@@ -1662,110 +1578,50 @@ pub unsafe extern "C" fn qcms_transform_create(
             if out_type == QCMS_DATA_RGB_8 {
                 (*transform).transform_fn = Some(
                     qcms_transform_data_gray_out_precache
-                        as unsafe extern "C" fn(
-                            _: *const qcms_transform,
-                            _: *const libc::c_uchar,
-                            _: *mut libc::c_uchar,
-                            _: size_t,
-                        ) -> (),
                 )
             } else if out_type == QCMS_DATA_RGBA_8 {
                 if in_type == QCMS_DATA_GRAY_8 {
                     (*transform).transform_fn = Some(
                         qcms_transform_data_gray_rgba_out_precache
-                            as unsafe extern "C" fn(
-                                _: *const qcms_transform,
-                                _: *const libc::c_uchar,
-                                _: *mut libc::c_uchar,
-                                _: size_t,
-                            ) -> (),
                     )
                 } else {
                     (*transform).transform_fn = Some(
                         qcms_transform_data_graya_rgba_out_precache
-                            as unsafe extern "C" fn(
-                                _: *const qcms_transform,
-                                _: *const libc::c_uchar,
-                                _: *mut libc::c_uchar,
-                                _: size_t,
-                            ) -> (),
                     )
                 }
             } else if out_type == QCMS_DATA_BGRA_8 {
                 if in_type == QCMS_DATA_GRAY_8 {
                     (*transform).transform_fn = Some(
                         qcms_transform_data_gray_bgra_out_precache
-                            as unsafe extern "C" fn(
-                                _: *const qcms_transform,
-                                _: *const libc::c_uchar,
-                                _: *mut libc::c_uchar,
-                                _: size_t,
-                            ) -> (),
                     )
                 } else {
                     (*transform).transform_fn = Some(
                         qcms_transform_data_graya_bgra_out_precache
-                            as unsafe extern "C" fn(
-                                _: *const qcms_transform,
-                                _: *const libc::c_uchar,
-                                _: *mut libc::c_uchar,
-                                _: size_t,
-                            ) -> (),
                     )
                 }
             }
         } else if out_type == QCMS_DATA_RGB_8 {
             (*transform).transform_fn = Some(
                 qcms_transform_data_gray_out_lut
-                    as unsafe extern "C" fn(
-                        _: *const qcms_transform,
-                        _: *const libc::c_uchar,
-                        _: *mut libc::c_uchar,
-                        _: size_t,
-                    ) -> (),
             )
         } else if out_type == QCMS_DATA_RGBA_8 {
             if in_type == QCMS_DATA_GRAY_8 {
                 (*transform).transform_fn = Some(
                     qcms_transform_data_gray_rgba_out_lut
-                        as unsafe extern "C" fn(
-                            _: *const qcms_transform,
-                            _: *const libc::c_uchar,
-                            _: *mut libc::c_uchar,
-                            _: size_t,
-                        ) -> (),
                 )
             } else {
                 (*transform).transform_fn = Some(
                     qcms_transform_data_graya_rgba_out_lut
-                        as unsafe extern "C" fn(
-                            _: *const qcms_transform,
-                            _: *const libc::c_uchar,
-                            _: *mut libc::c_uchar,
-                            _: size_t,
-                        ) -> (),
                 )
             }
         } else if out_type == QCMS_DATA_BGRA_8 {
             if in_type == QCMS_DATA_GRAY_8 {
                 (*transform).transform_fn = Some(
                     qcms_transform_data_gray_bgra_out_lut
-                        as unsafe extern "C" fn(
-                            _: *const qcms_transform,
-                            _: *const libc::c_uchar,
-                            _: *mut libc::c_uchar,
-                            _: size_t,
-                        ) -> (),
                 )
             } else {
                 (*transform).transform_fn = Some(
                     qcms_transform_data_graya_bgra_out_lut
-                        as unsafe extern "C" fn(
-                            _: *const qcms_transform,
-                            _: *const libc::c_uchar,
-                            _: *mut libc::c_uchar,
-                            _: size_t,
-                        ) -> (),
                 )
             }
         }
