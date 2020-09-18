@@ -830,7 +830,7 @@ unsafe fn read_tag_lutmABType(
     }
     // we'll fill in the rest below
     std::ptr::write_bytes(lut, 0, 1);
-    (*lut).clut_table = &mut *(*lut).clut_table_data.as_mut_ptr().offset(0isize) as *mut f32;
+    (*lut).clut_table = (*lut).clut_table_data.as_mut_ptr().offset(0isize) as *mut f32;
     if clut_offset != 0 {
         i = 0;
         while i < num_in_channels as libc::c_uint {
