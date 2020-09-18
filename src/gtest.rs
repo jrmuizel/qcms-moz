@@ -8,7 +8,7 @@ mod test {
         transform::qcms_profile_precache_output_transform, transform::qcms_transform,
         transform::qcms_transform_create, transform::qcms_transform_data,
         transform::QCMS_DATA_RGB_8, transform_util::lut_inverse_interp16, QCMS_INTENT_PERCEPTUAL,
-    };
+    iccread::qcms_profile_release, transform::qcms_transform_release};
     pub type size_t = libc::c_ulong;
 
     #[test]
@@ -190,6 +190,12 @@ mod test {
                 (data.len() / 3) as size_t,
             )
         };
+
+        unsafe {
+            qcms_transform_release( transform);
+            qcms_profile_release(sRGB_profile);
+            qcms_profile_release(other);
+        }
     }
 
     #[test]
@@ -220,7 +226,8 @@ mod test {
             let profile = unsafe {
                 qcms_profile_from_memory(data.as_ptr() as *const c_void, data.len() as size_t)
             };
-            assert_ne!(profile, std::ptr::null_mut())
+            assert_ne!(profile, std::ptr::null_mut());
+            unsafe { qcms_profile_release(profile) };
         }
     }
 }
