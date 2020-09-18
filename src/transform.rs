@@ -1075,7 +1075,7 @@ unsafe extern "C" fn precache_create() -> *mut precache_output {
 
 #[no_mangle]
 pub unsafe extern "C" fn precache_release(mut p: *mut precache_output) {
-    if (*p).ref_count.fetch_sub(1, Ordering::SeqCst) == 0 {
+    if (*p).ref_count.fetch_sub(1, Ordering::SeqCst) == 1 {
         free(p as *mut libc::c_void);
     };
 }
