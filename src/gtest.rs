@@ -206,6 +206,7 @@ mod test {
         unsafe {
             qcms_enable_iccv4();
         }
+        d.push("fuzz");
         d.push("samples");
         let samples = [
             "0220-ca351238d719fd07ef8607d326b398fe.icc",
