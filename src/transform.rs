@@ -21,11 +21,6 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#[cfg(any(target_arch = "arm", target_arch = "aarch64"))]
-use crate::transform_neon::{
-    qcms_transform_data_bgra_out_lut_neon, qcms_transform_data_rgb_out_lut_neon,
-    qcms_transform_data_rgba_out_lut_neon,
-};
 use crate::{
     chain::qcms_chain_transform,
     double_to_s15Fixed16Number,
@@ -34,11 +29,16 @@ use crate::{
         build_colorant_matrix, build_input_gamma_table, build_output_lut, compute_precache,
         lut_interp_linear,
     },
-};
+iccread::qcms_supports_iccv4};
 use crate::{
     iccread::{curveType, qcms_CIE_xyY, qcms_CIE_xyYTRIPLE, qcms_profile},
     qcms_intent, s15Fixed16Number,
     transform_util::clamp_float,
+};
+#[cfg(any(target_arch = "arm", target_arch = "aarch64"))]
+use crate::transform_neon::{
+    qcms_transform_data_bgra_out_lut_neon, qcms_transform_data_rgb_out_lut_neon,
+    qcms_transform_data_rgba_out_lut_neon,
 };
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 use crate::{
@@ -1178,7 +1178,7 @@ pub unsafe extern "C" fn qcms_profile_precache_output_transform(mut profile: *mu
     if (*profile).color_space != 0x52474220 {
         return;
     }
-    if qcms_supports_iccv4 {
+    if qcms_supports_iccv4.load(Ordering::Relaxed) {
         /* don't precache since we will use the B2A LUT */
         if !(*profile).B2A0.is_null() {
             return;
@@ -1342,7 +1342,7 @@ pub unsafe extern "C" fn qcms_transform_create(
         precache = true
     }
     // This precache assumes RGB_SIGNATURE (fails on GRAY_SIGNATURE, for instance)
-    if qcms_supports_iccv4 as i32 != 0
+    if qcms_supports_iccv4.load(Ordering::Relaxed) as i32 != 0
         && (in_type == QCMS_DATA_RGB_8
             || in_type == QCMS_DATA_RGBA_8
             || in_type == QCMS_DATA_BGRA_8)
@@ -1553,11 +1553,10 @@ pub unsafe extern "C" fn qcms_transform_data(
         length,
     );
 }
-#[no_mangle]
-pub static mut qcms_supports_iccv4: bool = false;
+
 #[no_mangle]
 pub unsafe extern "C" fn qcms_enable_iccv4() {
-    qcms_supports_iccv4 = true;
+    qcms_supports_iccv4.store(true, Ordering::Relaxed);
 }
 #[no_mangle]
 pub static mut qcms_supports_avx: bool = false;

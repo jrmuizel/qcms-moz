@@ -13,6 +13,7 @@
 #![feature(link_llvm_intrinsics)]
 #![feature(aarch64_target_feature)]
 #![feature(arm_target_feature)]
+#![feature(raw_ref_op)]
 
 extern crate libc;
 

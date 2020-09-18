@@ -21,6 +21,8 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+use std::sync::atomic::{AtomicBool, Ordering};
+
 use ::libc;
 use libc::{calloc, fclose, fopen, fread, free, malloc, memset, FILE};
 
@@ -33,9 +35,8 @@ use crate::{
     QCMS_INTENT_PERCEPTUAL,
 };
 
-extern "C" {
-    static mut qcms_supports_iccv4: bool;
-}
+
+pub static qcms_supports_iccv4: AtomicBool = AtomicBool::new(false);
 
 pub type int32_t = i32;
 pub type size_t = libc::c_ulong;
@@ -1436,14 +1437,14 @@ pub unsafe extern "C" fn qcms_profile_from_memory(
                             (*profile).mBA = read_tag_lutmABType(src, &index, TAG_B2A0)
                         }
                     }
-                    if !find_tag(&index, TAG_rXYZ).is_null() || !qcms_supports_iccv4 {
+                    if !find_tag(&index, TAG_rXYZ).is_null() || !qcms_supports_iccv4.load(Ordering::Relaxed) {
                         (*profile).redColorant = read_tag_XYZType(src, &index, TAG_rXYZ);
                         (*profile).greenColorant = read_tag_XYZType(src, &index, TAG_gXYZ);
                         (*profile).blueColorant = read_tag_XYZType(src, &index, TAG_bXYZ)
                     }
                     if !(*src).valid {
                         current_block = 17808765469879209355;
-                    } else if !find_tag(&index, TAG_rTRC).is_null() || !qcms_supports_iccv4 {
+                    } else if !find_tag(&index, TAG_rTRC).is_null() || !qcms_supports_iccv4.load(Ordering::Relaxed) {
                         (*profile).redTRC = read_tag_curveType(src, &index, TAG_rTRC);
                         (*profile).greenTRC = read_tag_curveType(src, &index, TAG_gTRC);
                         (*profile).blueTRC = read_tag_curveType(src, &index, TAG_bTRC);
