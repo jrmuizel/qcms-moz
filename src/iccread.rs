@@ -22,7 +22,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 use ::libc;
-use libc::{calloc, fclose, fopen, fread, free, malloc, memcpy, memset, FILE};
+use libc::{calloc, fclose, fopen, fread, free, malloc, memset, FILE};
 
 use crate::{
     double_to_s15Fixed16Number,
@@ -243,12 +243,7 @@ unsafe extern "C" fn read_u32(mut mem: *mut mem_source, mut offset: size_t) -> u
         invalid_source(mem, "Invalid offset");
         return 0;
     } else {
-        let mut k: be32 = 0;
-        memcpy(
-            &mut k as *mut be32 as *mut libc::c_void,
-            (*mem).buf.offset(offset as isize) as *const libc::c_void,
-            ::std::mem::size_of::<be32>(),
-        );
+        let k = std::ptr::read_unaligned((*mem).buf.offset(offset as isize) as *const be32);
         return be32_to_cpu(k);
     };
 }
@@ -257,12 +252,7 @@ unsafe extern "C" fn read_u16(mut mem: *mut mem_source, mut offset: size_t) -> u
         invalid_source(mem, "Invalid offset");
         return 0u16;
     } else {
-        let mut k: be16 = 0;
-        memcpy(
-            &mut k as *mut be16 as *mut libc::c_void,
-            (*mem).buf.offset(offset as isize) as *const libc::c_void,
-            ::std::mem::size_of::<be16>(),
-        );
+        let k = std::ptr::read_unaligned((*mem).buf.offset(offset as isize) as *const be16);
         return be16_to_cpu(k);
     };
 }
@@ -839,11 +829,7 @@ unsafe fn read_tag_lutmABType(
         return 0 as *mut lutmABType;
     }
     // we'll fill in the rest below
-    memset(
-        lut as *mut libc::c_void,
-        0,
-        ::std::mem::size_of::<lutmABType>(),
-    );
+    std::ptr::write_bytes(lut, 0, 1);
     (*lut).clut_table = &mut *(*lut).clut_table_data.as_mut_ptr().offset(0isize) as *mut f32;
     if clut_offset != 0 {
         i = 0;
@@ -1378,19 +1364,19 @@ pub unsafe extern "C" fn qcms_profile_from_memory(
         valid: false,
         invalid_reason: None,
     };
-    let mut src: *mut mem_source = &mut source;
     let mut index;
     let mut profile: *mut qcms_profile;
     source.buf = mem as *const libc::c_uchar;
     source.size = size;
     source.valid = true;
+    let mut src: *mut mem_source = &mut source;
     if size < 4 {
         return 0 as *mut qcms_profile;
     }
     length = read_u32(src, 0);
     if length as libc::c_ulong <= size {
         // shrink the area that we can read if appropriate
-        source.size = length as size_t
+        (*src).size = length as size_t
     } else {
         return 0 as *mut qcms_profile;
     }

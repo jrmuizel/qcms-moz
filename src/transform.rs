@@ -1410,7 +1410,7 @@ pub unsafe extern "C" fn qcms_transform_create(
                         (*transform).transform_fn = Some(qcms_transform_data_bgra_out_lut_avx)
                     }
                 }
-            } else if cfg!(any(target_arch = "x86", target_arch = "x86_64"))
+            } else if cfg!(all(any(target_arch = "x86", target_arch = "x86_64"), not(miri)))
                 && sse_version_available() >= 2
             {
                 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
