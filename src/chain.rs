@@ -32,7 +32,6 @@ use crate::{
 };
 use ::libc::{self, calloc, free, malloc, memcpy, memset};
 
-
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct qcms_modular_transform {
@@ -243,7 +242,7 @@ unsafe extern "C" fn qcms_transform_module_clut_only(
     let mut b_table: *mut f32 = (*transform).b_clut;
     let mut i: usize = 0;
     while i < length {
-         debug_assert!((*transform).grid_size as i32 >= 1);
+        debug_assert!((*transform).grid_size as i32 >= 1);
         let fresh12 = src;
         src = src.offset(1);
         let mut linear_r: f32 = *fresh12;
@@ -357,7 +356,7 @@ unsafe extern "C" fn qcms_transform_module_clut(
     let mut b_table: *mut f32 = (*transform).b_clut;
     let mut i: usize = 0;
     while i < length {
-         debug_assert!((*transform).grid_size as i32 >= 1);
+        debug_assert!((*transform).grid_size as i32 >= 1);
         let fresh18 = src;
         src = src.offset(1);
         let mut device_r: f32 = *fresh18;
@@ -1386,7 +1385,7 @@ unsafe extern "C" fn qcms_modular_transform_create_output(
             }
         }
     } else {
-         debug_assert!(false, "Unsupported output profile workflow.");
+        debug_assert!(false, "Unsupported output profile workflow.");
         return 0 as *mut qcms_modular_transform;
     }
     match current_block {
@@ -1528,7 +1527,7 @@ unsafe extern "C" fn qcms_modular_transform_create(
                                     return first_transform;
                                 }
                             } else {
-                                 debug_assert!(false, "output color space not supported");
+                                debug_assert!(false, "output color space not supported");
                             }
                         }
                     }
@@ -1536,7 +1535,7 @@ unsafe extern "C" fn qcms_modular_transform_create(
             }
         }
     } else {
-         debug_assert!(false, "input color space not supported");
+        debug_assert!(false, "input color space not supported");
     }
     qcms_modular_transform_release(first_transform);
     return 0 as *mut qcms_modular_transform;
@@ -1632,7 +1631,7 @@ unsafe extern "C" fn qcms_modular_transform_data(
                         ) -> (),
                 )
         {
-             debug_assert!(false, "Unsupported transform module");
+            debug_assert!(false, "Unsupported transform module");
             return 0 as *mut f32;
         }
         if (*transform).grid_size as i32 <= 0
@@ -1657,7 +1656,7 @@ unsafe extern "C" fn qcms_modular_transform_data(
                             ) -> (),
                     ))
         {
-             debug_assert!(false, "Invalid transform");
+            debug_assert!(false, "Invalid transform");
             return 0 as *mut f32;
         }
         (*transform)

@@ -78,8 +78,8 @@ pub struct precache_output {
  * profile, instead of duplicating them per transform */
 
 #[repr(C)]
-
-#[repr(align(16))]#[derive(Copy, Clone)]
+#[repr(align(16))]
+#[derive(Copy, Clone)]
 pub struct qcms_transform {
     pub matrix: [[f32; 4]; 3],
     pub input_gamma_table_r: *mut f32,
@@ -1284,7 +1284,7 @@ pub unsafe extern "C" fn qcms_transform_precacheLUT_float(
             } else if in_type == QCMS_DATA_RGB_8 {
                 (*transform).transform_fn = Some(qcms_transform_data_tetra_clut_rgb)
             }
-             debug_assert!((*transform).transform_fn.is_some());
+            debug_assert!((*transform).transform_fn.is_some());
         }
     }
     //XXX: qcms_modular_transform_data may return either the src or dest buffer. If so it must not be free-ed
@@ -1324,7 +1324,7 @@ pub unsafe extern "C" fn qcms_transform_create(
         match_0 = out_type == QCMS_DATA_RGBA_8 || out_type == QCMS_DATA_BGRA_8
     }
     if !match_0 {
-         debug_assert!(false, "input/output type");
+        debug_assert!(false, "input/output type");
         return 0 as *mut qcms_transform;
     }
     let mut transform: *mut qcms_transform = transform_alloc();
@@ -1356,7 +1356,7 @@ pub unsafe extern "C" fn qcms_transform_create(
         let mut result: *mut qcms_transform =
             qcms_transform_precacheLUT_float(transform, in_0, out, 33, in_type);
         if result.is_null() {
-             debug_assert!(false, "precacheLUT failed");
+            debug_assert!(false, "precacheLUT failed");
             qcms_transform_release(transform);
             return 0 as *mut qcms_transform;
         }
@@ -1434,7 +1434,6 @@ pub unsafe extern "C" fn qcms_transform_create(
                         (*transform).transform_fn = Some(qcms_transform_data_bgra_out_lut_neon)
                     }
                 }
-                
             } else if in_type == QCMS_DATA_RGB_8 {
                 (*transform).transform_fn = Some(qcms_transform_data_rgb_out_lut_precache)
             } else if in_type == QCMS_DATA_RGBA_8 {
@@ -1532,11 +1531,11 @@ pub unsafe extern "C" fn qcms_transform_create(
             }
         }
     } else {
-         debug_assert!(false, "unexpected colorspace");
+        debug_assert!(false, "unexpected colorspace");
         qcms_transform_release(transform);
         return 0 as *mut qcms_transform;
     }
-     debug_assert!((*transform).transform_fn.is_some());
+    debug_assert!((*transform).transform_fn.is_some());
     return transform;
 }
 #[no_mangle]

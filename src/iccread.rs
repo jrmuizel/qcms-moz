@@ -37,7 +37,6 @@ use crate::{
 
 pub static qcms_supports_iccv4: AtomicBool = AtomicBool::new(false);
 
-
 pub type icColorSpaceSignature = libc::c_uint;
 pub const icMaxEnumData: icColorSpaceSignature = 4294967295;
 pub const icSig15colorData: icColorSpaceSignature = 1178815570;
@@ -802,7 +801,7 @@ unsafe fn read_tag_lutmABType(
         b_curve_offset = b_curve_offset + offset
     }
     if clut_offset != 0 {
-         debug_assert!(num_in_channels as i32 == 3);
+        debug_assert!(num_in_channels as i32 == 3);
         // clut_size can not overflow since lg(256^num_in_channels) = 24 bits.
         i = 0;
         while i < num_in_channels as libc::c_uint {
@@ -845,30 +844,19 @@ unsafe fn read_tag_lutmABType(
     (*lut).num_out_channels = num_out_channels;
     if matrix_offset != 0 {
         // read the matrix if we have it
-        (*lut).e00 =
-            read_s15Fixed16Number(src, (matrix_offset + (4 * 0) as libc::c_uint) as usize); // the caller checks that this doesn't happen
-        (*lut).e01 =
-            read_s15Fixed16Number(src, (matrix_offset + (4 * 1) as libc::c_uint) as usize);
-        (*lut).e02 =
-            read_s15Fixed16Number(src, (matrix_offset + (4 * 2) as libc::c_uint) as usize);
-        (*lut).e10 =
-            read_s15Fixed16Number(src, (matrix_offset + (4 * 3) as libc::c_uint) as usize);
-        (*lut).e11 =
-            read_s15Fixed16Number(src, (matrix_offset + (4 * 4) as libc::c_uint) as usize);
-        (*lut).e12 =
-            read_s15Fixed16Number(src, (matrix_offset + (4 * 5) as libc::c_uint) as usize);
-        (*lut).e20 =
-            read_s15Fixed16Number(src, (matrix_offset + (4 * 6) as libc::c_uint) as usize);
-        (*lut).e21 =
-            read_s15Fixed16Number(src, (matrix_offset + (4 * 7) as libc::c_uint) as usize);
-        (*lut).e22 =
-            read_s15Fixed16Number(src, (matrix_offset + (4 * 8) as libc::c_uint) as usize);
-        (*lut).e03 =
-            read_s15Fixed16Number(src, (matrix_offset + (4 * 9) as libc::c_uint) as usize);
+        (*lut).e00 = read_s15Fixed16Number(src, (matrix_offset + (4 * 0) as libc::c_uint) as usize); // the caller checks that this doesn't happen
+        (*lut).e01 = read_s15Fixed16Number(src, (matrix_offset + (4 * 1) as libc::c_uint) as usize);
+        (*lut).e02 = read_s15Fixed16Number(src, (matrix_offset + (4 * 2) as libc::c_uint) as usize);
+        (*lut).e10 = read_s15Fixed16Number(src, (matrix_offset + (4 * 3) as libc::c_uint) as usize);
+        (*lut).e11 = read_s15Fixed16Number(src, (matrix_offset + (4 * 4) as libc::c_uint) as usize);
+        (*lut).e12 = read_s15Fixed16Number(src, (matrix_offset + (4 * 5) as libc::c_uint) as usize);
+        (*lut).e20 = read_s15Fixed16Number(src, (matrix_offset + (4 * 6) as libc::c_uint) as usize);
+        (*lut).e21 = read_s15Fixed16Number(src, (matrix_offset + (4 * 7) as libc::c_uint) as usize);
+        (*lut).e22 = read_s15Fixed16Number(src, (matrix_offset + (4 * 8) as libc::c_uint) as usize);
+        (*lut).e03 = read_s15Fixed16Number(src, (matrix_offset + (4 * 9) as libc::c_uint) as usize);
         (*lut).e13 =
             read_s15Fixed16Number(src, (matrix_offset + (4 * 10) as libc::c_uint) as usize);
-        (*lut).e23 =
-            read_s15Fixed16Number(src, (matrix_offset + (4 * 11) as libc::c_uint) as usize)
+        (*lut).e23 = read_s15Fixed16Number(src, (matrix_offset + (4 * 11) as libc::c_uint) as usize)
     }
     if a_curve_offset != 0 {
         read_nested_curveType(src, &mut (*lut).a_curves, num_in_channels, a_curve_offset);
@@ -946,7 +934,7 @@ unsafe fn read_tag_lutType(
         entry_size = 2;
         input_offset = 52
     } else {
-         debug_assert!(false);
+        debug_assert!(false);
         invalid_source(src, "Unexpected lut type");
         return 0 as *mut lutType;
     }
@@ -1052,9 +1040,8 @@ unsafe fn read_tag_lutType(
         }
         i = i + 3
     }
-    output_offset = (clut_offset as usize
-        + (clut_size * out_chan as u32) as usize * entry_size)
-        as u32;
+    output_offset =
+        (clut_offset as usize + (clut_size * out_chan as u32) as usize * entry_size) as u32;
     i = 0;
     while i < ((*lut).num_output_table_entries as i32 * out_chan as i32) as u32 {
         if type_0 == LUT8_TYPE {
@@ -1288,7 +1275,7 @@ unsafe extern "C" fn white_point_from_temp(mut temp_K: i32) -> qcms_CIE_xyY {
         white_point.x = -1.0f64;
         white_point.y = -1.0f64;
         white_point.Y = -1.0f64;
-         debug_assert!(false, "invalid temp");
+        debug_assert!(false, "invalid temp");
         return white_point;
     }
     // Obtain y(x)
@@ -1409,8 +1396,7 @@ pub unsafe extern "C" fn qcms_profile_from_memory(
             {
                 if (*profile).color_space == RGB_SIGNATURE {
                     if !find_tag(&index, TAG_A2B0).is_null() {
-                        if read_u32(src, (*find_tag(&index, TAG_A2B0)).offset as usize)
-                            == LUT8_TYPE
+                        if read_u32(src, (*find_tag(&index, TAG_A2B0)).offset as usize) == LUT8_TYPE
                             || read_u32(src, (*find_tag(&index, TAG_A2B0)).offset as usize)
                                 == LUT16_TYPE
                         {
@@ -1422,8 +1408,7 @@ pub unsafe extern "C" fn qcms_profile_from_memory(
                         }
                     }
                     if !find_tag(&index, TAG_B2A0).is_null() {
-                        if read_u32(src, (*find_tag(&index, TAG_B2A0)).offset as usize)
-                            == LUT8_TYPE
+                        if read_u32(src, (*find_tag(&index, TAG_B2A0)).offset as usize) == LUT8_TYPE
                             || read_u32(src, (*find_tag(&index, TAG_B2A0)).offset as usize)
                                 == LUT16_TYPE
                         {
@@ -1468,7 +1453,7 @@ pub unsafe extern "C" fn qcms_profile_from_memory(
                         current_block = 3580086814630675314;
                     }
                 } else {
-                     debug_assert!(false, "read_color_space protects against entering here");
+                    debug_assert!(false, "read_color_space protects against entering here");
                     current_block = 17808765469879209355;
                 }
                 match current_block {

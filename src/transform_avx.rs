@@ -81,16 +81,13 @@ unsafe extern "C" fn qcms_transform_data_template_lut_avx<F: Format>(
         vec_g0 = _mm_broadcast_ss(&*igtbl_g.offset(*src.offset(F::kGIndex as isize) as isize));
         vec_b0 = _mm_broadcast_ss(&*igtbl_b.offset(*src.offset(F::kBIndex as isize) as isize));
         vec_r1 = _mm_broadcast_ss(
-            &*igtbl_r
-                .offset(*src.offset((F::kRIndex + components as usize) as isize) as isize),
+            &*igtbl_r.offset(*src.offset((F::kRIndex + components as usize) as isize) as isize),
         );
         vec_g1 = _mm_broadcast_ss(
-            &*igtbl_g
-                .offset(*src.offset((F::kGIndex + components as usize) as isize) as isize),
+            &*igtbl_g.offset(*src.offset((F::kGIndex + components as usize) as isize) as isize),
         );
         vec_b1 = _mm_broadcast_ss(
-            &*igtbl_b
-                .offset(*src.offset((F::kBIndex + components as usize) as isize) as isize),
+            &*igtbl_b.offset(*src.offset((F::kBIndex + components as usize) as isize) as isize),
         );
         vec_r = _mm256_insertf128_ps(_mm256_castps128_ps256(vec_r0), vec_r1, 1);
         vec_g = _mm256_insertf128_ps(_mm256_castps128_ps256(vec_g0), vec_g1, 1);
@@ -128,16 +125,13 @@ unsafe extern "C" fn qcms_transform_data_template_lut_avx<F: Format>(
         vec_g0 = _mm_broadcast_ss(&*igtbl_g.offset(*src.offset(F::kGIndex as isize) as isize));
         vec_b0 = _mm_broadcast_ss(&*igtbl_b.offset(*src.offset(F::kBIndex as isize) as isize));
         vec_r1 = _mm_broadcast_ss(
-            &*igtbl_r
-                .offset(*src.offset((F::kRIndex + components as usize) as isize) as isize),
+            &*igtbl_r.offset(*src.offset((F::kRIndex + components as usize) as isize) as isize),
         );
         vec_g1 = _mm_broadcast_ss(
-            &*igtbl_g
-                .offset(*src.offset((F::kGIndex + components as usize) as isize) as isize),
+            &*igtbl_g.offset(*src.offset((F::kGIndex + components as usize) as isize) as isize),
         );
         vec_b1 = _mm_broadcast_ss(
-            &*igtbl_b
-                .offset(*src.offset((F::kBIndex + components as usize) as isize) as isize),
+            &*igtbl_b.offset(*src.offset((F::kBIndex + components as usize) as isize) as isize),
         );
         vec_r = _mm256_insertf128_ps(_mm256_castps128_ps256(vec_r0), vec_r1, 1);
         vec_g = _mm256_insertf128_ps(_mm256_castps128_ps256(vec_g0), vec_g1, 1);

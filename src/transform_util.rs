@@ -195,7 +195,7 @@ pub unsafe extern "C" fn compute_curve_gamma_table_type_parametric(
         f = *parameter.offset(6isize);
         interval = *parameter.offset(4isize)
     } else {
-         debug_assert!(false, "invalid parametric function type.");
+        debug_assert!(false, "invalid parametric function type.");
         a = 1.;
         b = 0.;
         c = 0.;
@@ -342,11 +342,10 @@ pub unsafe extern "C" fn lut_inverse_interp16(
         }
     }
 
-     
-// Not found, should we interpolate?
+    // Not found, should we interpolate?
 
-// Get surrounding nodes
-debug_assert!(x >= 1);
+    // Get surrounding nodes
+    debug_assert!(x >= 1);
 
     let mut val2: f64 = (length - 1) as f64 * ((x - 1) as f64 / 65535.0f64);
     let mut cell0: i32 = val2.floor() as i32;

@@ -4,11 +4,12 @@ mod test {
     use crate::{
         iccread::qcms_CIE_xyY, iccread::qcms_CIE_xyYTRIPLE,
         iccread::qcms_profile_create_rgb_with_gamma, iccread::qcms_profile_from_memory,
-        iccread::qcms_white_point_sRGB, transform::qcms_enable_iccv4,
-        transform::qcms_profile_precache_output_transform, transform::qcms_transform,
-        transform::qcms_transform_create, transform::qcms_transform_data,
+        iccread::qcms_profile_release, iccread::qcms_white_point_sRGB,
+        transform::qcms_enable_iccv4, transform::qcms_profile_precache_output_transform,
+        transform::qcms_transform, transform::qcms_transform_create,
+        transform::qcms_transform_data, transform::qcms_transform_release,
         transform::QCMS_DATA_RGB_8, transform_util::lut_inverse_interp16, QCMS_INTENT_PERCEPTUAL,
-    iccread::qcms_profile_release, transform::qcms_transform_release};
+    };
 
     #[test]
     fn test_lut_inverse_crash() {
@@ -193,7 +194,7 @@ mod test {
         };
 
         unsafe {
-            qcms_transform_release( transform);
+            qcms_transform_release(transform);
             qcms_profile_release(sRGB_profile);
             qcms_profile_release(other);
         }
@@ -201,8 +202,8 @@ mod test {
 
     #[test]
     fn samples() {
-        use std::io::Read;
         use libc::c_void;
+        use std::io::Read;
 
         let mut d = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         unsafe {
@@ -224,9 +225,8 @@ mod test {
             let mut file = std::fs::File::open(p.clone()).unwrap();
             let mut data = Vec::new();
             file.read_to_end(&mut data).unwrap();
-            let profile = unsafe {
-                qcms_profile_from_memory(data.as_ptr() as *const c_void, data.len())
-            };
+            let profile =
+                unsafe { qcms_profile_from_memory(data.as_ptr() as *const c_void, data.len()) };
             assert_ne!(profile, std::ptr::null_mut());
             unsafe { qcms_profile_release(profile) };
         }

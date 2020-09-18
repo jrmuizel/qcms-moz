@@ -6,7 +6,6 @@ use core::arch::aarch64::{float32x4_t, int32x4_t, vaddq_f32};
 use core::arch::arm::{float32x4_t, int32x4_t, vaddq_f32};
 use std::mem::zeroed;
 
-
 static mut floatScale: f32 = FLOATSCALE;
 static mut clampMaxValue: f32 = CLAMPMAXVAL;
 
