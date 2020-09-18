@@ -89,6 +89,8 @@ mod test {
         assert!(value < 201 * 256);
     }
 
+    // this test takes to long to run on miri
+    #[cfg(not(miri))]
     #[test]
     fn test_lut_inverse_non_monotonic() {
         // Make sure we behave sanely for non monotic functions
