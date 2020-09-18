@@ -360,10 +360,7 @@ unsafe extern "C" fn read_pcs(mut profile: *mut qcms_profile, mut mem: *mut mem_
         }
     };
 }
-unsafe fn read_tag_table(
-    mut profile: *mut qcms_profile,
-    mut mem: *mut mem_source,
-) -> Vec<tag> {
+unsafe fn read_tag_table(mut profile: *mut qcms_profile, mut mem: *mut mem_source) -> Vec<tag> {
     let count = read_u32(mem, 128);
     if count > 1024 {
         invalid_source(mem, "max number of tags exceeded");
