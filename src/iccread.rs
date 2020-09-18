@@ -1635,7 +1635,6 @@ pub unsafe extern "C" fn qcms_data_from_path(
 
 #[cfg(windows)]
 extern "C" {
-    #[no_mangle]
     pub fn _wfopen(filename: *const libc::wchar_t, mode: *const libc::wchar_t) -> *mut FILE;
 }
 
