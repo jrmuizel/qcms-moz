@@ -21,24 +21,25 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+#[cfg(any(target_arch = "arm", target_arch = "aarch64"))]
+use crate::transform_neon::{
+    qcms_transform_data_bgra_out_lut_neon, qcms_transform_data_rgb_out_lut_neon,
+    qcms_transform_data_rgba_out_lut_neon,
+};
 use crate::{
     chain::qcms_chain_transform,
     double_to_s15Fixed16Number,
+    iccread::qcms_supports_iccv4,
     matrix::*,
     transform_util::{
         build_colorant_matrix, build_input_gamma_table, build_output_lut, compute_precache,
         lut_interp_linear,
     },
-iccread::qcms_supports_iccv4};
+};
 use crate::{
     iccread::{curveType, qcms_CIE_xyY, qcms_CIE_xyYTRIPLE, qcms_profile},
     qcms_intent, s15Fixed16Number,
     transform_util::clamp_float,
-};
-#[cfg(any(target_arch = "arm", target_arch = "aarch64"))]
-use crate::transform_neon::{
-    qcms_transform_data_bgra_out_lut_neon, qcms_transform_data_rgb_out_lut_neon,
-    qcms_transform_data_rgba_out_lut_neon,
 };
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 use crate::{
@@ -1410,8 +1411,10 @@ pub unsafe extern "C" fn qcms_transform_create(
                         (*transform).transform_fn = Some(qcms_transform_data_bgra_out_lut_avx)
                     }
                 }
-            } else if cfg!(all(any(target_arch = "x86", target_arch = "x86_64"), not(miri)))
-                && sse_version_available() >= 2
+            } else if cfg!(all(
+                any(target_arch = "x86", target_arch = "x86_64"),
+                not(miri)
+            )) && sse_version_available() >= 2
             {
                 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
                 {
