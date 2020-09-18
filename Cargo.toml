@@ -1,7 +1,7 @@
 [package]
 name = "qcms"
-authors = ["C2Rust"]
-version = "0.0.0"
+authors = ["Jeff Muizelaar"]
+version = "0.1.0"
 publish = false
 edition = "2018"
 autobins = false
