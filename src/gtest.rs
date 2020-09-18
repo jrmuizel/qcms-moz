@@ -185,8 +185,8 @@ mod test {
         unsafe {
             qcms_transform_data(
                 transform,
-                &data as *const u8 as *const libc::c_void,
-                &data as *const u8 as *const libc::c_void as *mut libc::c_void,
+                data.as_ptr() as *const libc::c_void,
+                data.as_mut_ptr() as *mut libc::c_void,
                 (data.len() / 3) as size_t,
             )
         };
