@@ -201,6 +201,9 @@ mod test {
 
     #[test]
     fn samples() {
+        use std::io::Read;
+        use libc::c_void;
+
         let mut d = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         unsafe {
             qcms_enable_iccv4();
@@ -218,13 +221,9 @@ mod test {
         for s in samples.iter() {
             let mut p = d.clone();
             p.push(s);
-            dbg!(&p);
             let mut file = std::fs::File::open(p.clone()).unwrap();
             let mut data = Vec::new();
-            use std::io::Read;
-            dbg!(data.len());
             file.read_to_end(&mut data).unwrap();
-            use libc::c_void;
             let profile = unsafe {
                 qcms_profile_from_memory(data.as_ptr() as *const c_void, data.len())
             };

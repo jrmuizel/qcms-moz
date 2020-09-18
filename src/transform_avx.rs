@@ -16,8 +16,7 @@ pub use std::arch::x86_64::{
     _mm_add_ps, _mm_broadcast_ss, _mm_cvtps_epi32, _mm_loadu_ps, _mm_max_ps, _mm_min_ps,
     _mm_mul_ps, _mm_setzero_ps, _mm_store_si128,
 };
-pub type uintptr_t = usize;
-pub type size_t = usize;
+
 #[repr(align(32))]
 struct Output([u32; 8]);
 

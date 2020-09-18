@@ -11,8 +11,6 @@ pub use std::arch::x86_64::{
     _mm_mul_ps, _mm_set1_ps, _mm_setzero_ps, _mm_shuffle_ps, _mm_store_si128,
 };
 
-pub type uintptr_t = libc::c_ulong;
-pub type size_t = libc::c_ulong;
 #[repr(align(16))]
 struct Output([u32; 4]);
 

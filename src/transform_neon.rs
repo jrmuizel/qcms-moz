@@ -10,7 +10,6 @@ use std::mem::zeroed;
 static mut floatScale: f32 = FLOATSCALE;
 static mut clampMaxValue: f32 = CLAMPMAXVAL;
 
-//template <size_t kRIndex, size_t kGIndex, size_t kBIndex, size_t kAIndex = NO_A_INDEX>
 unsafe extern "C" fn qcms_transform_data_template_lut_neon<F: Format>(
     mut transform: *const qcms_transform,
     mut src: *const libc::c_uchar,

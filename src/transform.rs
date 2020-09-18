@@ -73,9 +73,6 @@ pub struct precache_output {
     pub data: [u8; PRECACHE_OUTPUT_SIZE],
 }
 
-pub type __darwin_size_t = libc::c_ulong;
-pub type size_t = __darwin_size_t;
-
 /* used as a lookup table for the output transformation.
  * we refcount them so we only need to have one around per output
  * profile, instead of duplicating them per transform */
@@ -631,7 +628,6 @@ unsafe extern "C" fn qcms_transform_data_graya_bgra_out_precache(
 ) {
     qcms_transform_data_gray_template_precache::<GrayAlpha, BGRA>(transform, src, dest, length);
 }
-//template <size_t kRIndex, size_t kGIndex, size_t kBIndex, size_t kAIndex = NO_A_INDEX>
 unsafe extern "C" fn qcms_transform_data_template_lut_precache<F: Format>(
     mut transform: *const qcms_transform,
     mut src: *const libc::c_uchar,
