@@ -1435,6 +1435,8 @@ pub unsafe extern "C" fn qcms_transform_create(
                         (*transform).transform_fn = Some(qcms_transform_data_bgra_out_lut_neon)
                     }
                 }
+            } else if in_type == QCMS_DATA_RGB_8 {
+                (*transform).transform_fn = Some(qcms_transform_data_rgb_out_lut_precache)
             } else if in_type == QCMS_DATA_RGBA_8 {
                 (*transform).transform_fn = Some(qcms_transform_data_rgba_out_lut_precache)
             } else if in_type == QCMS_DATA_BGRA_8 {
