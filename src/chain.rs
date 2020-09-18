@@ -32,9 +32,6 @@ use crate::{
 };
 use ::libc::{self, calloc, free, malloc, memcpy, memset};
 
-pub type __darwin_size_t = libc::c_ulong;
-pub type int32_t = i32;
-pub type size_t = __darwin_size_t;
 
 #[repr(C)]
 #[derive(Copy, Clone)]
@@ -58,14 +55,14 @@ pub struct qcms_modular_transform {
     pub output_gamma_lut_r: *mut u16,
     pub output_gamma_lut_g: *mut u16,
     pub output_gamma_lut_b: *mut u16,
-    pub output_gamma_lut_r_length: size_t,
-    pub output_gamma_lut_g_length: size_t,
-    pub output_gamma_lut_b_length: size_t,
+    pub output_gamma_lut_r_length: usize,
+    pub output_gamma_lut_g_length: usize,
+    pub output_gamma_lut_b_length: usize,
     pub transform_module_fn: transform_module_fn_t,
     pub next_transform: *mut qcms_modular_transform,
 }
 pub type transform_module_fn_t = Option<
-    unsafe extern "C" fn(_: *mut qcms_modular_transform, _: *mut f32, _: *mut f32, _: size_t) -> (),
+    unsafe extern "C" fn(_: *mut qcms_modular_transform, _: *mut f32, _: *mut f32, _: usize) -> (),
 >;
 
 #[inline]
@@ -130,13 +127,13 @@ unsafe extern "C" fn qcms_transform_module_LAB_to_XYZ(
     mut transform: *mut qcms_modular_transform,
     mut src: *mut f32,
     mut dest: *mut f32,
-    mut length: size_t,
+    mut length: usize,
 ) {
     // lcms: D50 XYZ values
     let mut WhitePointX: f32 = 0.9642;
     let mut WhitePointY: f32 = 1.0;
     let mut WhitePointZ: f32 = 0.8249;
-    let mut i: size_t = 0;
+    let mut i: usize = 0;
     while i < length {
         let fresh0 = src;
         src = src.offset(1);
@@ -182,13 +179,13 @@ unsafe extern "C" fn qcms_transform_module_XYZ_to_LAB(
     mut transform: *mut qcms_modular_transform,
     mut src: *mut f32,
     mut dest: *mut f32,
-    mut length: size_t,
+    mut length: usize,
 ) {
     // lcms: D50 XYZ values
     let mut WhitePointX: f32 = 0.9642;
     let mut WhitePointY: f32 = 1.0;
     let mut WhitePointZ: f32 = 0.8249;
-    let mut i: size_t = 0;
+    let mut i: usize = 0;
     while i < length {
         let fresh6 = src;
         src = src.offset(1);
@@ -236,7 +233,7 @@ unsafe extern "C" fn qcms_transform_module_clut_only(
     mut transform: *mut qcms_modular_transform,
     mut src: *mut f32,
     mut dest: *mut f32,
-    mut length: size_t,
+    mut length: usize,
 ) {
     let mut xy_len: i32 = 1;
     let mut x_len: i32 = (*transform).grid_size as i32;
@@ -244,9 +241,9 @@ unsafe extern "C" fn qcms_transform_module_clut_only(
     let mut r_table: *mut f32 = (*transform).r_clut;
     let mut g_table: *mut f32 = (*transform).g_clut;
     let mut b_table: *mut f32 = (*transform).b_clut;
-    let mut i: size_t = 0;
+    let mut i: usize = 0;
     while i < length {
-        debug_assert!((*transform).grid_size as i32 >= 1);
+         debug_assert!((*transform).grid_size as i32 >= 1);
         let fresh12 = src;
         src = src.offset(1);
         let mut linear_r: f32 = *fresh12;
@@ -350,7 +347,7 @@ unsafe extern "C" fn qcms_transform_module_clut(
     mut transform: *mut qcms_modular_transform,
     mut src: *mut f32,
     mut dest: *mut f32,
-    mut length: size_t,
+    mut length: usize,
 ) {
     let mut xy_len: i32 = 1;
     let mut x_len: i32 = (*transform).grid_size as i32;
@@ -358,9 +355,9 @@ unsafe extern "C" fn qcms_transform_module_clut(
     let mut r_table: *mut f32 = (*transform).r_clut;
     let mut g_table: *mut f32 = (*transform).g_clut;
     let mut b_table: *mut f32 = (*transform).b_clut;
-    let mut i: size_t = 0;
+    let mut i: usize = 0;
     while i < length {
-        debug_assert!((*transform).grid_size as i32 >= 1);
+         debug_assert!((*transform).grid_size as i32 >= 1);
         let fresh18 = src;
         src = src.offset(1);
         let mut device_r: f32 = *fresh18;
@@ -619,12 +616,12 @@ unsafe extern "C" fn qcms_transform_module_gamma_table(
     mut transform: *mut qcms_modular_transform,
     mut src: *mut f32,
     mut dest: *mut f32,
-    mut length: size_t,
+    mut length: usize,
 ) {
     let mut out_r: f32;
     let mut out_g: f32;
     let mut out_b: f32;
-    let mut i: size_t = 0;
+    let mut i: usize = 0;
     while i < length {
         let fresh24 = src;
         src = src.offset(1);
@@ -654,12 +651,12 @@ unsafe extern "C" fn qcms_transform_module_gamma_lut(
     mut transform: *mut qcms_modular_transform,
     mut src: *mut f32,
     mut dest: *mut f32,
-    mut length: size_t,
+    mut length: usize,
 ) {
     let mut out_r: f32;
     let mut out_g: f32;
     let mut out_b: f32;
-    let mut i: size_t = 0;
+    let mut i: usize = 0;
     while i < length {
         let fresh30 = src;
         src = src.offset(1);
@@ -701,7 +698,7 @@ unsafe extern "C" fn qcms_transform_module_matrix_translate(
     mut transform: *mut qcms_modular_transform,
     mut src: *mut f32,
     mut dest: *mut f32,
-    mut length: size_t,
+    mut length: usize,
 ) {
     let mut mat: matrix = matrix {
         m: [[0.; 3]; 3],
@@ -718,7 +715,7 @@ unsafe extern "C" fn qcms_transform_module_matrix_translate(
     mat.m[0][2] = (*transform).matrix.m[2][0];
     mat.m[1][2] = (*transform).matrix.m[2][1];
     mat.m[2][2] = (*transform).matrix.m[2][2];
-    let mut i: size_t = 0;
+    let mut i: usize = 0;
     while i < length {
         let fresh36 = src;
         src = src.offset(1);
@@ -751,7 +748,7 @@ unsafe extern "C" fn qcms_transform_module_matrix(
     mut transform: *mut qcms_modular_transform,
     mut src: *mut f32,
     mut dest: *mut f32,
-    mut length: size_t,
+    mut length: usize,
 ) {
     let mut mat: matrix = matrix {
         m: [[0.; 3]; 3],
@@ -768,7 +765,7 @@ unsafe extern "C" fn qcms_transform_module_matrix(
     mat.m[0][2] = (*transform).matrix.m[2][0];
     mat.m[1][2] = (*transform).matrix.m[2][1];
     mat.m[2][2] = (*transform).matrix.m[2][2];
-    let mut i: size_t = 0;
+    let mut i: usize = 0;
     while i < length {
         let fresh42 = src;
         src = src.offset(1);
@@ -934,7 +931,7 @@ unsafe extern "C" fn qcms_modular_transform_create_mAB(
                             _: *mut qcms_modular_transform,
                             _: *mut f32,
                             _: *mut f32,
-                            _: size_t,
+                            _: usize,
                         ) -> (),
                 );
                 if (*lut).num_grid_points[0] as i32 != (*lut).num_grid_points[1] as i32
@@ -971,7 +968,7 @@ unsafe extern "C" fn qcms_modular_transform_create_mAB(
                                         _: *mut qcms_modular_transform,
                                         _: *mut f32,
                                         _: *mut f32,
-                                        _: size_t,
+                                        _: usize,
                                     )
                                         -> (),
                             );
@@ -1003,7 +1000,7 @@ unsafe extern "C" fn qcms_modular_transform_create_mAB(
                                 _: *mut qcms_modular_transform,
                                 _: *mut f32,
                                 _: *mut f32,
-                                _: size_t,
+                                _: usize,
                             ) -> (),
                     );
                     // Prepare Matrix
@@ -1025,7 +1022,7 @@ unsafe extern "C" fn qcms_modular_transform_create_mAB(
                                         _: *mut qcms_modular_transform,
                                         _: *mut f32,
                                         _: *mut f32,
-                                        _: size_t,
+                                        _: usize,
                                     )
                                         -> (),
                             );
@@ -1056,7 +1053,7 @@ unsafe extern "C" fn qcms_modular_transform_create_mAB(
                                         _: *mut qcms_modular_transform,
                                         _: *mut f32,
                                         _: *mut f32,
-                                        _: size_t,
+                                        _: usize,
                                     )
                                         -> (),
                             );
@@ -1100,7 +1097,7 @@ unsafe extern "C" fn qcms_modular_transform_create_lut(
                         _: *mut qcms_modular_transform,
                         _: *mut f32,
                         _: *mut f32,
-                        _: size_t,
+                        _: usize,
                     ) -> (),
             );
             // Prepare input curves
@@ -1162,7 +1159,7 @@ unsafe extern "C" fn qcms_modular_transform_create_lut(
                                         _: *mut qcms_modular_transform,
                                         _: *mut f32,
                                         _: *mut f32,
-                                        _: size_t,
+                                        _: usize,
                                     )
                                         -> (),
                             );
@@ -1219,7 +1216,7 @@ pub unsafe extern "C" fn qcms_modular_transform_create_input(
                         _: *mut qcms_modular_transform,
                         _: *mut f32,
                         _: *mut f32,
-                        _: size_t,
+                        _: usize,
                     ) -> (),
             );
             if (*transform).input_clut_table_r.is_null()
@@ -1249,7 +1246,7 @@ pub unsafe extern "C" fn qcms_modular_transform_create_input(
                                 _: *mut qcms_modular_transform,
                                 _: *mut f32,
                                 _: *mut f32,
-                                _: size_t,
+                                _: usize,
                             ) -> (),
                     );
                     transform = qcms_modular_transform_alloc();
@@ -1264,7 +1261,7 @@ pub unsafe extern "C" fn qcms_modular_transform_create_input(
                                     _: *mut qcms_modular_transform,
                                     _: *mut f32,
                                     _: *mut f32,
-                                    _: size_t,
+                                    _: usize,
                                 ) -> (),
                         );
                         current_block = 10692455896603418738;
@@ -1321,7 +1318,7 @@ unsafe extern "C" fn qcms_modular_transform_create_output(
                         _: *mut qcms_modular_transform,
                         _: *mut f32,
                         _: *mut f32,
-                        _: size_t,
+                        _: usize,
                     ) -> (),
             );
             transform = qcms_modular_transform_alloc();
@@ -1345,7 +1342,7 @@ unsafe extern "C" fn qcms_modular_transform_create_output(
                             _: *mut qcms_modular_transform,
                             _: *mut f32,
                             _: *mut f32,
-                            _: size_t,
+                            _: usize,
                         ) -> (),
                 );
                 transform = qcms_modular_transform_alloc();
@@ -1374,7 +1371,7 @@ unsafe extern "C" fn qcms_modular_transform_create_output(
                                 _: *mut qcms_modular_transform,
                                 _: *mut f32,
                                 _: *mut f32,
-                                _: size_t,
+                                _: usize,
                             ) -> (),
                     );
                     if (*transform).output_gamma_lut_r.is_null()
@@ -1389,7 +1386,7 @@ unsafe extern "C" fn qcms_modular_transform_create_output(
             }
         }
     } else {
-        debug_assert!(false, "Unsupported output profile workflow.");
+         debug_assert!(false, "Unsupported output profile workflow.");
         return 0 as *mut qcms_modular_transform;
     }
     match current_block {
@@ -1474,7 +1471,7 @@ unsafe extern "C" fn qcms_modular_transform_create(
                                 _: *mut qcms_modular_transform,
                                 _: *mut f32,
                                 _: *mut f32,
-                                _: size_t,
+                                _: usize,
                             ) -> (),
                     );
                     current_block = 10599921512955367680;
@@ -1509,7 +1506,7 @@ unsafe extern "C" fn qcms_modular_transform_create(
                                         _: *mut qcms_modular_transform,
                                         _: *mut f32,
                                         _: *mut f32,
-                                        _: size_t,
+                                        _: usize,
                                     )
                                         -> (),
                             );
@@ -1531,7 +1528,7 @@ unsafe extern "C" fn qcms_modular_transform_create(
                                     return first_transform;
                                 }
                             } else {
-                                debug_assert!(false, "output color space not supported");
+                                 debug_assert!(false, "output color space not supported");
                             }
                         }
                     }
@@ -1539,7 +1536,7 @@ unsafe extern "C" fn qcms_modular_transform_create(
             }
         }
     } else {
-        debug_assert!(false, "input color space not supported");
+         debug_assert!(false, "input color space not supported");
     }
     qcms_modular_transform_release(first_transform);
     return 0 as *mut qcms_modular_transform;
@@ -1548,7 +1545,7 @@ unsafe extern "C" fn qcms_modular_transform_data(
     mut transform: *mut qcms_modular_transform,
     mut src: *mut f32,
     mut dest: *mut f32,
-    mut len: size_t,
+    mut len: usize,
 ) -> *mut f32 {
     while !transform.is_null() {
         // Keep swaping src/dest when performing a transform to use less memory.
@@ -1561,7 +1558,7 @@ unsafe extern "C" fn qcms_modular_transform_data(
                         _: *mut qcms_modular_transform,
                         _: *mut f32,
                         _: *mut f32,
-                        _: size_t,
+                        _: usize,
                     ) -> (),
             )
             && transform_fn
@@ -1571,7 +1568,7 @@ unsafe extern "C" fn qcms_modular_transform_data(
                             _: *mut qcms_modular_transform,
                             _: *mut f32,
                             _: *mut f32,
-                            _: size_t,
+                            _: usize,
                         ) -> (),
                 )
             && transform_fn
@@ -1581,7 +1578,7 @@ unsafe extern "C" fn qcms_modular_transform_data(
                             _: *mut qcms_modular_transform,
                             _: *mut f32,
                             _: *mut f32,
-                            _: size_t,
+                            _: usize,
                         ) -> (),
                 )
             && transform_fn
@@ -1591,7 +1588,7 @@ unsafe extern "C" fn qcms_modular_transform_data(
                             _: *mut qcms_modular_transform,
                             _: *mut f32,
                             _: *mut f32,
-                            _: size_t,
+                            _: usize,
                         ) -> (),
                 )
             && transform_fn
@@ -1601,7 +1598,7 @@ unsafe extern "C" fn qcms_modular_transform_data(
                             _: *mut qcms_modular_transform,
                             _: *mut f32,
                             _: *mut f32,
-                            _: size_t,
+                            _: usize,
                         ) -> (),
                 )
             && transform_fn
@@ -1611,7 +1608,7 @@ unsafe extern "C" fn qcms_modular_transform_data(
                             _: *mut qcms_modular_transform,
                             _: *mut f32,
                             _: *mut f32,
-                            _: size_t,
+                            _: usize,
                         ) -> (),
                 )
             && transform_fn
@@ -1621,7 +1618,7 @@ unsafe extern "C" fn qcms_modular_transform_data(
                             _: *mut qcms_modular_transform,
                             _: *mut f32,
                             _: *mut f32,
-                            _: size_t,
+                            _: usize,
                         ) -> (),
                 )
             && transform_fn
@@ -1631,11 +1628,11 @@ unsafe extern "C" fn qcms_modular_transform_data(
                             _: *mut qcms_modular_transform,
                             _: *mut f32,
                             _: *mut f32,
-                            _: size_t,
+                            _: usize,
                         ) -> (),
                 )
         {
-            debug_assert!(false, "Unsupported transform module");
+             debug_assert!(false, "Unsupported transform module");
             return 0 as *mut f32;
         }
         if (*transform).grid_size as i32 <= 0
@@ -1646,7 +1643,7 @@ unsafe extern "C" fn qcms_modular_transform_data(
                             _: *mut qcms_modular_transform,
                             _: *mut f32,
                             _: *mut f32,
-                            _: size_t,
+                            _: usize,
                         ) -> (),
                 )
                 || transform_fn
@@ -1656,11 +1653,11 @@ unsafe extern "C" fn qcms_modular_transform_data(
                                 _: *mut qcms_modular_transform,
                                 _: *mut f32,
                                 _: *mut f32,
-                                _: size_t,
+                                _: usize,
                             ) -> (),
                     ))
         {
-            debug_assert!(false, "Invalid transform");
+             debug_assert!(false, "Invalid transform");
             return 0 as *mut f32;
         }
         (*transform)
@@ -1679,7 +1676,7 @@ pub unsafe extern "C" fn qcms_chain_transform(
     mut out: *mut qcms_profile,
     mut src: *mut f32,
     mut dest: *mut f32,
-    mut lutSize: size_t,
+    mut lutSize: usize,
 ) -> *mut f32 {
     let mut transform_list: *mut qcms_modular_transform = qcms_modular_transform_create(in_0, out);
     if !transform_list.is_null() {

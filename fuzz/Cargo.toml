@@ -21,7 +21,7 @@ path = ".."
 members = ["."]
 
 [[bin]]
-name = "fuzz_target_1"
+name = "fuzz_target_qcms"
 path = "fuzz_targets/fuzz_target_qcms.rs"
 test = false
 doc = false

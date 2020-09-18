@@ -20,7 +20,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut_sse2<F: Format>(
     mut transform: *const qcms_transform,
     mut src: *const libc::c_uchar,
     mut dest: *mut libc::c_uchar,
-    mut length: size_t,
+    mut length: usize,
 ) {
     let mut mat: *const [f32; 4] = (*transform).matrix.as_ptr();
     let mut input: Output = std::mem::zeroed();
@@ -74,7 +74,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut_sse2<F: Format>(
     }
     src = src.offset(components as isize);
     let mut i: libc::c_uint = 0;
-    while (i as libc::c_ulong) < length {
+    while (i as usize) < length {
         /* position values from gamma tables */
         vec_r = _mm_shuffle_ps(vec_r, vec_r, 0);
         vec_g = _mm_shuffle_ps(vec_g, vec_g, 0);
@@ -131,7 +131,7 @@ pub unsafe extern "C" fn qcms_transform_data_rgb_out_lut_sse2(
     mut transform: *const qcms_transform,
     mut src: *const libc::c_uchar,
     mut dest: *mut libc::c_uchar,
-    mut length: size_t,
+    mut length: usize,
 ) {
     qcms_transform_data_template_lut_sse2::<RGB>(transform, src, dest, length);
 }
@@ -140,7 +140,7 @@ pub unsafe extern "C" fn qcms_transform_data_rgba_out_lut_sse2(
     mut transform: *const qcms_transform,
     mut src: *const libc::c_uchar,
     mut dest: *mut libc::c_uchar,
-    mut length: size_t,
+    mut length: usize,
 ) {
     qcms_transform_data_template_lut_sse2::<RGBA>(transform, src, dest, length);
 }
@@ -150,7 +150,7 @@ pub unsafe extern "C" fn qcms_transform_data_bgra_out_lut_sse2(
     mut transform: *const qcms_transform,
     mut src: *const libc::c_uchar,
     mut dest: *mut libc::c_uchar,
-    mut length: size_t,
+    mut length: usize,
 ) {
     qcms_transform_data_template_lut_sse2::<BGRA>(transform, src, dest, length);
 }

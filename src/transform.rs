@@ -81,8 +81,8 @@ pub type size_t = __darwin_size_t;
  * profile, instead of duplicating them per transform */
 
 #[repr(C)]
-#[derive(Copy, Clone)]
-#[repr(align(16))]
+
+#[repr(align(16))]#[derive(Copy, Clone)]
 pub struct qcms_transform {
     pub matrix: [[f32; 4]; 3],
     pub input_gamma_table_r: *mut f32,
@@ -109,10 +109,10 @@ pub struct qcms_transform {
     pub output_gamma_lut_g: *mut u16,
     pub output_gamma_lut_b: *mut u16,
     pub output_gamma_lut_gray: *mut u16,
-    pub output_gamma_lut_r_length: size_t,
-    pub output_gamma_lut_g_length: size_t,
-    pub output_gamma_lut_b_length: size_t,
-    pub output_gamma_lut_gray_length: size_t,
+    pub output_gamma_lut_r_length: usize,
+    pub output_gamma_lut_g_length: usize,
+    pub output_gamma_lut_b_length: usize,
+    pub output_gamma_lut_gray_length: usize,
     pub output_table_r: *mut precache_output,
     pub output_table_g: *mut precache_output,
     pub output_table_b: *mut precache_output,
@@ -123,7 +123,7 @@ pub type transform_fn_t = Option<
         _: *const qcms_transform,
         _: *const libc::c_uchar,
         _: *mut libc::c_uchar,
-        _: size_t,
+        _: usize,
     ) -> (),
 >;
 
@@ -205,34 +205,34 @@ pub struct CIE_XYZ {
 }
 
 pub trait Format {
-    const kRIndex: size_t;
-    const kGIndex: size_t;
-    const kBIndex: size_t;
-    const kAIndex: size_t;
+    const kRIndex: usize;
+    const kGIndex: usize;
+    const kBIndex: usize;
+    const kAIndex: usize;
 }
 
 pub struct BGRA;
 impl Format for BGRA {
-    const kBIndex: size_t = 0;
-    const kGIndex: size_t = 1;
-    const kRIndex: size_t = 2;
-    const kAIndex: size_t = 3;
+    const kBIndex: usize = 0;
+    const kGIndex: usize = 1;
+    const kRIndex: usize = 2;
+    const kAIndex: usize = 3;
 }
 
 pub struct RGBA;
 impl Format for RGBA {
-    const kRIndex: size_t = 0;
-    const kGIndex: size_t = 1;
-    const kBIndex: size_t = 2;
-    const kAIndex: size_t = 3;
+    const kRIndex: usize = 0;
+    const kGIndex: usize = 1;
+    const kBIndex: usize = 2;
+    const kAIndex: usize = 3;
 }
 
 pub struct RGB;
 impl Format for RGB {
-    const kRIndex: size_t = 0;
-    const kGIndex: size_t = 1;
-    const kBIndex: size_t = 2;
-    const kAIndex: size_t = 0xFF;
+    const kRIndex: usize = 0;
+    const kGIndex: usize = 1;
+    const kBIndex: usize = 2;
+    const kAIndex: usize = 0xFF;
 }
 
 pub trait GrayFormat {
@@ -476,12 +476,12 @@ unsafe extern "C" fn qcms_transform_data_gray_template_lut<I: GrayFormat, F: For
     mut transform: *const qcms_transform,
     mut src: *const libc::c_uchar,
     mut dest: *mut libc::c_uchar,
-    mut length: size_t,
+    mut length: usize,
 ) {
     let components: libc::c_uint = if F::kAIndex == 0xff { 3 } else { 4 } as libc::c_uint;
 
     let mut i: libc::c_uint = 0;
-    while (i as libc::c_ulong) < length {
+    while (i as usize) < length {
         let fresh0 = src;
         src = src.offset(1);
         let mut device: libc::c_uchar = *fresh0;
@@ -522,7 +522,7 @@ unsafe extern "C" fn qcms_transform_data_gray_out_lut(
     mut transform: *const qcms_transform,
     mut src: *const libc::c_uchar,
     mut dest: *mut libc::c_uchar,
-    mut length: size_t,
+    mut length: usize,
 ) {
     qcms_transform_data_gray_template_lut::<Gray, RGB>(transform, src, dest, length);
 }
@@ -530,7 +530,7 @@ unsafe extern "C" fn qcms_transform_data_gray_rgba_out_lut(
     mut transform: *const qcms_transform,
     mut src: *const libc::c_uchar,
     mut dest: *mut libc::c_uchar,
-    mut length: size_t,
+    mut length: usize,
 ) {
     qcms_transform_data_gray_template_lut::<Gray, RGBA>(transform, src, dest, length);
 }
@@ -538,7 +538,7 @@ unsafe extern "C" fn qcms_transform_data_gray_bgra_out_lut(
     mut transform: *const qcms_transform,
     mut src: *const libc::c_uchar,
     mut dest: *mut libc::c_uchar,
-    mut length: size_t,
+    mut length: usize,
 ) {
     qcms_transform_data_gray_template_lut::<Gray, BGRA>(transform, src, dest, length);
 }
@@ -546,7 +546,7 @@ unsafe extern "C" fn qcms_transform_data_graya_rgba_out_lut(
     mut transform: *const qcms_transform,
     mut src: *const libc::c_uchar,
     mut dest: *mut libc::c_uchar,
-    mut length: size_t,
+    mut length: usize,
 ) {
     qcms_transform_data_gray_template_lut::<GrayAlpha, RGBA>(transform, src, dest, length);
 }
@@ -554,7 +554,7 @@ unsafe extern "C" fn qcms_transform_data_graya_bgra_out_lut(
     mut transform: *const qcms_transform,
     mut src: *const libc::c_uchar,
     mut dest: *mut libc::c_uchar,
-    mut length: size_t,
+    mut length: usize,
 ) {
     qcms_transform_data_gray_template_lut::<GrayAlpha, BGRA>(transform, src, dest, length);
 }
@@ -562,12 +562,12 @@ unsafe extern "C" fn qcms_transform_data_gray_template_precache<I: GrayFormat, F
     mut transform: *const qcms_transform,
     mut src: *const libc::c_uchar,
     mut dest: *mut libc::c_uchar,
-    mut length: size_t,
+    mut length: usize,
 ) {
     let components: libc::c_uint = if F::kAIndex == 0xff { 3 } else { 4 } as libc::c_uint;
 
     let mut i: libc::c_uint = 0;
-    while (i as libc::c_ulong) < length {
+    while (i as usize) < length {
         let fresh2 = src;
         src = src.offset(1);
         let mut device: libc::c_uchar = *fresh2;
@@ -595,7 +595,7 @@ unsafe extern "C" fn qcms_transform_data_gray_out_precache(
     mut transform: *const qcms_transform,
     mut src: *const libc::c_uchar,
     mut dest: *mut libc::c_uchar,
-    mut length: size_t,
+    mut length: usize,
 ) {
     qcms_transform_data_gray_template_precache::<Gray, RGB>(transform, src, dest, length);
 }
@@ -603,7 +603,7 @@ unsafe extern "C" fn qcms_transform_data_gray_rgba_out_precache(
     mut transform: *const qcms_transform,
     mut src: *const libc::c_uchar,
     mut dest: *mut libc::c_uchar,
-    mut length: size_t,
+    mut length: usize,
 ) {
     qcms_transform_data_gray_template_precache::<Gray, RGBA>(transform, src, dest, length);
 }
@@ -611,7 +611,7 @@ unsafe extern "C" fn qcms_transform_data_gray_bgra_out_precache(
     mut transform: *const qcms_transform,
     mut src: *const libc::c_uchar,
     mut dest: *mut libc::c_uchar,
-    mut length: size_t,
+    mut length: usize,
 ) {
     qcms_transform_data_gray_template_precache::<Gray, BGRA>(transform, src, dest, length);
 }
@@ -619,7 +619,7 @@ unsafe extern "C" fn qcms_transform_data_graya_rgba_out_precache(
     mut transform: *const qcms_transform,
     mut src: *const libc::c_uchar,
     mut dest: *mut libc::c_uchar,
-    mut length: size_t,
+    mut length: usize,
 ) {
     qcms_transform_data_gray_template_precache::<GrayAlpha, RGBA>(transform, src, dest, length);
 }
@@ -627,7 +627,7 @@ unsafe extern "C" fn qcms_transform_data_graya_bgra_out_precache(
     mut transform: *const qcms_transform,
     mut src: *const libc::c_uchar,
     mut dest: *mut libc::c_uchar,
-    mut length: size_t,
+    mut length: usize,
 ) {
     qcms_transform_data_gray_template_precache::<GrayAlpha, BGRA>(transform, src, dest, length);
 }
@@ -636,13 +636,13 @@ unsafe extern "C" fn qcms_transform_data_template_lut_precache<F: Format>(
     mut transform: *const qcms_transform,
     mut src: *const libc::c_uchar,
     mut dest: *mut libc::c_uchar,
-    mut length: size_t,
+    mut length: usize,
 ) {
     let components: libc::c_uint = if F::kAIndex == 0xff { 3 } else { 4 } as libc::c_uint;
 
     let mut mat: *const [f32; 4] = (*transform).matrix.as_ptr();
     let mut i: libc::c_uint = 0;
-    while (i as libc::c_ulong) < length {
+    while (i as usize) < length {
         let mut device_r: libc::c_uchar = *src.offset(F::kRIndex as isize);
         let mut device_g: libc::c_uchar = *src.offset(F::kGIndex as isize);
         let mut device_b: libc::c_uchar = *src.offset(F::kBIndex as isize);
@@ -687,7 +687,7 @@ pub unsafe extern "C" fn qcms_transform_data_rgb_out_lut_precache(
     mut transform: *const qcms_transform,
     mut src: *const libc::c_uchar,
     mut dest: *mut libc::c_uchar,
-    mut length: size_t,
+    mut length: usize,
 ) {
     qcms_transform_data_template_lut_precache::<RGB>(transform, src, dest, length);
 }
@@ -696,7 +696,7 @@ pub unsafe extern "C" fn qcms_transform_data_rgba_out_lut_precache(
     mut transform: *const qcms_transform,
     mut src: *const libc::c_uchar,
     mut dest: *mut libc::c_uchar,
-    mut length: size_t,
+    mut length: usize,
 ) {
     qcms_transform_data_template_lut_precache::<RGBA>(transform, src, dest, length);
 }
@@ -705,7 +705,7 @@ pub unsafe extern "C" fn qcms_transform_data_bgra_out_lut_precache(
     mut transform: *const qcms_transform,
     mut src: *const libc::c_uchar,
     mut dest: *mut libc::c_uchar,
-    mut length: size_t,
+    mut length: usize,
 ) {
     qcms_transform_data_template_lut_precache::<BGRA>(transform, src, dest, length);
 }
@@ -774,7 +774,7 @@ unsafe extern "C" fn qcms_transform_data_tetra_clut_template<F: Format>(
     mut transform: *const qcms_transform,
     mut src: *const libc::c_uchar,
     mut dest: *mut libc::c_uchar,
-    mut length: size_t,
+    mut length: usize,
 ) {
     let components: libc::c_uint = if F::kAIndex == 0xff { 3 } else { 4 } as libc::c_uint;
 
@@ -800,7 +800,7 @@ unsafe extern "C" fn qcms_transform_data_tetra_clut_template<F: Format>(
     let mut clut_g: f32;
     let mut clut_b: f32;
     let mut i: libc::c_uint = 0;
-    while (i as libc::c_ulong) < length {
+    while (i as usize) < length {
         let mut in_r: libc::c_uchar = *src.offset(F::kRIndex as isize);
         let mut in_g: libc::c_uchar = *src.offset(F::kGIndex as isize);
         let mut in_b: libc::c_uchar = *src.offset(F::kBIndex as isize);
@@ -944,7 +944,7 @@ unsafe extern "C" fn qcms_transform_data_tetra_clut_rgb(
     mut transform: *const qcms_transform,
     mut src: *const libc::c_uchar,
     mut dest: *mut libc::c_uchar,
-    mut length: size_t,
+    mut length: usize,
 ) {
     qcms_transform_data_tetra_clut_template::<RGB>(transform, src, dest, length);
 }
@@ -952,7 +952,7 @@ unsafe extern "C" fn qcms_transform_data_tetra_clut_rgba(
     mut transform: *const qcms_transform,
     mut src: *const libc::c_uchar,
     mut dest: *mut libc::c_uchar,
-    mut length: size_t,
+    mut length: usize,
 ) {
     qcms_transform_data_tetra_clut_template::<RGBA>(transform, src, dest, length);
 }
@@ -960,7 +960,7 @@ unsafe extern "C" fn qcms_transform_data_tetra_clut_bgra(
     mut transform: *const qcms_transform,
     mut src: *const libc::c_uchar,
     mut dest: *mut libc::c_uchar,
-    mut length: size_t,
+    mut length: usize,
 ) {
     qcms_transform_data_tetra_clut_template::<BGRA>(transform, src, dest, length);
 }
@@ -968,13 +968,13 @@ unsafe extern "C" fn qcms_transform_data_template_lut<F: Format>(
     mut transform: *const qcms_transform,
     mut src: *const libc::c_uchar,
     mut dest: *mut libc::c_uchar,
-    mut length: size_t,
+    mut length: usize,
 ) {
     let components: libc::c_uint = if F::kAIndex == 0xff { 3 } else { 4 } as libc::c_uint;
 
     let mut mat: *const [f32; 4] = (*transform).matrix.as_ptr();
     let mut i: libc::c_uint = 0;
-    while (i as libc::c_ulong) < length {
+    while (i as usize) < length {
         let mut device_r: libc::c_uchar = *src.offset(F::kRIndex as isize);
         let mut device_g: libc::c_uchar = *src.offset(F::kGIndex as isize);
         let mut device_b: libc::c_uchar = *src.offset(F::kBIndex as isize);
@@ -1030,7 +1030,7 @@ pub unsafe extern "C" fn qcms_transform_data_rgb_out_lut(
     mut transform: *const qcms_transform,
     mut src: *const libc::c_uchar,
     mut dest: *mut libc::c_uchar,
-    mut length: size_t,
+    mut length: usize,
 ) {
     qcms_transform_data_template_lut::<RGB>(transform, src, dest, length);
 }
@@ -1039,7 +1039,7 @@ pub unsafe extern "C" fn qcms_transform_data_rgba_out_lut(
     mut transform: *const qcms_transform,
     mut src: *const libc::c_uchar,
     mut dest: *mut libc::c_uchar,
-    mut length: size_t,
+    mut length: usize,
 ) {
     qcms_transform_data_template_lut::<RGBA>(transform, src, dest, length);
 }
@@ -1048,7 +1048,7 @@ pub unsafe extern "C" fn qcms_transform_data_bgra_out_lut(
     mut transform: *const qcms_transform,
     mut src: *const libc::c_uchar,
     mut dest: *mut libc::c_uchar,
-    mut length: size_t,
+    mut length: usize,
 ) {
     qcms_transform_data_template_lut::<BGRA>(transform, src, dest, length);
 }
@@ -1275,7 +1275,7 @@ pub unsafe extern "C" fn qcms_transform_precacheLUT_float(
             }
             x = x + 1
         }
-        lut = qcms_chain_transform(in_0, out, src, dest, lutSize as size_t);
+        lut = qcms_chain_transform(in_0, out, src, dest, lutSize as usize);
         if !lut.is_null() {
             (*transform).r_clut = &mut *lut.offset(0isize) as *mut f32;
             (*transform).g_clut = &mut *lut.offset(1isize) as *mut f32;
@@ -1288,7 +1288,7 @@ pub unsafe extern "C" fn qcms_transform_precacheLUT_float(
             } else if in_type == QCMS_DATA_RGB_8 {
                 (*transform).transform_fn = Some(qcms_transform_data_tetra_clut_rgb)
             }
-            debug_assert!((*transform).transform_fn.is_some());
+             debug_assert!((*transform).transform_fn.is_some());
         }
     }
     //XXX: qcms_modular_transform_data may return either the src or dest buffer. If so it must not be free-ed
@@ -1328,7 +1328,7 @@ pub unsafe extern "C" fn qcms_transform_create(
         match_0 = out_type == QCMS_DATA_RGBA_8 || out_type == QCMS_DATA_BGRA_8
     }
     if !match_0 {
-        debug_assert!(false, "input/output type");
+         debug_assert!(false, "input/output type");
         return 0 as *mut qcms_transform;
     }
     let mut transform: *mut qcms_transform = transform_alloc();
@@ -1360,7 +1360,7 @@ pub unsafe extern "C" fn qcms_transform_create(
         let mut result: *mut qcms_transform =
             qcms_transform_precacheLUT_float(transform, in_0, out, 33, in_type);
         if result.is_null() {
-            debug_assert!(false, "precacheLUT failed");
+             debug_assert!(false, "precacheLUT failed");
             qcms_transform_release(transform);
             return 0 as *mut qcms_transform;
         }
@@ -1438,6 +1438,7 @@ pub unsafe extern "C" fn qcms_transform_create(
                         (*transform).transform_fn = Some(qcms_transform_data_bgra_out_lut_neon)
                     }
                 }
+                
             } else if in_type == QCMS_DATA_RGB_8 {
                 (*transform).transform_fn = Some(qcms_transform_data_rgb_out_lut_precache)
             } else if in_type == QCMS_DATA_RGBA_8 {
@@ -1535,11 +1536,11 @@ pub unsafe extern "C" fn qcms_transform_create(
             }
         }
     } else {
-        debug_assert!(false, "unexpected colorspace");
+         debug_assert!(false, "unexpected colorspace");
         qcms_transform_release(transform);
         return 0 as *mut qcms_transform;
     }
-    debug_assert!((*transform).transform_fn.is_some());
+     debug_assert!((*transform).transform_fn.is_some());
     return transform;
 }
 #[no_mangle]
@@ -1547,7 +1548,7 @@ pub unsafe extern "C" fn qcms_transform_data(
     mut transform: *mut qcms_transform,
     mut src: *const libc::c_void,
     mut dest: *mut libc::c_void,
-    mut length: size_t,
+    mut length: usize,
 ) {
     (*transform)
         .transform_fn

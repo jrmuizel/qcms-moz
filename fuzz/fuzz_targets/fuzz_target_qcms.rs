@@ -8,9 +8,9 @@ extern crate libc;
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
- use qcms::{iccread::{qcms_profile, size_t, qcms_profile_get_color_space}, transform::QCMS_DATA_RGBA_8, transform::QCMS_DATA_RGB_8, transform::QCMS_DATA_GRAYA_8, transform::QCMS_DATA_GRAY_8, iccread::icSigRgbData, iccread::qcms_profile_get_rendering_intent, transform::qcms_profile_precache_output_transform, transform::qcms_transform_create, transform::qcms_transform_data, transform::qcms_transform_release, transform::qcms_enable_iccv4, iccread::qcms_profile_from_memory, iccread::qcms_profile_release, iccread::qcms_profile_sRGB, iccread::qcms_profile_is_bogus, iccread::icSigGrayData};
+ use qcms::{iccread::{qcms_profile, qcms_profile_get_color_space}, transform::QCMS_DATA_RGBA_8, transform::QCMS_DATA_RGB_8, transform::QCMS_DATA_GRAYA_8, transform::QCMS_DATA_GRAY_8, iccread::icSigRgbData, iccread::qcms_profile_get_rendering_intent, transform::qcms_profile_precache_output_transform, transform::qcms_transform_create, transform::qcms_transform_data, transform::qcms_transform_release, transform::qcms_enable_iccv4, iccread::qcms_profile_from_memory, iccread::qcms_profile_release, iccread::qcms_profile_sRGB, iccread::qcms_profile_is_bogus, iccread::icSigGrayData};
 
- unsafe fn transform(src_profile: *mut qcms_profile, dst_profile: *mut qcms_profile, size: size_t)
+ unsafe fn transform(src_profile: *mut qcms_profile, dst_profile: *mut qcms_profile, size: usize)
  {
    // qcms supports GRAY and RGB profiles as input, and RGB as output.
  
@@ -58,13 +58,13 @@ extern crate libc;
      src_bytes_per_pixel = 1;
    }
  
-   qcms_transform_data(transform, src.as_ptr() as *const libc::c_void, dst.as_mut_ptr() as *mut libc::c_void, (SRC_SIZE / src_bytes_per_pixel) as size_t);
+   qcms_transform_data(transform, src.as_ptr() as *const libc::c_void, dst.as_mut_ptr() as *mut libc::c_void, (SRC_SIZE / src_bytes_per_pixel) as usize);
    qcms_transform_release(transform);
  }
  
  unsafe fn do_fuzz(data: &[u8])
  {
-   let size = data.len() as size_t;
+   let size = data.len();
    qcms_enable_iccv4();
  
    let profile = qcms_profile_from_memory(data.as_ptr() as *const libc::c_void, size);

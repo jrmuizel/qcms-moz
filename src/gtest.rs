@@ -9,7 +9,6 @@ mod test {
         transform::qcms_transform_create, transform::qcms_transform_data,
         transform::QCMS_DATA_RGB_8, transform_util::lut_inverse_interp16, QCMS_INTENT_PERCEPTUAL,
     iccread::qcms_profile_release, transform::qcms_transform_release};
-    pub type size_t = libc::c_ulong;
 
     #[test]
     fn test_lut_inverse_crash() {
@@ -189,7 +188,7 @@ mod test {
                 transform,
                 data.as_ptr() as *const libc::c_void,
                 data.as_mut_ptr() as *mut libc::c_void,
-                (data.len() / 3) as size_t,
+                data.len() / 3,
             )
         };
 
@@ -227,7 +226,7 @@ mod test {
             file.read_to_end(&mut data).unwrap();
             use libc::c_void;
             let profile = unsafe {
-                qcms_profile_from_memory(data.as_ptr() as *const c_void, data.len() as size_t)
+                qcms_profile_from_memory(data.as_ptr() as *const c_void, data.len())
             };
             assert_ne!(profile, std::ptr::null_mut());
             unsafe { qcms_profile_release(profile) };

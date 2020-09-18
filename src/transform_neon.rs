@@ -5,8 +5,7 @@ use core::arch::aarch64::{float32x4_t, int32x4_t, vaddq_f32};
 #[cfg(target_arch = "arm")]
 use core::arch::arm::{float32x4_t, int32x4_t, vaddq_f32};
 use std::mem::zeroed;
-pub type uintptr_t = libc::c_ulong;
-pub type size_t = libc::c_ulong;
+
 
 static mut floatScale: f32 = FLOATSCALE;
 static mut clampMaxValue: f32 = CLAMPMAXVAL;
@@ -16,7 +15,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut_neon<F: Format>(
     mut transform: *const qcms_transform,
     mut src: *const libc::c_uchar,
     mut dest: *mut libc::c_uchar,
-    mut length: size_t,
+    mut length: usize,
 ) {
     let mut mat: *const [f32; 4] = (*transform).matrix.as_ptr();
     let mut input_back: [libc::c_char; 32] = [0; 32];
@@ -25,8 +24,8 @@ unsafe extern "C" fn qcms_transform_data_template_lut_neon<F: Format>(
      * because they don't work on stack variables. gcc 4.4 does do the right thing
      * on x86 but that's too new for us right now. For more info: gcc bug #16660 */
     let mut input: *const f32 = (&mut *input_back.as_mut_ptr().offset(16isize) as *mut libc::c_char
-        as uintptr_t
-        & !(0xf) as libc::c_ulong) as *mut f32;
+        as usize
+        & !(0xf) as usize) as *mut f32;
     /* share input and output locations to save having to keep the
      * locations in separate registers */
     let mut output: *const u32 = input as *mut u32;
@@ -77,7 +76,7 @@ unsafe extern "C" fn qcms_transform_data_template_lut_neon<F: Format>(
     }
     src = src.offset(components as isize);
     let mut i: libc::c_uint = 0;
-    while (i as libc::c_ulong) < length {
+    while (i as usize) < length {
         /* gamma * matrix */
         vec_r = vmulq_f32(vec_r, mat0);
         vec_g = vmulq_f32(vec_g, mat1);
@@ -128,7 +127,7 @@ pub unsafe extern "C" fn qcms_transform_data_rgb_out_lut_neon(
     mut transform: *const qcms_transform,
     mut src: *const libc::c_uchar,
     mut dest: *mut libc::c_uchar,
-    mut length: size_t,
+    mut length: usize,
 ) {
     qcms_transform_data_template_lut_neon::<RGB>(transform, src, dest, length);
 }
@@ -137,7 +136,7 @@ pub unsafe extern "C" fn qcms_transform_data_rgba_out_lut_neon(
     mut transform: *const qcms_transform,
     mut src: *const libc::c_uchar,
     mut dest: *mut libc::c_uchar,
-    mut length: size_t,
+    mut length: usize,
 ) {
     qcms_transform_data_template_lut_neon::<RGBA>(transform, src, dest, length);
 }
@@ -147,7 +146,7 @@ pub unsafe extern "C" fn qcms_transform_data_bgra_out_lut_neon(
     mut transform: *const qcms_transform,
     mut src: *const libc::c_uchar,
     mut dest: *mut libc::c_uchar,
-    mut length: size_t,
+    mut length: usize,
 ) {
     qcms_transform_data_template_lut_neon::<BGRA>(transform, src, dest, length);
 }

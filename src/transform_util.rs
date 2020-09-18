@@ -7,8 +7,6 @@ use crate::{
     s15Fixed16Number_to_float,
 };
 
-pub type __darwin_size_t = libc::c_ulong;
-pub type size_t = __darwin_size_t;
 pub type int32_t = i32;
 
 pub type uint8_t = libc::c_uchar;
@@ -197,7 +195,7 @@ pub unsafe extern "C" fn compute_curve_gamma_table_type_parametric(
         f = *parameter.offset(6isize);
         interval = *parameter.offset(4isize)
     } else {
-        debug_assert!(false, "invalid parametric function type.");
+         debug_assert!(false, "invalid parametric function type.");
         a = 1.;
         b = 0.;
         c = 0.;
@@ -205,7 +203,7 @@ pub unsafe extern "C" fn compute_curve_gamma_table_type_parametric(
         f = 0.;
         interval = -1.
     }
-    let mut X: size_t = 0;
+    let mut X: usize = 0;
     while X < 256 {
         if X as f32 >= interval {
             // XXX The equations are not exactly as defined in the spec but are
@@ -344,10 +342,11 @@ pub unsafe extern "C" fn lut_inverse_interp16(
         }
     }
 
-    // Not found, should we interpolate?
+     
+// Not found, should we interpolate?
 
-    // Get surrounding nodes
-    debug_assert!(x >= 1);
+// Get surrounding nodes
+debug_assert!(x >= 1);
 
     let mut val2: f64 = (length - 1) as f64 * ((x - 1) as f64 / 65535.0f64);
     let mut cell0: i32 = val2.floor() as i32;
@@ -569,7 +568,7 @@ for most consumers.
 pub unsafe extern "C" fn build_output_lut(
     mut trc: *mut curveType,
     mut output_gamma_lut: *mut *mut u16,
-    mut output_gamma_lut_length: *mut size_t,
+    mut output_gamma_lut_length: *mut usize,
 ) {
     if (*trc).type_0 == 0x70617261 {
         let mut gamma_table: [f32; 256] = [0.; 256];
@@ -603,7 +602,7 @@ pub unsafe extern "C" fn build_output_lut(
     } else {
         //XXX: the choice of a minimum of 256 here is not backed by any theory,
         //     measurement or data, however it is what lcms uses.
-        *output_gamma_lut_length = (*trc).count as size_t;
+        *output_gamma_lut_length = (*trc).count as usize;
         if *output_gamma_lut_length < 256 {
             *output_gamma_lut_length = 256
         }
