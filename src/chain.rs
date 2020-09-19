@@ -1550,111 +1550,21 @@ unsafe extern "C" fn qcms_modular_transform_data(
         // Keep swaping src/dest when performing a transform to use less memory.
         let mut new_src: *mut f32 = dest;
         let transform_fn: transform_module_fn_t = (*transform).transform_module_fn;
-        if transform_fn
-            != Some(
-                qcms_transform_module_gamma_table
-                    as unsafe extern "C" fn(
-                        _: *mut qcms_modular_transform,
-                        _: *mut f32,
-                        _: *mut f32,
-                        _: usize,
-                    ) -> (),
-            )
-            && transform_fn
-                != Some(
-                    qcms_transform_module_gamma_lut
-                        as unsafe extern "C" fn(
-                            _: *mut qcms_modular_transform,
-                            _: *mut f32,
-                            _: *mut f32,
-                            _: usize,
-                        ) -> (),
-                )
-            && transform_fn
-                != Some(
-                    qcms_transform_module_clut
-                        as unsafe extern "C" fn(
-                            _: *mut qcms_modular_transform,
-                            _: *mut f32,
-                            _: *mut f32,
-                            _: usize,
-                        ) -> (),
-                )
-            && transform_fn
-                != Some(
-                    qcms_transform_module_clut_only
-                        as unsafe extern "C" fn(
-                            _: *mut qcms_modular_transform,
-                            _: *mut f32,
-                            _: *mut f32,
-                            _: usize,
-                        ) -> (),
-                )
-            && transform_fn
-                != Some(
-                    qcms_transform_module_matrix
-                        as unsafe extern "C" fn(
-                            _: *mut qcms_modular_transform,
-                            _: *mut f32,
-                            _: *mut f32,
-                            _: usize,
-                        ) -> (),
-                )
-            && transform_fn
-                != Some(
-                    qcms_transform_module_matrix_translate
-                        as unsafe extern "C" fn(
-                            _: *mut qcms_modular_transform,
-                            _: *mut f32,
-                            _: *mut f32,
-                            _: usize,
-                        ) -> (),
-                )
-            && transform_fn
-                != Some(
-                    qcms_transform_module_LAB_to_XYZ
-                        as unsafe extern "C" fn(
-                            _: *mut qcms_modular_transform,
-                            _: *mut f32,
-                            _: *mut f32,
-                            _: usize,
-                        ) -> (),
-                )
-            && transform_fn
-                != Some(
-                    qcms_transform_module_XYZ_to_LAB
-                        as unsafe extern "C" fn(
-                            _: *mut qcms_modular_transform,
-                            _: *mut f32,
-                            _: *mut f32,
-                            _: usize,
-                        ) -> (),
-                )
+        if transform_fn != Some(qcms_transform_module_gamma_table)
+            && transform_fn != Some(qcms_transform_module_gamma_lut)
+            && transform_fn != Some(qcms_transform_module_clut)
+            && transform_fn != Some(qcms_transform_module_clut_only)
+            && transform_fn != Some(qcms_transform_module_matrix)
+            && transform_fn != Some(qcms_transform_module_matrix_translate)
+            && transform_fn != Some(qcms_transform_module_LAB_to_XYZ)
+            && transform_fn != Some(qcms_transform_module_XYZ_to_LAB)
         {
             debug_assert!(false, "Unsupported transform module");
             return 0 as *mut f32;
         }
         if (*transform).grid_size as i32 <= 0
-            && (transform_fn
-                == Some(
-                    qcms_transform_module_clut
-                        as unsafe extern "C" fn(
-                            _: *mut qcms_modular_transform,
-                            _: *mut f32,
-                            _: *mut f32,
-                            _: usize,
-                        ) -> (),
-                )
-                || transform_fn
-                    == Some(
-                        qcms_transform_module_clut_only
-                            as unsafe extern "C" fn(
-                                _: *mut qcms_modular_transform,
-                                _: *mut f32,
-                                _: *mut f32,
-                                _: usize,
-                            ) -> (),
-                    ))
+            && (transform_fn == Some(qcms_transform_module_clut)
+                || transform_fn == Some(qcms_transform_module_clut_only))
         {
             debug_assert!(false, "Invalid transform");
             return 0 as *mut f32;
