@@ -1457,13 +1457,7 @@ unsafe extern "C" fn qcms_modular_transform_create(
                 } else {
                     append_transform(lab_to_pcs, &mut next_transform);
                     (*lab_to_pcs).transform_module_fn = Some(
-                        qcms_transform_module_LAB_to_XYZ
-                            as unsafe extern "C" fn(
-                                _: *mut qcms_modular_transform,
-                                _: *mut f32,
-                                _: *mut f32,
-                                _: usize,
-                            ) -> (),
+                        qcms_transform_module_LAB_to_XYZ,
                     );
                     current_block = 10599921512955367680;
                 }
@@ -1492,14 +1486,7 @@ unsafe extern "C" fn qcms_modular_transform_create(
                         } else {
                             append_transform(pcs_to_lab, &mut next_transform);
                             (*pcs_to_lab).transform_module_fn = Some(
-                                qcms_transform_module_XYZ_to_LAB
-                                    as unsafe extern "C" fn(
-                                        _: *mut qcms_modular_transform,
-                                        _: *mut f32,
-                                        _: *mut f32,
-                                        _: usize,
-                                    )
-                                        -> (),
+                                qcms_transform_module_XYZ_to_LAB,
                             );
                             current_block = 7175849428784450219;
                         }
