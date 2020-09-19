@@ -1,3 +1,26 @@
+/* vim: set ts=8 sw=8 noexpandtab: */
+//  qcms
+//  Copyright (C) 2009 Mozilla Foundation
+//  Copyright (C) 1998-2007 Marti Maria
+//
+// Permission is hereby granted, free of charge, to any person obtaining
+// a copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the Software
+// is furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+// THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 use ::libc;
 use libc::{free, malloc};
 
@@ -12,10 +35,14 @@ pub type int32_t = i32;
 pub type uint8_t = libc::c_uchar;
 pub type uint16_t = libc::c_ushort;
 
+//XXX: could use a bettername
 pub type uint16_fract_t = u16;
 
 #[inline]
-unsafe extern "C" fn u8Fixed8Number_to_float(mut x: u16) -> f32 {
+fn u8Fixed8Number_to_float(mut x: u16) -> f32 {
+    // 0x0000 = 0.
+    // 0x0100 = 1.
+    // 0xffff = 255  + 255/256
     return (x as i32 as f64 / 256.0f64) as f32;
 }
 #[inline]
@@ -35,7 +62,7 @@ pub fn clamp_float(mut a: f32) -> f32 {
         return 1.;
     } else if a >= 0. {
         return a;
-    } else {
+    } else { // a < 0 or a is NaN
         return 0.;
     };
 }
@@ -524,44 +551,7 @@ unsafe extern "C" fn build_pow_table(mut gamma: f32, mut length: i32) -> *mut u1
     }
     return output;
 }
-/* vim: set ts=8 sw=8 noexpandtab: */
-//  qcms
-//  Copyright (C) 2009 Mozilla Foundation
-//  Copyright (C) 1998-2007 Marti Maria
-//
-// Permission is hereby granted, free of charge, to any person obtaining
-// a copy of this software and associated documentation files (the "Software"),
-// to deal in the Software without restriction, including without limitation
-// the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the Software
-// is furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-//XXX: could use a bettername
-/* One would naturally write this function as the following:
-if (a > 1.)
-  return 1.;
-else if (a < 0)
-  return 0;
-else
-  return a;
 
-However, that version will let NaNs pass through which is undesirable
-for most consumers.
-*/
-// a < 0 or a is NaN
-// 0x0000 = 0.
-// 0x0100 = 1.
-// 0xffff = 255  + 255/256
 #[no_mangle]
 pub unsafe extern "C" fn build_output_lut(
     mut trc: *mut curveType,
