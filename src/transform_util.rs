@@ -1,7 +1,7 @@
 use ::libc;
 use libc::{free, malloc};
 
-use crate::matrix::matrix;
+use crate::{iccread::PARAMETRIC_CURVE_TYPE, matrix::matrix};
 use crate::{
     iccread::{curveType, qcms_profile},
     s15Fixed16Number_to_float,
@@ -39,7 +39,6 @@ pub fn clamp_float(mut a: f32) -> f32 {
         return 0.;
     };
 }
-//'para'
 /* value must be a value between 0 and 1 */
 //XXX: is the above a good restriction to have?
 // the output range of this functions is 0..1
@@ -235,7 +234,7 @@ pub unsafe extern "C" fn build_input_gamma_table(mut TRC: *mut curveType) -> *mu
     }
     let mut gamma_table: *mut f32 = malloc(::std::mem::size_of::<f32>() * 256) as *mut f32;
     if !gamma_table.is_null() {
-        if (*TRC).type_0 == 0x70617261 {
+        if (*TRC).type_0 == PARAMETRIC_CURVE_TYPE {
             compute_curve_gamma_table_type_parametric(
                 gamma_table,
                 (*TRC).parameter.as_mut_ptr(),
@@ -438,7 +437,7 @@ pub unsafe extern "C" fn compute_precache_linear(mut output: *mut u8) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn compute_precache(mut trc: *mut curveType, mut output: *mut u8) -> bool {
-    if (*trc).type_0 == 0x70617261 {
+    if (*trc).type_0 == PARAMETRIC_CURVE_TYPE {
         let mut gamma_table: [f32; 256] = [0.; 256];
         let mut gamma_table_uint: [u16; 256] = [0; 256];
 
@@ -569,7 +568,7 @@ pub unsafe extern "C" fn build_output_lut(
     mut output_gamma_lut: *mut *mut u16,
     mut output_gamma_lut_length: *mut usize,
 ) {
-    if (*trc).type_0 == 0x70617261 {
+    if (*trc).type_0 == PARAMETRIC_CURVE_TYPE {
         let mut gamma_table: [f32; 256] = [0.; 256];
 
         let mut output: *mut u16 = malloc(::std::mem::size_of::<u16>() * 256) as *mut u16;

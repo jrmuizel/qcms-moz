@@ -548,14 +548,14 @@ unsafe fn find_tag(mut index: &tag_index, mut tag_id: u32) -> *const tag {
     0 as *const tag
 }
 
-const XYZ_TYPE: u32 = 0x58595a20; // 'XYZ '
-const CURVE_TYPE: u32 = 0x63757276; // 'curv'
-const PARAMETRIC_CURVE_TYPE: u32 = 0x70617261; // 'para'
-const LUT16_TYPE: u32 = 0x6d667432; // 'mft2'
-const LUT8_TYPE: u32 = 0x6d667431; // 'mft1'
-const LUT_MAB_TYPE: u32 = 0x6d414220; // 'mAB '
-const LUT_MBA_TYPE: u32 = 0x6d424120; // 'mBA '
-const CHROMATIC_TYPE: u32 = 0x73663332; // 'sf32'
+pub const XYZ_TYPE: u32 = 0x58595a20; // 'XYZ '
+pub const CURVE_TYPE: u32 = 0x63757276; // 'curv'
+pub const PARAMETRIC_CURVE_TYPE: u32 = 0x70617261; // 'para'
+pub const LUT16_TYPE: u32 = 0x6d667432; // 'mft2'
+pub const LUT8_TYPE: u32 = 0x6d667431; // 'mft1'
+pub const LUT_MAB_TYPE: u32 = 0x6d414220; // 'mAB '
+pub const LUT_MBA_TYPE: u32 = 0x6d424120; // 'mBA '
+pub const CHROMATIC_TYPE: u32 = 0x73663332; // 'sf32'
 
 unsafe fn read_tag_s15Fixed16ArrayType(
     mut src: *mut mem_source,
