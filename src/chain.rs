@@ -30,7 +30,7 @@ use crate::{
         lut_interp_linear_float,
     },
 };
-use ::libc::{self, calloc, free, malloc, memcpy, memset};
+use ::libc::{self, calloc, free, malloc, memcpy};
 
 #[repr(C)]
 #[derive(Copy, Clone)]
@@ -86,11 +86,7 @@ unsafe extern "C" fn build_lut_matrix(mut lut: *mut lutType) -> matrix {
         result.m[2][2] = s15Fixed16Number_to_float((*lut).e22);
         result.invalid = false
     } else {
-        memset(
-            &mut result as *mut matrix as *mut libc::c_void,
-            0,
-            ::std::mem::size_of::<matrix>(),
-        );
+        result = std::mem::zeroed();
         result.invalid = true
     }
     return result;
@@ -112,11 +108,7 @@ unsafe extern "C" fn build_mAB_matrix(mut lut: *mut lutmABType) -> matrix {
         result.m[2][2] = s15Fixed16Number_to_float((*lut).e22);
         result.invalid = false
     } else {
-        memset(
-            &mut result as *mut matrix as *mut libc::c_void,
-            0,
-            ::std::mem::size_of::<matrix>(),
-        );
+        result = std::mem::zeroed();
         result.invalid = true
     }
     return result;
