@@ -65,10 +65,10 @@ pub const icSigLuvData: icColorSpaceSignature = 1282766368;
 pub const icSigLabData: icColorSpaceSignature = 1281450528;
 pub const icSigXYZData: icColorSpaceSignature = 1482250784;
 
-const RGB_SIGNATURE: u32 = 0x52474220;
-const GRAY_SIGNATURE: u32 = 0x47524159;
-const XYZ_SIGNATURE: u32 = 0x58595A20;
-const LAB_SIGNATURE: u32 = 0x4C616220;
+pub const RGB_SIGNATURE: u32 = 0x52474220;
+pub const GRAY_SIGNATURE: u32 = 0x47524159;
+pub const XYZ_SIGNATURE: u32 = 0x58595A20;
+pub const LAB_SIGNATURE: u32 = 0x4C616220;
 
 #[repr(C)]
 #[derive(Copy, Clone)]

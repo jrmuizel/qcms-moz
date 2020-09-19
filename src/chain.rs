@@ -29,7 +29,7 @@ use crate::{
         build_colorant_matrix, build_input_gamma_table, build_output_lut, lut_interp_linear,
         lut_interp_linear_float,
     },
-};
+iccread::RGB_SIGNATURE, iccread::LAB_SIGNATURE, iccread::XYZ_SIGNATURE};
 use ::libc::{self, calloc, free, malloc, memcpy};
 
 #[repr(C)]
@@ -1446,11 +1446,11 @@ unsafe extern "C" fn qcms_modular_transform_create(
     let mut current_block: u64;
     let mut first_transform: *mut qcms_modular_transform = 0 as *mut qcms_modular_transform;
     let mut next_transform: *mut *mut qcms_modular_transform = &mut first_transform;
-    if (*in_0).color_space == 0x52474220 {
+    if (*in_0).color_space == RGB_SIGNATURE {
         let mut rgb_to_pcs: *mut qcms_modular_transform = qcms_modular_transform_create_input(in_0);
         if !rgb_to_pcs.is_null() {
             append_transform(rgb_to_pcs, &mut next_transform);
-            if (*in_0).pcs == 0x4c616220 && (*out).pcs == 0x58595a20 {
+            if (*in_0).pcs == LAB_SIGNATURE && (*out).pcs == XYZ_SIGNATURE {
                 let mut lab_to_pcs: *mut qcms_modular_transform = qcms_modular_transform_alloc();
                 if lab_to_pcs.is_null() {
                     current_block = 8418824557173580938;
@@ -1478,7 +1478,7 @@ unsafe extern "C" fn qcms_modular_transform_create(
                 //	chromaticAdaption->transform_module_fn = qcms_transform_module_matrix;
                 //}
                 {
-                    if (*in_0).pcs == 0x58595a20 && (*out).pcs == 0x4c616220 {
+                    if (*in_0).pcs == XYZ_SIGNATURE && (*out).pcs == LAB_SIGNATURE {
                         let mut pcs_to_lab: *mut qcms_modular_transform =
                             qcms_modular_transform_alloc();
                         if pcs_to_lab.is_null() {
@@ -1496,7 +1496,7 @@ unsafe extern "C" fn qcms_modular_transform_create(
                     match current_block {
                         8418824557173580938 => {}
                         _ => {
-                            if (*out).color_space == 0x52474220 {
+                            if (*out).color_space == RGB_SIGNATURE {
                                 let mut pcs_to_rgb: *mut qcms_modular_transform =
                                     qcms_modular_transform_create_output(out);
                                 if !pcs_to_rgb.is_null() {
