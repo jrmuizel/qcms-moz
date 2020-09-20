@@ -236,6 +236,9 @@ unsafe extern "C" fn qcms_transform_module_clut_only(
     let mut g_table: *mut f32 = (*transform).g_clut;
     let mut b_table: *mut f32 = (*transform).b_clut;
     let mut i: usize = 0;
+    let CLU =
+        |table: *mut f32, x, y, z| *table.offset(((x * len + y * x_len + z * xy_len) * 3) as isize);
+
     while i < length {
         debug_assert!((*transform).grid_size as i32 >= 1);
         let fresh12 = src;
@@ -256,75 +259,31 @@ unsafe extern "C" fn qcms_transform_module_clut_only(
         let mut x_d: f32 = linear_r * ((*transform).grid_size as i32 - 1) as f32 - x as f32;
         let mut y_d: f32 = linear_g * ((*transform).grid_size as i32 - 1) as f32 - y as f32;
         let mut z_d: f32 = linear_b * ((*transform).grid_size as i32 - 1) as f32 - z as f32;
-        let mut r_x1: f32 = lerp(
-            *r_table.offset(((x * len + y * x_len + z * xy_len) * 3) as isize),
-            *r_table.offset(((x_n * len + y * x_len + z * xy_len) * 3) as isize),
-            x_d,
-        );
-        let mut r_x2: f32 = lerp(
-            *r_table.offset(((x * len + y_n * x_len + z * xy_len) * 3) as isize),
-            *r_table.offset(((x_n * len + y_n * x_len + z * xy_len) * 3) as isize),
-            x_d,
-        );
+
+        let mut r_x1: f32 = lerp(CLU(r_table, x, y, z), CLU(r_table, x_n, y, z), x_d);
+        let mut r_x2: f32 = lerp(CLU(r_table, x, y_n, z), CLU(r_table, x_n, y_n, z), x_d);
         let mut r_y1: f32 = lerp(r_x1, r_x2, y_d);
-        let mut r_x3: f32 = lerp(
-            *r_table.offset(((x * len + y * x_len + z_n * xy_len) * 3) as isize),
-            *r_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3) as isize),
-            x_d,
-        );
-        let mut r_x4: f32 = lerp(
-            *r_table.offset(((x * len + y_n * x_len + z_n * xy_len) * 3) as isize),
-            *r_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3) as isize),
-            x_d,
-        );
+        let mut r_x3: f32 = lerp(CLU(r_table, x, y, z_n), CLU(r_table, x_n, y, z_n), x_d);
+        let mut r_x4: f32 = lerp(CLU(r_table, x, y_n, z_n), CLU(r_table, x_n, y_n, z_n), x_d);
         let mut r_y2: f32 = lerp(r_x3, r_x4, y_d);
         let mut clut_r: f32 = lerp(r_y1, r_y2, z_d);
-        let mut g_x1: f32 = lerp(
-            *g_table.offset(((x * len + y * x_len + z * xy_len) * 3) as isize),
-            *g_table.offset(((x_n * len + y * x_len + z * xy_len) * 3) as isize),
-            x_d,
-        );
-        let mut g_x2: f32 = lerp(
-            *g_table.offset(((x * len + y_n * x_len + z * xy_len) * 3) as isize),
-            *g_table.offset(((x_n * len + y_n * x_len + z * xy_len) * 3) as isize),
-            x_d,
-        );
+
+        let mut g_x1: f32 = lerp(CLU(g_table, x, y, z), CLU(g_table, x_n, y, z), x_d);
+        let mut g_x2: f32 = lerp(CLU(g_table, x, y_n, z), CLU(g_table, x_n, y_n, z), x_d);
         let mut g_y1: f32 = lerp(g_x1, g_x2, y_d);
-        let mut g_x3: f32 = lerp(
-            *g_table.offset(((x * len + y * x_len + z_n * xy_len) * 3) as isize),
-            *g_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3) as isize),
-            x_d,
-        );
-        let mut g_x4: f32 = lerp(
-            *g_table.offset(((x * len + y_n * x_len + z_n * xy_len) * 3) as isize),
-            *g_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3) as isize),
-            x_d,
-        );
+        let mut g_x3: f32 = lerp(CLU(g_table, x, y, z_n), CLU(g_table, x_n, y, z_n), x_d);
+        let mut g_x4: f32 = lerp(CLU(g_table, x, y_n, z_n), CLU(g_table, x_n, y_n, z_n), x_d);
         let mut g_y2: f32 = lerp(g_x3, g_x4, y_d);
         let mut clut_g: f32 = lerp(g_y1, g_y2, z_d);
-        let mut b_x1: f32 = lerp(
-            *b_table.offset(((x * len + y * x_len + z * xy_len) * 3) as isize),
-            *b_table.offset(((x_n * len + y * x_len + z * xy_len) * 3) as isize),
-            x_d,
-        );
-        let mut b_x2: f32 = lerp(
-            *b_table.offset(((x * len + y_n * x_len + z * xy_len) * 3) as isize),
-            *b_table.offset(((x_n * len + y_n * x_len + z * xy_len) * 3) as isize),
-            x_d,
-        );
+
+        let mut b_x1: f32 = lerp(CLU(b_table, x, y, z), CLU(b_table, x_n, y, z), x_d);
+        let mut b_x2: f32 = lerp(CLU(b_table, x, y_n, z), CLU(b_table, x_n, y_n, z), x_d);
         let mut b_y1: f32 = lerp(b_x1, b_x2, y_d);
-        let mut b_x3: f32 = lerp(
-            *b_table.offset(((x * len + y * x_len + z_n * xy_len) * 3) as isize),
-            *b_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3) as isize),
-            x_d,
-        );
-        let mut b_x4: f32 = lerp(
-            *b_table.offset(((x * len + y_n * x_len + z_n * xy_len) * 3) as isize),
-            *b_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3) as isize),
-            x_d,
-        );
+        let mut b_x3: f32 = lerp(CLU(b_table, x, y, z_n), CLU(b_table, x_n, y, z_n), x_d);
+        let mut b_x4: f32 = lerp(CLU(b_table, x, y_n, z_n), CLU(b_table, x_n, y_n, z_n), x_d);
         let mut b_y2: f32 = lerp(b_x3, b_x4, y_d);
         let mut clut_b: f32 = lerp(b_y1, b_y2, z_d);
+
         let fresh15 = dest;
         dest = dest.offset(1);
         *fresh15 = clamp_float(clut_r);
@@ -349,6 +308,9 @@ unsafe extern "C" fn qcms_transform_module_clut(
     let mut r_table: *mut f32 = (*transform).r_clut;
     let mut g_table: *mut f32 = (*transform).g_clut;
     let mut b_table: *mut f32 = (*transform).b_clut;
+    let CLU =
+        |table: *mut f32, x, y, z| *table.offset(((x * len + y * x_len + z * xy_len) * 3) as isize);
+
     let mut i: usize = 0;
     while i < length {
         debug_assert!((*transform).grid_size as i32 >= 1);
@@ -385,73 +347,28 @@ unsafe extern "C" fn qcms_transform_module_clut(
         let mut x_d: f32 = linear_r * ((*transform).grid_size as i32 - 1) as f32 - x as f32;
         let mut y_d: f32 = linear_g * ((*transform).grid_size as i32 - 1) as f32 - y as f32;
         let mut z_d: f32 = linear_b * ((*transform).grid_size as i32 - 1) as f32 - z as f32;
-        let mut r_x1: f32 = lerp(
-            *r_table.offset(((x * len + y * x_len + z * xy_len) * 3) as isize),
-            *r_table.offset(((x_n * len + y * x_len + z * xy_len) * 3) as isize),
-            x_d,
-        );
-        let mut r_x2: f32 = lerp(
-            *r_table.offset(((x * len + y_n * x_len + z * xy_len) * 3) as isize),
-            *r_table.offset(((x_n * len + y_n * x_len + z * xy_len) * 3) as isize),
-            x_d,
-        );
+
+        let mut r_x1: f32 = lerp(CLU(r_table, x, y, z), CLU(r_table, x_n, y, z), x_d);
+        let mut r_x2: f32 = lerp(CLU(r_table, x, y_n, z), CLU(r_table, x_n, y_n, z), x_d);
         let mut r_y1: f32 = lerp(r_x1, r_x2, y_d);
-        let mut r_x3: f32 = lerp(
-            *r_table.offset(((x * len + y * x_len + z_n * xy_len) * 3) as isize),
-            *r_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3) as isize),
-            x_d,
-        );
-        let mut r_x4: f32 = lerp(
-            *r_table.offset(((x * len + y_n * x_len + z_n * xy_len) * 3) as isize),
-            *r_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3) as isize),
-            x_d,
-        );
+        let mut r_x3: f32 = lerp(CLU(r_table, x, y, z_n), CLU(r_table, x_n, y, z_n), x_d);
+        let mut r_x4: f32 = lerp(CLU(r_table, x, y_n, z_n), CLU(r_table, x_n, y_n, z_n), x_d);
         let mut r_y2: f32 = lerp(r_x3, r_x4, y_d);
         let mut clut_r: f32 = lerp(r_y1, r_y2, z_d);
-        let mut g_x1: f32 = lerp(
-            *g_table.offset(((x * len + y * x_len + z * xy_len) * 3) as isize),
-            *g_table.offset(((x_n * len + y * x_len + z * xy_len) * 3) as isize),
-            x_d,
-        );
-        let mut g_x2: f32 = lerp(
-            *g_table.offset(((x * len + y_n * x_len + z * xy_len) * 3) as isize),
-            *g_table.offset(((x_n * len + y_n * x_len + z * xy_len) * 3) as isize),
-            x_d,
-        );
+
+        let mut g_x1: f32 = lerp(CLU(g_table, x, y, z), CLU(g_table, x_n, y, z), x_d);
+        let mut g_x2: f32 = lerp(CLU(g_table, x, y_n, z), CLU(g_table, x_n, y_n, z), x_d);
         let mut g_y1: f32 = lerp(g_x1, g_x2, y_d);
-        let mut g_x3: f32 = lerp(
-            *g_table.offset(((x * len + y * x_len + z_n * xy_len) * 3) as isize),
-            *g_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3) as isize),
-            x_d,
-        );
-        let mut g_x4: f32 = lerp(
-            *g_table.offset(((x * len + y_n * x_len + z_n * xy_len) * 3) as isize),
-            *g_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3) as isize),
-            x_d,
-        );
+        let mut g_x3: f32 = lerp(CLU(g_table, x, y, z_n), CLU(g_table, x_n, y, z_n), x_d);
+        let mut g_x4: f32 = lerp(CLU(g_table, x, y_n, z_n), CLU(g_table, x_n, y_n, z_n), x_d);
         let mut g_y2: f32 = lerp(g_x3, g_x4, y_d);
         let mut clut_g: f32 = lerp(g_y1, g_y2, z_d);
-        let mut b_x1: f32 = lerp(
-            *b_table.offset(((x * len + y * x_len + z * xy_len) * 3) as isize),
-            *b_table.offset(((x_n * len + y * x_len + z * xy_len) * 3) as isize),
-            x_d,
-        );
-        let mut b_x2: f32 = lerp(
-            *b_table.offset(((x * len + y_n * x_len + z * xy_len) * 3) as isize),
-            *b_table.offset(((x_n * len + y_n * x_len + z * xy_len) * 3) as isize),
-            x_d,
-        );
+
+        let mut b_x1: f32 = lerp(CLU(b_table, x, y, z), CLU(b_table, x_n, y, z), x_d);
+        let mut b_x2: f32 = lerp(CLU(b_table, x, y_n, z), CLU(b_table, x_n, y_n, z), x_d);
         let mut b_y1: f32 = lerp(b_x1, b_x2, y_d);
-        let mut b_x3: f32 = lerp(
-            *b_table.offset(((x * len + y * x_len + z_n * xy_len) * 3) as isize),
-            *b_table.offset(((x_n * len + y * x_len + z_n * xy_len) * 3) as isize),
-            x_d,
-        );
-        let mut b_x4: f32 = lerp(
-            *b_table.offset(((x * len + y_n * x_len + z_n * xy_len) * 3) as isize),
-            *b_table.offset(((x_n * len + y_n * x_len + z_n * xy_len) * 3) as isize),
-            x_d,
-        );
+        let mut b_x3: f32 = lerp(CLU(b_table, x, y, z_n), CLU(b_table, x_n, y, z_n), x_d);
+        let mut b_x4: f32 = lerp(CLU(b_table, x, y_n, z_n), CLU(b_table, x_n, y_n, z_n), x_d);
         let mut b_y2: f32 = lerp(b_x3, b_x4, y_d);
         let mut clut_b: f32 = lerp(b_y1, b_y2, z_d);
         let mut pcs_r: f32 = lut_interp_linear_float(

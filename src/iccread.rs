@@ -352,10 +352,7 @@ const COLOR_SPACE_PROFILE: u32 = 0x73706163; // 'spac'
 const ABSTRACT_PROFILE: u32 = 0x61627374; // 'abst'
 const NAMED_COLOR_PROFILE: u32 = 0x6e6d636c; // 'nmcl'
 
-fn read_class_signature(
-    mut profile: &mut qcms_profile,
-    mut mem: &mut mem_source,
-) {
+fn read_class_signature(mut profile: &mut qcms_profile, mut mem: &mut mem_source) {
     (*profile).class_type = read_u32(mem, 12);
     match (*profile).class_type {
         DISPLAY_DEVICE_PROFILE
@@ -1097,10 +1094,7 @@ unsafe fn read_tag_lutType(
     }
     return lut;
 }
-fn read_rendering_intent(
-    mut profile: &mut qcms_profile,
-    mut src: &mut mem_source,
-) {
+fn read_rendering_intent(mut profile: &mut qcms_profile, mut src: &mut mem_source) {
     (*profile).rendering_intent = read_u32(src, 64);
     match (*profile).rendering_intent {
         0 | 2 | 1 | 3 => {}
