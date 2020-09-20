@@ -282,6 +282,11 @@ unsafe extern "C" fn write_u32(mut mem: *mut libc::c_void, mut offset: usize, mu
 unsafe extern "C" fn write_u16(mut mem: *mut libc::c_void, mut offset: usize, mut value: u16) {
     *((mem as *mut libc::c_uchar).offset(offset as isize) as *mut u16) = cpu_to_be16(value);
 }
+
+/* An arbitrary 4MB limit on profile size */
+const MAX_PROFILE_SIZE: usize = 1024*1024*4;
+const MAX_TAG_COUNT: usize = 1024;
+
 unsafe extern "C" fn check_CMM_type_signature(mut src: *mut mem_source) {
     //uint32_t CMM_type_signature = read_u32(src, 4);
     //TODO: do the check?
@@ -1366,7 +1371,7 @@ pub unsafe extern "C" fn qcms_profile_from_memory(
         return 0 as *mut qcms_profile;
     }
     /* ensure that the profile size is sane so it's easier to reason about */
-    if source.size <= 64 || source.size >= (1024 * 1024 * 4) {
+    if source.size <= 64 || source.size >= MAX_PROFILE_SIZE {
         return 0 as *mut qcms_profile;
     }
     profile = qcms_profile_create();
@@ -1536,7 +1541,7 @@ unsafe extern "C" fn qcms_data_from_file(
         return;
     }
     length = be32_to_cpu(length_be);
-    if length > (1024 * 1024 * 4) as libc::c_uint
+    if length > MAX_PROFILE_SIZE as libc::c_uint
         || (length as libc::c_ulong) < ::std::mem::size_of::<be32>() as libc::c_ulong
     {
         return;
