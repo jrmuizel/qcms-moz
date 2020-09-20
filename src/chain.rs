@@ -21,6 +21,9 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 use crate::{
+    iccread::LAB_SIGNATURE,
+    iccread::RGB_SIGNATURE,
+    iccread::XYZ_SIGNATURE,
     iccread::{lutType, lutmABType, qcms_profile},
     matrix::{matrix, matrix_invert},
     s15Fixed16Number_to_float,
@@ -29,7 +32,7 @@ use crate::{
         build_colorant_matrix, build_input_gamma_table, build_output_lut, lut_interp_linear,
         lut_interp_linear_float,
     },
-iccread::RGB_SIGNATURE, iccread::LAB_SIGNATURE, iccread::XYZ_SIGNATURE};
+};
 use ::libc::{self, calloc, free, malloc, memcpy};
 
 #[repr(C)]
@@ -1456,9 +1459,7 @@ unsafe extern "C" fn qcms_modular_transform_create(
                     current_block = 8418824557173580938;
                 } else {
                     append_transform(lab_to_pcs, &mut next_transform);
-                    (*lab_to_pcs).transform_module_fn = Some(
-                        qcms_transform_module_LAB_to_XYZ,
-                    );
+                    (*lab_to_pcs).transform_module_fn = Some(qcms_transform_module_LAB_to_XYZ);
                     current_block = 10599921512955367680;
                 }
             } else {
@@ -1485,9 +1486,8 @@ unsafe extern "C" fn qcms_modular_transform_create(
                             current_block = 8418824557173580938;
                         } else {
                             append_transform(pcs_to_lab, &mut next_transform);
-                            (*pcs_to_lab).transform_module_fn = Some(
-                                qcms_transform_module_XYZ_to_LAB,
-                            );
+                            (*pcs_to_lab).transform_module_fn =
+                                Some(qcms_transform_module_XYZ_to_LAB);
                             current_block = 7175849428784450219;
                         }
                     } else {

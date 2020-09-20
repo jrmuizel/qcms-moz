@@ -62,7 +62,8 @@ pub fn clamp_float(mut a: f32) -> f32 {
         return 1.;
     } else if a >= 0. {
         return a;
-    } else { // a < 0 or a is NaN
+    } else {
+        // a < 0 or a is NaN
         return 0.;
     };
 }

@@ -21,10 +21,14 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-use std::{sync::atomic::{AtomicBool, Ordering}, slice};
+use std::{
+    ptr::null_mut,
+    slice,
+    sync::atomic::{AtomicBool, Ordering},
+};
 
 use ::libc;
-use libc::{calloc, fclose, fopen, fread, free, malloc, memset, FILE};
+use libc::{fclose, fopen, fread, free, malloc, memset, FILE};
 
 use crate::{
     double_to_s15Fixed16Number,
@@ -71,7 +75,7 @@ pub const XYZ_SIGNATURE: u32 = 0x58595A20;
 pub const LAB_SIGNATURE: u32 = 0x4C616220;
 
 #[repr(C)]
-#[derive(Copy, Clone)]
+#[derive(Clone)]
 pub struct qcms_profile {
     pub class_type: u32,
     pub color_space: u32,
@@ -92,6 +96,38 @@ pub struct qcms_profile {
     pub output_table_r: *mut precache_output,
     pub output_table_g: *mut precache_output,
     pub output_table_b: *mut precache_output,
+}
+
+impl Drop for qcms_profile {
+    fn drop(&mut self) {
+        unsafe {
+            if !self.output_table_r.is_null() {
+                precache_release(self.output_table_r);
+            }
+            if !self.output_table_g.is_null() {
+                precache_release(self.output_table_g);
+            }
+            if !self.output_table_b.is_null() {
+                precache_release(self.output_table_b);
+            }
+            if !self.A2B0.is_null() {
+                lut_release(self.A2B0);
+            }
+            if !self.B2A0.is_null() {
+                lut_release(self.B2A0);
+            }
+            if !self.mAB.is_null() {
+                mAB_release(self.mAB);
+            }
+            if !self.mBA.is_null() {
+                mAB_release(self.mBA);
+            }
+            free(self.redTRC as *mut libc::c_void);
+            free(self.blueTRC as *mut libc::c_void);
+            free(self.greenTRC as *mut libc::c_void);
+            free(self.grayTRC as *mut libc::c_void);
+        }
+    }
 }
 
 #[repr(C)]
@@ -239,7 +275,9 @@ fn read_u32(mut mem: &mut mem_source, mut offset: usize) -> u32 {
         invalid_source(mem, "Invalid offset");
         return 0;
     } else {
-        let k = unsafe { std::ptr::read_unaligned((*mem).buf.as_ptr().offset(offset as isize) as *const be32) };
+        let k = unsafe {
+            std::ptr::read_unaligned((*mem).buf.as_ptr().offset(offset as isize) as *const be32)
+        };
         return be32_to_cpu(k);
     };
 }
@@ -248,7 +286,9 @@ fn read_u16(mut mem: &mut mem_source, mut offset: usize) -> u16 {
         invalid_source(mem, "Invalid offset");
         return 0u16;
     } else {
-        let k = unsafe { std::ptr::read_unaligned((*mem).buf.as_ptr().offset(offset as isize) as *const be16) };
+        let k = unsafe {
+            std::ptr::read_unaligned((*mem).buf.as_ptr().offset(offset as isize) as *const be16)
+        };
         return be16_to_cpu(k);
     };
 }
@@ -260,19 +300,13 @@ fn read_u8(mut mem: &mut mem_source, mut offset: usize) -> u8 {
         return unsafe { *((*mem).buf.as_ptr().offset(offset as isize) as *mut u8) };
     };
 }
-fn read_s15Fixed16Number(
-    mut mem: &mut mem_source,
-    mut offset: usize,
-) -> s15Fixed16Number {
+fn read_s15Fixed16Number(mut mem: &mut mem_source, mut offset: usize) -> s15Fixed16Number {
     return read_u32(mem, offset) as s15Fixed16Number;
 }
 fn read_uInt8Number(mut mem: &mut mem_source, mut offset: usize) -> uInt8Number {
     return read_u8(mem, offset);
 }
-fn read_uInt16Number(
-    mut mem: &mut mem_source,
-    mut offset: usize,
-) -> uInt16Number {
+fn read_uInt16Number(mut mem: &mut mem_source, mut offset: usize) -> uInt16Number {
     return read_u16(mem, offset);
 }
 unsafe extern "C" fn write_u32(mut mem: *mut libc::c_void, mut offset: usize, mut value: u32) {
@@ -283,7 +317,7 @@ unsafe extern "C" fn write_u16(mut mem: *mut libc::c_void, mut offset: usize, mu
 }
 
 /* An arbitrary 4MB limit on profile size */
-const MAX_PROFILE_SIZE: usize = 1024*1024*4;
+const MAX_PROFILE_SIZE: usize = 1024 * 1024 * 4;
 const MAX_TAG_COUNT: u32 = 1024;
 
 fn check_CMM_type_signature(mut src: &mut mem_source) {
@@ -319,7 +353,7 @@ const ABSTRACT_PROFILE: u32 = 0x61627374; // 'abst'
 const NAMED_COLOR_PROFILE: u32 = 0x6e6d636c; // 'nmcl'
 
 unsafe extern "C" fn read_class_signature(
-    mut profile: *mut qcms_profile,
+    mut profile: &mut qcms_profile,
     mut mem: &mut mem_source,
 ) {
     (*profile).class_type = read_u32(mem, 12);
@@ -333,7 +367,7 @@ unsafe extern "C" fn read_class_signature(
         }
     };
 }
-unsafe extern "C" fn read_color_space(mut profile: *mut qcms_profile, mut mem: &mut mem_source) {
+unsafe extern "C" fn read_color_space(mut profile: &mut qcms_profile, mut mem: &mut mem_source) {
     (*profile).color_space = read_u32(mem, 16);
     match (*profile).color_space {
         RGB_SIGNATURE | GRAY_SIGNATURE => {}
@@ -342,7 +376,7 @@ unsafe extern "C" fn read_color_space(mut profile: *mut qcms_profile, mut mem: &
         }
     };
 }
-unsafe extern "C" fn read_pcs(mut profile: *mut qcms_profile, mut mem: &mut mem_source) {
+unsafe extern "C" fn read_pcs(mut profile: &mut qcms_profile, mut mem: &mut mem_source) {
     (*profile).pcs = read_u32(mem, 20);
     match (*profile).pcs {
         XYZ_SIGNATURE | LAB_SIGNATURE => {}
@@ -351,7 +385,7 @@ unsafe extern "C" fn read_pcs(mut profile: *mut qcms_profile, mut mem: &mut mem_
         }
     };
 }
-fn read_tag_table(mut profile: *mut qcms_profile, mut mem: &mut mem_source) -> Vec<tag> {
+fn read_tag_table(mut profile: &mut qcms_profile, mut mem: &mut mem_source) -> Vec<tag> {
     let count = read_u32(mem, 128);
     if count > MAX_TAG_COUNT {
         invalid_source(mem, "max number of tags exceeded");
@@ -445,7 +479,7 @@ authorization from SunSoft Inc.
 // true if the profile looks bogus and should probably be
 // ignored.
 #[no_mangle]
-pub unsafe extern "C" fn qcms_profile_is_bogus(mut profile: *mut qcms_profile) -> bool {
+pub unsafe extern "C" fn qcms_profile_is_bogus(mut profile: &mut qcms_profile) -> bool {
     let mut sum: [f32; 3] = [0.; 3];
     let mut target: [f32; 3] = [0.; 3];
     let mut tolerance: [f32; 3] = [0.; 3];
@@ -1064,7 +1098,7 @@ unsafe fn read_tag_lutType(
     return lut;
 }
 unsafe extern "C" fn read_rendering_intent(
-    mut profile: *mut qcms_profile,
+    mut profile: &mut qcms_profile,
     mut src: &mut mem_source,
 ) {
     (*profile).rendering_intent = read_u32(src, 64);
@@ -1076,8 +1110,8 @@ unsafe extern "C" fn read_rendering_intent(
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn qcms_profile_create() -> *mut qcms_profile {
-    return calloc(::std::mem::size_of::<qcms_profile>(), 1) as *mut qcms_profile;
+pub unsafe extern "C" fn qcms_profile_create() -> Box<qcms_profile> {
+    Box::new(std::mem::zeroed())
 }
 /* build sRGB gamma table */
 /* based on cmsBuildParametricGamma() */
@@ -1180,13 +1214,10 @@ pub unsafe extern "C" fn qcms_profile_create_rgb_with_gamma_set(
     mut greenGamma: f32,
     mut blueGamma: f32,
 ) -> *mut qcms_profile {
-    let mut profile: *mut qcms_profile = qcms_profile_create();
-    if profile.is_null() {
-        return 0 as *mut qcms_profile;
-    }
+    let mut profile = qcms_profile_create();
+
     //XXX: should store the whitepoint
-    if !set_rgb_colorants(profile, white_point, primaries) {
-        qcms_profile_release(profile);
+    if !set_rgb_colorants(&mut profile, white_point, primaries) {
         return 0 as *mut qcms_profile;
     }
     (*profile).redTRC = curve_from_gamma(redGamma);
@@ -1194,14 +1225,13 @@ pub unsafe extern "C" fn qcms_profile_create_rgb_with_gamma_set(
     (*profile).greenTRC = curve_from_gamma(greenGamma);
     if (*profile).redTRC.is_null() || (*profile).blueTRC.is_null() || (*profile).greenTRC.is_null()
     {
-        qcms_profile_release(profile);
         return 0 as *mut qcms_profile;
     }
     (*profile).class_type = DISPLAY_DEVICE_PROFILE;
     (*profile).rendering_intent = QCMS_INTENT_PERCEPTUAL;
     (*profile).color_space = RGB_SIGNATURE;
     (*profile).pcs = XYZ_TYPE;
-    return profile;
+    return Box::into_raw(profile);
 }
 #[no_mangle]
 pub unsafe extern "C" fn qcms_profile_create_rgb_with_gamma(
@@ -1218,13 +1248,9 @@ pub unsafe extern "C" fn qcms_profile_create_rgb_with_table(
     mut table: *mut u16,
     mut num_entries: i32,
 ) -> *mut qcms_profile {
-    let mut profile: *mut qcms_profile = qcms_profile_create();
-    if profile.is_null() {
-        return 0 as *mut qcms_profile;
-    }
+    let mut profile = qcms_profile_create();
     //XXX: should store the whitepoint
-    if !set_rgb_colorants(profile, white_point, primaries) {
-        qcms_profile_release(profile);
+    if !set_rgb_colorants(&mut profile, white_point, primaries) {
         return 0 as *mut qcms_profile;
     }
     (*profile).redTRC = curve_from_table(table, num_entries);
@@ -1232,14 +1258,13 @@ pub unsafe extern "C" fn qcms_profile_create_rgb_with_table(
     (*profile).greenTRC = curve_from_table(table, num_entries);
     if (*profile).redTRC.is_null() || (*profile).blueTRC.is_null() || (*profile).greenTRC.is_null()
     {
-        qcms_profile_release(profile);
         return 0 as *mut qcms_profile;
     }
     (*profile).class_type = DISPLAY_DEVICE_PROFILE;
     (*profile).rendering_intent = QCMS_INTENT_PERCEPTUAL;
     (*profile).color_space = RGB_SIGNATURE;
     (*profile).pcs = XYZ_TYPE;
-    return profile;
+    return Box::into_raw(profile);
 }
 /* from lcms: cmsWhitePointFromTemp */
 /* tempK must be >= 4000. and <= 25000.
@@ -1345,7 +1370,6 @@ pub unsafe extern "C" fn qcms_profile_from_memory(
     mut mem: *const libc::c_void,
     mut size: usize,
 ) -> *mut qcms_profile {
-    let mut current_block: u64;
     let mut length: u32;
     let mut source: mem_source = mem_source {
         buf: &[],
@@ -1353,124 +1377,115 @@ pub unsafe extern "C" fn qcms_profile_from_memory(
         invalid_reason: None,
     };
     let mut index;
-    let mut profile: *mut qcms_profile;
     source.buf = slice::from_raw_parts(mem as *const libc::c_uchar, size);
     source.valid = true;
     let mut src: &mut mem_source = &mut source;
     if size < 4 {
-        return 0 as *mut qcms_profile;
+        return null_mut();
     }
     length = read_u32(src, 0);
     if length as usize <= size {
         // shrink the area that we can read if appropriate
-        (*src).buf =  &(*src).buf[0..length as usize];
+        (*src).buf = &(*src).buf[0..length as usize];
     } else {
-        return 0 as *mut qcms_profile;
+        return null_mut();
     }
     /* ensure that the profile size is sane so it's easier to reason about */
     if src.buf.len() <= 64 || src.buf.len() >= MAX_PROFILE_SIZE {
-        return 0 as *mut qcms_profile;
+        return null_mut();
     }
-    profile = qcms_profile_create();
-    if profile.is_null() {
-        return 0 as *mut qcms_profile;
-    }
+    let mut profile = qcms_profile_create();
+
     check_CMM_type_signature(src);
     check_profile_version(src);
-    read_class_signature(profile, src);
-    read_rendering_intent(profile, src);
-    read_color_space(profile, src);
-    read_pcs(profile, src);
+    read_class_signature(&mut profile, src);
+    read_rendering_intent(&mut profile, src);
+    read_color_space(&mut profile, src);
+    read_pcs(&mut profile, src);
     //TODO read rest of profile stuff
-    if (*src).valid {
-        index = read_tag_table(profile, src);
-        if !(!(*src).valid || index.is_empty()) {
-            if !find_tag(&index, TAG_CHAD).is_null() {
-                (*profile).chromaticAdaption = read_tag_s15Fixed16ArrayType(src, &index, TAG_CHAD)
-            } else {
-                (*profile).chromaticAdaption.invalid = true
-                //Signal the data is not present
-            }
-            if (*profile).class_type == DISPLAY_DEVICE_PROFILE
-                || (*profile).class_type == INPUT_DEVICE_PROFILE
-                || (*profile).class_type == OUTPUT_DEVICE_PROFILE
-                || (*profile).class_type == COLOR_SPACE_PROFILE
-            {
-                if (*profile).color_space == RGB_SIGNATURE {
-                    if !find_tag(&index, TAG_A2B0).is_null() {
-                        if read_u32(src, (*find_tag(&index, TAG_A2B0)).offset as usize) == LUT8_TYPE
-                            || read_u32(src, (*find_tag(&index, TAG_A2B0)).offset as usize)
-                                == LUT16_TYPE
-                        {
-                            (*profile).A2B0 = read_tag_lutType(src, &index, TAG_A2B0)
-                        } else if read_u32(src, (*find_tag(&index, TAG_A2B0)).offset as usize)
-                            == LUT_MAB_TYPE
-                        {
-                            (*profile).mAB = read_tag_lutmABType(src, &index, TAG_A2B0)
-                        }
-                    }
-                    if !find_tag(&index, TAG_B2A0).is_null() {
-                        if read_u32(src, (*find_tag(&index, TAG_B2A0)).offset as usize) == LUT8_TYPE
-                            || read_u32(src, (*find_tag(&index, TAG_B2A0)).offset as usize)
-                                == LUT16_TYPE
-                        {
-                            (*profile).B2A0 = read_tag_lutType(src, &index, TAG_B2A0)
-                        } else if read_u32(src, (*find_tag(&index, TAG_B2A0)).offset as usize)
-                            == LUT_MBA_TYPE
-                        {
-                            (*profile).mBA = read_tag_lutmABType(src, &index, TAG_B2A0)
-                        }
-                    }
-                    if !find_tag(&index, TAG_rXYZ).is_null()
-                        || !qcms_supports_iccv4.load(Ordering::Relaxed)
-                    {
-                        (*profile).redColorant = read_tag_XYZType(src, &index, TAG_rXYZ);
-                        (*profile).greenColorant = read_tag_XYZType(src, &index, TAG_gXYZ);
-                        (*profile).blueColorant = read_tag_XYZType(src, &index, TAG_bXYZ)
-                    }
-                    if !(*src).valid {
-                        current_block = 17808765469879209355;
-                    } else if !find_tag(&index, TAG_rTRC).is_null()
-                        || !qcms_supports_iccv4.load(Ordering::Relaxed)
-                    {
-                        (*profile).redTRC = read_tag_curveType(src, &index, TAG_rTRC);
-                        (*profile).greenTRC = read_tag_curveType(src, &index, TAG_gTRC);
-                        (*profile).blueTRC = read_tag_curveType(src, &index, TAG_bTRC);
-                        if (*profile).redTRC.is_null()
-                            || (*profile).blueTRC.is_null()
-                            || (*profile).greenTRC.is_null()
-                        {
-                            current_block = 17808765469879209355;
-                        } else {
-                            current_block = 3580086814630675314;
-                        }
-                    } else {
-                        current_block = 3580086814630675314;
-                    }
-                } else if (*profile).color_space == GRAY_SIGNATURE {
-                    (*profile).grayTRC = read_tag_curveType(src, &index, TAG_kTRC);
-                    if (*profile).grayTRC.is_null() {
-                        current_block = 17808765469879209355;
-                    } else {
-                        current_block = 3580086814630675314;
-                    }
-                } else {
-                    debug_assert!(false, "read_color_space protects against entering here");
-                    current_block = 17808765469879209355;
-                }
-                match current_block {
-                    17808765469879209355 => {}
-                    _ => {
-                        if (*src).valid {
-                            return profile;
-                        }
-                    }
-                }
-            }
-        }
+    if !(*src).valid {
+        return null_mut();
     }
-    qcms_profile_release(profile);
-    return 0 as *mut qcms_profile;
+
+    index = read_tag_table(&mut profile, src);
+    if !(*src).valid || index.is_empty() {
+        return null_mut();
+    }
+
+    if !find_tag(&index, TAG_CHAD).is_null() {
+        (*profile).chromaticAdaption = read_tag_s15Fixed16ArrayType(src, &index, TAG_CHAD)
+    } else {
+        (*profile).chromaticAdaption.invalid = true //Signal the data is not present
+    }
+
+    if (*profile).class_type == DISPLAY_DEVICE_PROFILE
+        || (*profile).class_type == INPUT_DEVICE_PROFILE
+        || (*profile).class_type == OUTPUT_DEVICE_PROFILE
+        || (*profile).class_type == COLOR_SPACE_PROFILE
+    {
+        if (*profile).color_space == RGB_SIGNATURE {
+            if !find_tag(&index, TAG_A2B0).is_null() {
+                if read_u32(src, (*find_tag(&index, TAG_A2B0)).offset as usize) == LUT8_TYPE
+                    || read_u32(src, (*find_tag(&index, TAG_A2B0)).offset as usize) == LUT16_TYPE
+                {
+                    (*profile).A2B0 = read_tag_lutType(src, &index, TAG_A2B0)
+                } else if read_u32(src, (*find_tag(&index, TAG_A2B0)).offset as usize)
+                    == LUT_MAB_TYPE
+                {
+                    (*profile).mAB = read_tag_lutmABType(src, &index, TAG_A2B0)
+                }
+            }
+            if !find_tag(&index, TAG_B2A0).is_null() {
+                if read_u32(src, (*find_tag(&index, TAG_B2A0)).offset as usize) == LUT8_TYPE
+                    || read_u32(src, (*find_tag(&index, TAG_B2A0)).offset as usize) == LUT16_TYPE
+                {
+                    (*profile).B2A0 = read_tag_lutType(src, &index, TAG_B2A0)
+                } else if read_u32(src, (*find_tag(&index, TAG_B2A0)).offset as usize)
+                    == LUT_MBA_TYPE
+                {
+                    (*profile).mBA = read_tag_lutmABType(src, &index, TAG_B2A0)
+                }
+            }
+            if !find_tag(&index, TAG_rXYZ).is_null() || !qcms_supports_iccv4.load(Ordering::Relaxed)
+            {
+                (*profile).redColorant = read_tag_XYZType(src, &index, TAG_rXYZ);
+                (*profile).greenColorant = read_tag_XYZType(src, &index, TAG_gXYZ);
+                (*profile).blueColorant = read_tag_XYZType(src, &index, TAG_bXYZ)
+            }
+            if !(*src).valid {
+                return null_mut();
+            }
+
+            if !find_tag(&index, TAG_rTRC).is_null() || !qcms_supports_iccv4.load(Ordering::Relaxed)
+            {
+                (*profile).redTRC = read_tag_curveType(src, &index, TAG_rTRC);
+                (*profile).greenTRC = read_tag_curveType(src, &index, TAG_gTRC);
+                (*profile).blueTRC = read_tag_curveType(src, &index, TAG_bTRC);
+                if (*profile).redTRC.is_null()
+                    || (*profile).blueTRC.is_null()
+                    || (*profile).greenTRC.is_null()
+                {
+                    return null_mut();
+                }
+            }
+        } else if (*profile).color_space == GRAY_SIGNATURE {
+            (*profile).grayTRC = read_tag_curveType(src, &index, TAG_kTRC);
+            if (*profile).grayTRC.is_null() {
+                return null_mut();
+            }
+        } else {
+            debug_assert!(false, "read_color_space protects against entering here");
+            return null_mut();
+        }
+    } else {
+        return null_mut();
+    }
+
+    if !(*src).valid {
+        return null_mut();
+    }
+
+    Box::into_raw(profile)
 }
 #[no_mangle]
 pub unsafe extern "C" fn qcms_profile_get_rendering_intent(
@@ -1489,32 +1504,7 @@ unsafe extern "C" fn lut_release(mut lut: *mut lutType) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn qcms_profile_release(mut profile: *mut qcms_profile) {
-    if !(*profile).output_table_r.is_null() {
-        precache_release((*profile).output_table_r);
-    }
-    if !(*profile).output_table_g.is_null() {
-        precache_release((*profile).output_table_g);
-    }
-    if !(*profile).output_table_b.is_null() {
-        precache_release((*profile).output_table_b);
-    }
-    if !(*profile).A2B0.is_null() {
-        lut_release((*profile).A2B0);
-    }
-    if !(*profile).B2A0.is_null() {
-        lut_release((*profile).B2A0);
-    }
-    if !(*profile).mAB.is_null() {
-        mAB_release((*profile).mAB);
-    }
-    if !(*profile).mBA.is_null() {
-        mAB_release((*profile).mBA);
-    }
-    free((*profile).redTRC as *mut libc::c_void);
-    free((*profile).blueTRC as *mut libc::c_void);
-    free((*profile).greenTRC as *mut libc::c_void);
-    free((*profile).grayTRC as *mut libc::c_void);
-    free(profile as *mut libc::c_void);
+    drop(Box::from_raw(profile));
 }
 unsafe extern "C" fn qcms_data_from_file(
     mut file: *mut FILE,

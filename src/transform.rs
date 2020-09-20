@@ -429,7 +429,7 @@ unsafe extern "C" fn adapt_matrix_to_D50(
 }
 #[no_mangle]
 pub unsafe extern "C" fn set_rgb_colorants(
-    mut profile: *mut qcms_profile,
+    mut profile: &mut qcms_profile,
     mut white_point: qcms_CIE_xyY,
     mut primaries: qcms_CIE_xyYTRIPLE,
 ) -> bool {
