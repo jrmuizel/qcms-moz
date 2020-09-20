@@ -352,7 +352,7 @@ const COLOR_SPACE_PROFILE: u32 = 0x73706163; // 'spac'
 const ABSTRACT_PROFILE: u32 = 0x61627374; // 'abst'
 const NAMED_COLOR_PROFILE: u32 = 0x6e6d636c; // 'nmcl'
 
-unsafe extern "C" fn read_class_signature(
+fn read_class_signature(
     mut profile: &mut qcms_profile,
     mut mem: &mut mem_source,
 ) {
@@ -367,7 +367,7 @@ unsafe extern "C" fn read_class_signature(
         }
     };
 }
-unsafe extern "C" fn read_color_space(mut profile: &mut qcms_profile, mut mem: &mut mem_source) {
+fn read_color_space(mut profile: &mut qcms_profile, mut mem: &mut mem_source) {
     (*profile).color_space = read_u32(mem, 16);
     match (*profile).color_space {
         RGB_SIGNATURE | GRAY_SIGNATURE => {}
@@ -376,7 +376,7 @@ unsafe extern "C" fn read_color_space(mut profile: &mut qcms_profile, mut mem: &
         }
     };
 }
-unsafe extern "C" fn read_pcs(mut profile: &mut qcms_profile, mut mem: &mut mem_source) {
+fn read_pcs(mut profile: &mut qcms_profile, mut mem: &mut mem_source) {
     (*profile).pcs = read_u32(mem, 20);
     match (*profile).pcs {
         XYZ_SIGNATURE | LAB_SIGNATURE => {}
@@ -479,7 +479,7 @@ authorization from SunSoft Inc.
 // true if the profile looks bogus and should probably be
 // ignored.
 #[no_mangle]
-pub unsafe extern "C" fn qcms_profile_is_bogus(mut profile: &mut qcms_profile) -> bool {
+pub extern "C" fn qcms_profile_is_bogus(mut profile: &mut qcms_profile) -> bool {
     let mut sum: [f32; 3] = [0.; 3];
     let mut target: [f32; 3] = [0.; 3];
     let mut tolerance: [f32; 3] = [0.; 3];
@@ -1097,7 +1097,7 @@ unsafe fn read_tag_lutType(
     }
     return lut;
 }
-unsafe extern "C" fn read_rendering_intent(
+fn read_rendering_intent(
     mut profile: &mut qcms_profile,
     mut src: &mut mem_source,
 ) {
