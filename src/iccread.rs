@@ -285,7 +285,7 @@ unsafe extern "C" fn write_u16(mut mem: *mut libc::c_void, mut offset: usize, mu
 
 /* An arbitrary 4MB limit on profile size */
 const MAX_PROFILE_SIZE: usize = 1024*1024*4;
-const MAX_TAG_COUNT: usize = 1024;
+const MAX_TAG_COUNT: u32 = 1024;
 
 unsafe extern "C" fn check_CMM_type_signature(mut src: *mut mem_source) {
     //uint32_t CMM_type_signature = read_u32(src, 4);
@@ -354,7 +354,7 @@ unsafe extern "C" fn read_pcs(mut profile: *mut qcms_profile, mut mem: *mut mem_
 }
 unsafe fn read_tag_table(mut profile: *mut qcms_profile, mut mem: *mut mem_source) -> Vec<tag> {
     let count = read_u32(mem, 128);
-    if count > 1024 {
+    if count > MAX_TAG_COUNT {
         invalid_source(mem, "max number of tags exceeded");
         return Vec::new();
     }
