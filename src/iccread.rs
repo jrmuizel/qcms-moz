@@ -227,11 +227,11 @@ fn be32_to_cpu(mut v: be32) -> u32 {
 fn be16_to_cpu(mut v: be16) -> u16 {
     u16::from_be(v)
 }
-unsafe fn invalid_source(mut mem: *mut mem_source, reason: &'static str) {
+unsafe fn invalid_source(mut mem: &mut mem_source, reason: &'static str) {
     (*mem).valid = false;
     (*mem).invalid_reason = Some(reason);
 }
-unsafe extern "C" fn read_u32(mut mem: *mut mem_source, mut offset: usize) -> u32 {
+unsafe extern "C" fn read_u32(mut mem: &mut mem_source, mut offset: usize) -> u32 {
     /* Subtract from mem->size instead of the more intuitive adding to offset.
      * This avoids overflowing offset. The subtraction is safe because
      * mem->size is guaranteed to be > 4 */
@@ -243,7 +243,7 @@ unsafe extern "C" fn read_u32(mut mem: *mut mem_source, mut offset: usize) -> u3
         return be32_to_cpu(k);
     };
 }
-unsafe extern "C" fn read_u16(mut mem: *mut mem_source, mut offset: usize) -> u16 {
+unsafe extern "C" fn read_u16(mut mem: &mut mem_source, mut offset: usize) -> u16 {
     if offset > (*mem).buf.len() - 2 {
         invalid_source(mem, "Invalid offset");
         return 0u16;
@@ -252,7 +252,7 @@ unsafe extern "C" fn read_u16(mut mem: *mut mem_source, mut offset: usize) -> u1
         return be16_to_cpu(k);
     };
 }
-unsafe extern "C" fn read_u8(mut mem: *mut mem_source, mut offset: usize) -> u8 {
+unsafe extern "C" fn read_u8(mut mem: &mut mem_source, mut offset: usize) -> u8 {
     if offset > (*mem).buf.len() - 1 {
         invalid_source(mem, "Invalid offset");
         return 0u8;
@@ -261,16 +261,16 @@ unsafe extern "C" fn read_u8(mut mem: *mut mem_source, mut offset: usize) -> u8 
     };
 }
 unsafe extern "C" fn read_s15Fixed16Number(
-    mut mem: *mut mem_source,
+    mut mem: &mut mem_source,
     mut offset: usize,
 ) -> s15Fixed16Number {
     return read_u32(mem, offset) as s15Fixed16Number;
 }
-unsafe extern "C" fn read_uInt8Number(mut mem: *mut mem_source, mut offset: usize) -> uInt8Number {
+unsafe extern "C" fn read_uInt8Number(mut mem: &mut mem_source, mut offset: usize) -> uInt8Number {
     return read_u8(mem, offset);
 }
 unsafe extern "C" fn read_uInt16Number(
-    mut mem: *mut mem_source,
+    mut mem: &mut mem_source,
     mut offset: usize,
 ) -> uInt16Number {
     return read_u16(mem, offset);
@@ -286,11 +286,11 @@ unsafe extern "C" fn write_u16(mut mem: *mut libc::c_void, mut offset: usize, mu
 const MAX_PROFILE_SIZE: usize = 1024*1024*4;
 const MAX_TAG_COUNT: u32 = 1024;
 
-unsafe extern "C" fn check_CMM_type_signature(mut src: *mut mem_source) {
+unsafe extern "C" fn check_CMM_type_signature(mut src: &mut mem_source) {
     //uint32_t CMM_type_signature = read_u32(src, 4);
     //TODO: do the check?
 }
-unsafe extern "C" fn check_profile_version(mut src: *mut mem_source) {
+unsafe extern "C" fn check_profile_version(mut src: &mut mem_source) {
     /*
     uint8_t major_revision = read_u8(src, 8 + 0);
     uint8_t minor_revision = read_u8(src, 8 + 1);
@@ -320,7 +320,7 @@ const NAMED_COLOR_PROFILE: u32 = 0x6e6d636c; // 'nmcl'
 
 unsafe extern "C" fn read_class_signature(
     mut profile: *mut qcms_profile,
-    mut mem: *mut mem_source,
+    mut mem: &mut mem_source,
 ) {
     (*profile).class_type = read_u32(mem, 12);
     match (*profile).class_type {
@@ -333,7 +333,7 @@ unsafe extern "C" fn read_class_signature(
         }
     };
 }
-unsafe extern "C" fn read_color_space(mut profile: *mut qcms_profile, mut mem: *mut mem_source) {
+unsafe extern "C" fn read_color_space(mut profile: *mut qcms_profile, mut mem: &mut mem_source) {
     (*profile).color_space = read_u32(mem, 16);
     match (*profile).color_space {
         RGB_SIGNATURE | GRAY_SIGNATURE => {}
@@ -342,7 +342,7 @@ unsafe extern "C" fn read_color_space(mut profile: *mut qcms_profile, mut mem: *
         }
     };
 }
-unsafe extern "C" fn read_pcs(mut profile: *mut qcms_profile, mut mem: *mut mem_source) {
+unsafe extern "C" fn read_pcs(mut profile: *mut qcms_profile, mut mem: &mut mem_source) {
     (*profile).pcs = read_u32(mem, 20);
     match (*profile).pcs {
         XYZ_SIGNATURE | LAB_SIGNATURE => {}
@@ -351,7 +351,7 @@ unsafe extern "C" fn read_pcs(mut profile: *mut qcms_profile, mut mem: *mut mem_
         }
     };
 }
-unsafe fn read_tag_table(mut profile: *mut qcms_profile, mut mem: *mut mem_source) -> Vec<tag> {
+unsafe fn read_tag_table(mut profile: *mut qcms_profile, mut mem: &mut mem_source) -> Vec<tag> {
     let count = read_u32(mem, 128);
     if count > MAX_TAG_COUNT {
         invalid_source(mem, "max number of tags exceeded");
@@ -562,7 +562,7 @@ pub const LUT_MBA_TYPE: u32 = 0x6d424120; // 'mBA '
 pub const CHROMATIC_TYPE: u32 = 0x73663332; // 'sf32'
 
 unsafe fn read_tag_s15Fixed16ArrayType(
-    mut src: *mut mem_source,
+    mut src: &mut mem_source,
     mut index: &tag_index,
     mut tag_id: u32,
 ) -> matrix {
@@ -594,7 +594,7 @@ unsafe fn read_tag_s15Fixed16ArrayType(
     return matrix;
 }
 unsafe fn read_tag_XYZType(
-    mut src: *mut mem_source,
+    mut src: &mut mem_source,
     mut index: &tag_index,
     mut tag_id: u32,
 ) -> XYZNumber {
@@ -621,7 +621,7 @@ unsafe fn read_tag_XYZType(
 // This method is used when reading mAB tags where nested curveType are
 // present that are not part of the tag_index.
 unsafe extern "C" fn read_curveType(
-    mut src: *mut mem_source,
+    mut src: &mut mem_source,
     mut offset: u32,
     mut len: *mut u32,
 ) -> *mut curveType {
@@ -689,7 +689,7 @@ unsafe extern "C" fn read_curveType(
     return curve;
 }
 unsafe fn read_tag_curveType(
-    mut src: *mut mem_source,
+    mut src: &mut mem_source,
     mut index: &tag_index,
     mut tag_id: u32,
 ) -> *mut curveType {
@@ -705,7 +705,7 @@ unsafe fn read_tag_curveType(
 }
 // arbitrary
 unsafe extern "C" fn read_nested_curveType(
-    mut src: *mut mem_source,
+    mut src: &mut mem_source,
     mut curveArray: *mut [*mut curveType; 10],
     mut num_channels: u8,
     mut curve_offset: u32,
@@ -747,7 +747,7 @@ unsafe extern "C" fn mAB_release(mut lut: *mut lutmABType) {
 }
 /* See section 10.10 for specs */
 unsafe fn read_tag_lutmABType(
-    mut src: *mut mem_source,
+    mut src: &mut mem_source,
     mut index: &tag_index,
     mut tag_id: u32,
 ) -> *mut lutmABType {
@@ -904,7 +904,7 @@ unsafe fn read_tag_lutmABType(
     return lut;
 }
 unsafe fn read_tag_lutType(
-    mut src: *mut mem_source,
+    mut src: &mut mem_source,
     mut index: &tag_index,
     mut tag_id: u32,
 ) -> *mut lutType {
@@ -1065,7 +1065,7 @@ unsafe fn read_tag_lutType(
 }
 unsafe extern "C" fn read_rendering_intent(
     mut profile: *mut qcms_profile,
-    mut src: *mut mem_source,
+    mut src: &mut mem_source,
 ) {
     (*profile).rendering_intent = read_u32(src, 64);
     match (*profile).rendering_intent {
@@ -1356,7 +1356,7 @@ pub unsafe extern "C" fn qcms_profile_from_memory(
     let mut profile: *mut qcms_profile;
     source.buf = slice::from_raw_parts(mem as *const libc::c_uchar, size);
     source.valid = true;
-    let mut src: *mut mem_source = &mut source;
+    let mut src: &mut mem_source = &mut source;
     if size < 4 {
         return 0 as *mut qcms_profile;
     }
@@ -1368,7 +1368,7 @@ pub unsafe extern "C" fn qcms_profile_from_memory(
         return 0 as *mut qcms_profile;
     }
     /* ensure that the profile size is sane so it's easier to reason about */
-    if source.buf.len() <= 64 || source.buf.len() >= MAX_PROFILE_SIZE {
+    if src.buf.len() <= 64 || src.buf.len() >= MAX_PROFILE_SIZE {
         return 0 as *mut qcms_profile;
     }
     profile = qcms_profile_create();
