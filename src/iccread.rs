@@ -21,7 +21,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::{sync::atomic::{AtomicBool, Ordering}, slice};
 
 use ::libc;
 use libc::{calloc, fclose, fopen, fread, free, malloc, memset, FILE};
@@ -199,9 +199,8 @@ type tag_index = [tag];
 
 #[repr(C)]
 #[derive(Copy, Clone)]
-pub struct mem_source {
-    pub buf: *const u8,
-    pub size: usize,
+pub struct mem_source<'a> {
+    pub buf: &'a [u8],
     pub valid: bool,
     pub invalid_reason: Option<&'static str>,
 }
@@ -236,29 +235,29 @@ unsafe extern "C" fn read_u32(mut mem: *mut mem_source, mut offset: usize) -> u3
     /* Subtract from mem->size instead of the more intuitive adding to offset.
      * This avoids overflowing offset. The subtraction is safe because
      * mem->size is guaranteed to be > 4 */
-    if offset > (*mem).size - 4 {
+    if offset > (*mem).buf.len() - 4 {
         invalid_source(mem, "Invalid offset");
         return 0;
     } else {
-        let k = std::ptr::read_unaligned((*mem).buf.offset(offset as isize) as *const be32);
+        let k = std::ptr::read_unaligned((*mem).buf.as_ptr().offset(offset as isize) as *const be32);
         return be32_to_cpu(k);
     };
 }
 unsafe extern "C" fn read_u16(mut mem: *mut mem_source, mut offset: usize) -> u16 {
-    if offset > (*mem).size - 2 {
+    if offset > (*mem).buf.len() - 2 {
         invalid_source(mem, "Invalid offset");
         return 0u16;
     } else {
-        let k = std::ptr::read_unaligned((*mem).buf.offset(offset as isize) as *const be16);
+        let k = std::ptr::read_unaligned((*mem).buf.as_ptr().offset(offset as isize) as *const be16);
         return be16_to_cpu(k);
     };
 }
 unsafe extern "C" fn read_u8(mut mem: *mut mem_source, mut offset: usize) -> u8 {
-    if offset > (*mem).size - 1 {
+    if offset > (*mem).buf.len() - 1 {
         invalid_source(mem, "Invalid offset");
         return 0u8;
     } else {
-        return *((*mem).buf.offset(offset as isize) as *mut u8);
+        return *((*mem).buf.as_ptr().offset(offset as isize) as *mut u8);
     };
 }
 unsafe extern "C" fn read_s15Fixed16Number(
@@ -1349,15 +1348,13 @@ pub unsafe extern "C" fn qcms_profile_from_memory(
     let mut current_block: u64;
     let mut length: u32;
     let mut source: mem_source = mem_source {
-        buf: 0 as *const libc::c_uchar,
-        size: 0,
+        buf: &[],
         valid: false,
         invalid_reason: None,
     };
     let mut index;
     let mut profile: *mut qcms_profile;
-    source.buf = mem as *const libc::c_uchar;
-    source.size = size;
+    source.buf = slice::from_raw_parts(mem as *const libc::c_uchar, size);
     source.valid = true;
     let mut src: *mut mem_source = &mut source;
     if size < 4 {
@@ -1366,12 +1363,12 @@ pub unsafe extern "C" fn qcms_profile_from_memory(
     length = read_u32(src, 0);
     if length as usize <= size {
         // shrink the area that we can read if appropriate
-        (*src).size = length as usize
+        (*src).buf =  &(*src).buf[0..length as usize];
     } else {
         return 0 as *mut qcms_profile;
     }
     /* ensure that the profile size is sane so it's easier to reason about */
-    if source.size <= 64 || source.size >= MAX_PROFILE_SIZE {
+    if source.buf.len() <= 64 || source.buf.len() >= MAX_PROFILE_SIZE {
         return 0 as *mut qcms_profile;
     }
     profile = qcms_profile_create();
