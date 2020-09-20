@@ -227,11 +227,11 @@ fn be32_to_cpu(mut v: be32) -> u32 {
 fn be16_to_cpu(mut v: be16) -> u16 {
     u16::from_be(v)
 }
-unsafe fn invalid_source(mut mem: &mut mem_source, reason: &'static str) {
+fn invalid_source(mut mem: &mut mem_source, reason: &'static str) {
     (*mem).valid = false;
     (*mem).invalid_reason = Some(reason);
 }
-unsafe extern "C" fn read_u32(mut mem: &mut mem_source, mut offset: usize) -> u32 {
+fn read_u32(mut mem: &mut mem_source, mut offset: usize) -> u32 {
     /* Subtract from mem->size instead of the more intuitive adding to offset.
      * This avoids overflowing offset. The subtraction is safe because
      * mem->size is guaranteed to be > 4 */
@@ -239,37 +239,37 @@ unsafe extern "C" fn read_u32(mut mem: &mut mem_source, mut offset: usize) -> u3
         invalid_source(mem, "Invalid offset");
         return 0;
     } else {
-        let k = std::ptr::read_unaligned((*mem).buf.as_ptr().offset(offset as isize) as *const be32);
+        let k = unsafe { std::ptr::read_unaligned((*mem).buf.as_ptr().offset(offset as isize) as *const be32) };
         return be32_to_cpu(k);
     };
 }
-unsafe extern "C" fn read_u16(mut mem: &mut mem_source, mut offset: usize) -> u16 {
+fn read_u16(mut mem: &mut mem_source, mut offset: usize) -> u16 {
     if offset > (*mem).buf.len() - 2 {
         invalid_source(mem, "Invalid offset");
         return 0u16;
     } else {
-        let k = std::ptr::read_unaligned((*mem).buf.as_ptr().offset(offset as isize) as *const be16);
+        let k = unsafe { std::ptr::read_unaligned((*mem).buf.as_ptr().offset(offset as isize) as *const be16) };
         return be16_to_cpu(k);
     };
 }
-unsafe extern "C" fn read_u8(mut mem: &mut mem_source, mut offset: usize) -> u8 {
+fn read_u8(mut mem: &mut mem_source, mut offset: usize) -> u8 {
     if offset > (*mem).buf.len() - 1 {
         invalid_source(mem, "Invalid offset");
         return 0u8;
     } else {
-        return *((*mem).buf.as_ptr().offset(offset as isize) as *mut u8);
+        return unsafe { *((*mem).buf.as_ptr().offset(offset as isize) as *mut u8) };
     };
 }
-unsafe extern "C" fn read_s15Fixed16Number(
+fn read_s15Fixed16Number(
     mut mem: &mut mem_source,
     mut offset: usize,
 ) -> s15Fixed16Number {
     return read_u32(mem, offset) as s15Fixed16Number;
 }
-unsafe extern "C" fn read_uInt8Number(mut mem: &mut mem_source, mut offset: usize) -> uInt8Number {
+fn read_uInt8Number(mut mem: &mut mem_source, mut offset: usize) -> uInt8Number {
     return read_u8(mem, offset);
 }
-unsafe extern "C" fn read_uInt16Number(
+fn read_uInt16Number(
     mut mem: &mut mem_source,
     mut offset: usize,
 ) -> uInt16Number {
@@ -286,11 +286,11 @@ unsafe extern "C" fn write_u16(mut mem: *mut libc::c_void, mut offset: usize, mu
 const MAX_PROFILE_SIZE: usize = 1024*1024*4;
 const MAX_TAG_COUNT: u32 = 1024;
 
-unsafe extern "C" fn check_CMM_type_signature(mut src: &mut mem_source) {
+fn check_CMM_type_signature(mut src: &mut mem_source) {
     //uint32_t CMM_type_signature = read_u32(src, 4);
     //TODO: do the check?
 }
-unsafe extern "C" fn check_profile_version(mut src: &mut mem_source) {
+fn check_profile_version(mut src: &mut mem_source) {
     /*
     uint8_t major_revision = read_u8(src, 8 + 0);
     uint8_t minor_revision = read_u8(src, 8 + 1);
@@ -351,7 +351,7 @@ unsafe extern "C" fn read_pcs(mut profile: *mut qcms_profile, mut mem: &mut mem_
         }
     };
 }
-unsafe fn read_tag_table(mut profile: *mut qcms_profile, mut mem: &mut mem_source) -> Vec<tag> {
+fn read_tag_table(mut profile: *mut qcms_profile, mut mem: &mut mem_source) -> Vec<tag> {
     let count = read_u32(mem, 128);
     if count > MAX_TAG_COUNT {
         invalid_source(mem, "max number of tags exceeded");
@@ -1246,7 +1246,7 @@ pub unsafe extern "C" fn qcms_profile_create_rgb_with_table(
  * Invalid values of tempK will return
  * (x,y,Y) = (-1.0, -1.0, -1.0)
  * similar to argyll: icx_DTEMP2XYZ() */
-unsafe extern "C" fn white_point_from_temp(mut temp_K: i32) -> qcms_CIE_xyY {
+fn white_point_from_temp(mut temp_K: i32) -> qcms_CIE_xyY {
     let mut white_point: qcms_CIE_xyY = qcms_CIE_xyY {
         x: 0.,
         y: 0.,
