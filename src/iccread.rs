@@ -650,7 +650,7 @@ fn read_tag_XYZType(mut src: &mut mem_source, mut index: &tag_index, mut tag_id:
 unsafe extern "C" fn read_curveType(
     mut src: &mut mem_source,
     mut offset: u32,
-    mut len: *mut u32,
+    mut len: &mut u32,
 ) -> *mut curveType {
     static mut COUNT_TO_LENGTH: [u32; 5] = [1, 3, 4, 5, 7]; //PARAMETRIC_CURVE_TYPE
     let mut curve: *mut curveType;
