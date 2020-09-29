@@ -1,6 +1,5 @@
 #[cfg(test)]
 mod test {
-
     use crate::{
         iccread::*, transform::*, transform_util::lut_inverse_interp16, QCMS_INTENT_PERCEPTUAL,
     };
