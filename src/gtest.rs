@@ -811,10 +811,11 @@ mod test {
         }
     }
 
-    fn profile_from_path(path: &str) -> *mut qcms_profile {
+    fn profile_from_path(file: &str) -> *mut qcms_profile {
         use std::io::Read;
-        let path = "/Users/jrmuizel/source/gecko/gfx/tests/gtest/icc_profiles/".to_string() + path;
-        dbg!(&path);
+        let mut path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        path.push("profiles");
+        path.push(file);
         let mut file = std::fs::File::open(path).unwrap();
         let mut data = Vec::new();
         file.read_to_end(&mut data).unwrap();
