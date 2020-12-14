@@ -410,11 +410,12 @@ mod test {
         let kAIndex = 3;
 
         // Sample every red pixel value with a subset of green and blue.
-        let mut color = &mut outBuffer[..];
-        for r in 0..=255 {
+        // we use a u16 for r to avoid https://github.com/rust-lang/rust/issues/78283
+        let mut color: &mut [u8] = &mut outBuffer[..];
+        for r in 0..=255u16 {
             for &g in colorSamples.iter() {
                 for &b in colorSamples.iter() {
-                    color[kRIndex] = r;
+                    color[kRIndex] = r as u8;
                     color[kGIndex] = g;
                     color[kBIndex] = b;
                     if kHasAlpha {
@@ -428,10 +429,10 @@ mod test {
         // Sample every green pixel value with a subset of red and blue.
         let mut color = &mut outBuffer[..];
         for &r in colorSamples.iter() {
-            for g in 0..=255 {
+            for g in 0..=255u16 {
                 for &b in colorSamples.iter() {
                     color[kRIndex] = r;
-                    color[kGIndex] = g;
+                    color[kGIndex] = g as u8;
                     color[kBIndex] = b;
                     if kHasAlpha {
                         color[kAIndex] = 0x80;
@@ -443,18 +444,26 @@ mod test {
 
         // Sample every blue pixel value with a subset of red and green.
         let mut color = &mut outBuffer[..];
+        let mut i = 0;
+        let mut r_count = 0;
+        let mut g_count = 0;
+        let mut b_count = 0;
         for &r in colorSamples.iter() {
             for &g in colorSamples.iter() {
-                for b in 0..=255 {
+                for b in 0..=255u16 {
                     color[kRIndex] = r;
                     color[kGIndex] = g;
-                    color[kBIndex] = b;
+                    color[kBIndex] = b as u8;
                     if kHasAlpha {
                         color[kAIndex] = 0x80;
                     }
+                    i += pixelSize;
                     color = &mut color[pixelSize..];
+                    b_count += 1;
                 }
+                g_count += 1;
             }
+            r_count += 1;
         }
 
         (pixelCount, outBuffer)
@@ -855,7 +864,7 @@ mod test {
             qcms_enable_iccv4();
         }
         let input = qcms_profile_sRGB();
-        // lut-ident.icc was created from the profile in bug 1679621
+        // B2A0-ident.icc was created from the profile in bug 1679621
         // manually edited using iccToXML/iccFromXML
         let output = profile_from_path("B2A0-ident.icc");
 
